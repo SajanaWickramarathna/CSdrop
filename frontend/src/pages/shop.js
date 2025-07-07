@@ -152,11 +152,9 @@ export default function Shop() {
 
   return (
     <div className="bg-gray-100 min-h-screen">
-      {/* Fixed Navbar */}
       <Nav />
       <ToastContainer position="top-center" autoClose={3000} />
 
-      {/* Fixed Sidebar */}
       <aside className="w-60 h-screen fixed top-20 left-0 z-40 bg-white shadow-lg px-2 pt-4 flex flex-col gap-2">
         <h2 className="text-lg font-bold tracking-widest text-blue-700 px-2">
           CATEGORIES
@@ -189,9 +187,7 @@ export default function Shop() {
         </nav>
       </aside>
 
-      {/* Main Content Area */}
       <div className="flex pt-20 pl-60">
-        {/* Optional Filter Panel */}
         {showFilterPanel && (
           <aside className="w-80 bg-gray-100 border-l border-gray-300 text-gray-900 py-12 px-8">
             <div>
@@ -252,9 +248,7 @@ export default function Shop() {
           </aside>
         )}
 
-        {/* Product Grid */}
         <div className="flex-1 p-8">
-          {/* Filter tags */}
           <div className="flex flex-wrap gap-2 mb-6">
             {selectedCategory && (
               <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium flex items-center gap-1">
@@ -296,7 +290,6 @@ export default function Shop() {
             )}
           </div>
 
-          {/* Product Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {filteredProducts.length > 0 ? (
               filteredProducts.map((product) => (

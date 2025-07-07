@@ -78,6 +78,7 @@ exports.getAllProducts = async (req, res) => {
 
 exports.getProductById = async (req, res) => {
   try {
+    // Consistently use route param:
     const { id } = req.params;
     const product = await Product.findOne({ product_id: Number(id) });
     if (!product) return res.status(404).json({ error: 'Product not found' });

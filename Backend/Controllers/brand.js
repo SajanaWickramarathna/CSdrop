@@ -101,6 +101,18 @@ exports.updateBrand = async (req, res) => {
   }
 };
 
+exports.getBrandById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Ensure id is a number if your schema expects that
+    const brand = await Brand.findOne({ brand_id: Number(id) });
+    if (!brand) return res.status(404).json({ error: 'Brand not found' });
+    res.json(brand);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // MODIFIED: Delete brand and all related products
 exports.deleteBrand = async (req, res) => {
   try {

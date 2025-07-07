@@ -22,6 +22,9 @@ router.put('/updatebrand/:id', upload.single("brand_image"), BrandController.upd
 // Delete brand
 router.delete('/deletebrand/:id', BrandController.deleteBrand);
 
+// Get brand by ID
+router.get('/:id', BrandController.getBrandById);
+
 router.get('/with-product-count', BrandController.getAllBrandsWithProductCount);
 
 module.exports = router;

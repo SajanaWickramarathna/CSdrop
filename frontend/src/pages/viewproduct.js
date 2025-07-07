@@ -1,108 +1,152 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
-import { Button, IconButton } from '@mui/material';
-import { Card, CardContent, CardHeader, Typography, Rating, Divider, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import { ShoppingCart, FavoriteBorder, LocalShipping, CheckCircle, Palette, Replay, LocalShippingOutlined } from '@mui/icons-material';
-import Nav from '../components/navigation';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
+import Nav from "../components/navigation";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const CartIcon = () => <span style={{ marginRight: 6 }}>🛒</span>;
 
 const ProductViewPage = () => {
   const { id } = useParams();
   const [product, setProduct] = useState(null);
-  const [brandData, setBrandData] = useState(null);
-  const [categoryData, setCategoryData] = useState(null);
+  const [brand, setBrand] = useState(null);
   const [loading, setLoading] = useState(true);
 
-    const token = localStorage.getItem('token');
-
-
+  // Fetch product and brand details
   useEffect(() => {
-    axios.get(`http://localhost:3001/api/products/product?id=${id}`)
-      .then((response) => {
-        setProduct(response.data);
+    async function fetchProductAndBrand() {
+      try {
+        const productRes = await axios.get(
+          `http://localhost:3001/api/products/product/${id}`
+        );
+        setProduct(productRes.data);
+
+        if (productRes.data.brand_id) {
+          // Fetch brand details from repo endpoint
+          const brandRes = await axios.get(
+            `http://localhost:3001/api/brands/${productRes.data.brand_id}`
+          );
+          setBrand(brandRes.data);
+        } else {
+          setBrand(null);
+        }
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      } catch (err) {
+        setLoading(false);
+      }
+    }
+    fetchProductAndBrand();
   }, [id]);
 
-  useEffect(() => {
-    if (product) {
-      axios.get(`http://localhost:3001/api/brands/brand?id=${product.product_brand_id}`)
-        .then((response) => {
-          setBrandData(response.data);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    }
-  }, [product]);
+  const getProductImageSrc = (imgPath) => {
+    if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
+    if (imgPath.startsWith("http")) return imgPath;
+    if (imgPath.startsWith("/uploads")) return `http://localhost:3001${imgPath}`;
+    if (imgPath.startsWith("uploads")) return `http://localhost:3001/${imgPath}`;
+    return `http://localhost:3001/uploads/${imgPath}`;
+  };
 
-  useEffect(() => {
-    if (product) {
-      axios.get(`http://localhost:3001/api/categories/category?id=${product.product_category_id}`)
-        .then((response) => {
-          setCategoryData(response.data);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    }
-  }, [product]);
+  if (loading)
+    return (
+      <div className="text-center p-10 bg-white" style={{ minHeight: "100vh", color: "#2D2D2D" }}>
+        Loading...
+      </div>
+    );
+  if (!product)
+    return (
+      <div className="text-center p-10 bg-white" style={{ minHeight: "100vh", color: "#2D2D2D" }}>
+        Product not found
+      </div>
+    );
 
-    const handleAddToCart = (product_id) => {
-        axios.post(
-        'http://localhost:3001/api/cart/addtocart',
-        { product_id, quantity: 1 },
-        { headers: { Authorization: `Bearer ${token}` } }
-        )
-        .then(() => {
-        toast.success('Product added to cart');
-        })
-        .catch((err) => {
-        toast.error('Error adding to cart');
-        console.error('Error adding to cart:', err);
-        });
-    };
+  const {
+    product_name,
+    product_description,
+    product_price,
+    product_image,
+    product_status,
+  } = product;
 
-  if (loading) return <div className='text-center p-10'>Loading...</div>;
-  if (!product) return <div className='text-center p-10'>Product not found</div>;
+  // Availability logic
+  const isAvailable =
+    product_status && (product_status.toLowerCase() === "active" || product_status === 1);
 
   return (
-    <div>
+    <div style={{ minHeight: "100vh", background: "#fff" }}>
       <Nav />
       <ToastContainer position="top-center" autoClose={3000} />
-    
-      <div className='flex justify-center items-center min-h-screen p-6 bg-gray-100 py-28'>
-        <Card className='w-full max-w-6xl shadow-2xl rounded-2xl bg-white p-8'>
-          <CardHeader title={<Typography variant='h4' className='font-bold text-gray-800'>{product.product_name}</Typography>} subheader={<Typography variant='subtitle1' className='text-gray-600'>{brandData?.brand_name} | {categoryData?.category_name}</Typography>} />
-          <Divider className='my-4' />
-          <CardContent>
-            <div className='flex flex-col lg:flex-row items-start gap-10'>
-              <img src={`http://localhost:3001${product.product_image}`} alt={product.product_name} className='w-full lg:w-1/2 rounded-lg shadow-md object-cover'/>
-              <div className='space-y-6'>
-                <Typography variant='body1' className='text-gray-700'>{product.product_description}</Typography>
-                <Typography variant='h5' className='font-semibold text-green-700'>Rs.{product.product_price}</Typography>
-                {/*<Rating name='product-rating' value={4} readOnly size='large' />*/}
-                {/*<Typography variant='body2' className={`text-sm ${product.stock_count > 0 ? 'text-green-600' : 'text-red-600'}`}>Stock: {product.stock_count > 0 ? `${product.stock_count} available` : 'Out of stock'}</Typography>*/}
-                <div className='flex gap-4'>
-                  <Button variant='contained' color='primary' startIcon={<ShoppingCart />} className='mt-4 py-2 px-5 rounded-md text-white shadow hover:shadow-lg' onClick={()=> handleAddToCart(product.product_id)}>
-                    Add to Cart
-                  </Button>
-                </div>
-                <Typography variant='subtitle2' className='text-gray-600'>Category: {categoryData?.category_name}</Typography>
-                <Typography variant='subtitle2' className='text-gray-600'>Brand: {brandData?.brand_name}</Typography>
+      <div
+        className="flex flex-col md:flex-row w-full justify-center items-start px-8 pt-32 pb-12"
+        style={{
+          minHeight: "100vh",
+          color: "#2D2D2D",
+          background: "#fff",
+        }}
+      >
+        {/* Left: Image and info */}
+        <div className="flex-1 flex flex-col items-center max-w-lg">
+          <div className="text-3xl md:text-4xl font-bold mb-4 tracking-wide text-left w-full">
+            {product_name}
+          </div>
+          <div
+            className="shadow-xl rounded-lg border border-gray-300 bg-white mb-2 w-full p-6 flex flex-col items-center"
+            style={{ minWidth: 350 }}
+          >
+            <img
+              src={getProductImageSrc(product_image)}
+              alt={product_name}
+              className="rounded-lg shadow-md w-96 h-72 object-contain"
+              style={{ background: "#f5f5f5" }}
+            />
+          </div>
+          <div className="mt-6 flex w-full max-w-lg">
+            <div className="flex flex-col gap-2 w-1/2">
+              <div className="text-gray-700">Availability</div>
+              <div className="text-gray-700">Brand</div>
+            </div>
+            <div className="flex flex-col gap-2 w-1/2">
+              <div
+                className="font-semibold"
+                style={{
+                  color: isAvailable ? "#22c55e" : "#ef4444",
+                  background: "none",
+                }}
+              >
+                {isAvailable ? "Available" : "Not Available"}
+              </div>
+              <div
+                className="font-semibold text-gray-900"
+                style={{
+                  background: "none",
+                  display: "inline-block",
+                  padding: "0 6px",
+                  borderRadius: 4,
+                  fontSize: 18,
+                }}
+              >
+                {brand?.brand_name || "N/A"}
               </div>
             </div>
-            <Divider className='my-6' />
-            <Typography variant='h6' className='font-bold text-gray-800'>Product Details:</Typography>
-            <List>
-              <ListItem><ListItemIcon><CheckCircle color='success' /></ListItemIcon><ListItemText primary='High quality and durable materials' /></ListItem>
-              <ListItem><ListItemIcon><Palette color='primary' /></ListItemIcon><ListItemText primary='Available in multiple colors' /></ListItem>
-              <ListItem><ListItemIcon><Replay color='secondary' /></ListItemIcon><ListItemText primary='30-day return policy' /></ListItem>
-              <ListItem><ListItemIcon><LocalShippingOutlined color='info' /></ListItemIcon><ListItemText primary='Free shipping on orders over LKR 100000' /></ListItem>
-            </List>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+        {/* Right: Price, description, actions */}
+        <div className="flex-1 flex flex-col justify-start items-start pl-0 md:pl-20 pt-10 md:pt-0 max-w-xl w-full">
+          <div className="mt-4 text-3xl font-bold mb-4">
+            {Number(product_price).toLocaleString("en-US")} LKR
+          </div>
+          <div className="mb-6 text-base text-gray-700 whitespace-pre-line">
+            {product_description}
+          </div>
+          <button
+            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded font-bold flex items-center transition-all"
+            style={{ letterSpacing: "1px" }}
+            onClick={() => {/* TODO: Implement Add to Cart */}}
+            disabled={!isAvailable}
+          >
+            <CartIcon /> Add to Cart
+          </button>
+        </div>
       </div>
     </div>
   );
