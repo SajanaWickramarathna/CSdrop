@@ -11,9 +11,8 @@ exports.addBrand = async (req, res) => {
     if (!category) return res.status(400).json({ error: 'Invalid category_id' });
 
     let brand_image = "";
-    // Handle image uploaded via multer (req.file)
     if (req.file && req.file.filename) {
-      brand_image = req.file.filename; // or req.file.path if you prefer
+      brand_image = req.file.filename;
     } else {
       return res.status(400).json({ error: 'Brand image is required' });
     }
@@ -86,12 +85,10 @@ exports.updateBrand = async (req, res) => {
   try {
     const { id } = req.params;
     const update = req.body;
-    // Handle new image upload if present
     if (req.file && req.file.filename) {
-      update.brand_image = req.file.filename; // or req.file.path
+      update.brand_image = req.file.filename;
     }
     if (update.category_id) {
-      // Validate new category
       const category = await Category.findOne({ category_id: Number(update.category_id) });
       if (!category) return res.status(400).json({ error: 'Invalid category_id' });
       update.category_name = category.category_name;
@@ -104,12 +101,16 @@ exports.updateBrand = async (req, res) => {
   }
 };
 
+// MODIFIED: Delete brand and all related products
 exports.deleteBrand = async (req, res) => {
   try {
     const { id } = req.params;
+    // First, delete all products related to this brand
+    await Product.deleteMany({ brand_id: Number(id) });
+    // Then, delete the brand itself
     const result = await Brand.findOneAndDelete({ brand_id: Number(id) });
     if (!result) return res.status(404).json({ error: 'Brand not found' });
-    res.json({ message: 'Brand deleted successfully' });
+    res.json({ message: 'Brand and all related products deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

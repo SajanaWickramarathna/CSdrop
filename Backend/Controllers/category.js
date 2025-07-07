@@ -1,5 +1,6 @@
 const Category = require('../Models/category');
 const Brand = require('../Models/brand');
+const Product = require('../Models/product'); // ADD THIS if not already imported
 
 // ADD CATEGORY
 exports.addCategory = async (req, res) => {
@@ -91,12 +92,29 @@ exports.getAllCategoriesWithBrandCount = async (req, res) => {
   }
 };
 
+// DELETE CATEGORY + CASCADE DELETE BRANDS & PRODUCTS
 exports.deleteCategory = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Find all brands in this category
+    const brands = await Brand.find({ category_id: Number(id) });
+    const brandIds = brands.map(b => b.brand_id);
+
+    // Delete ALL products under these brands
+    await Product.deleteMany({ brand_id: { $in: brandIds } });
+
+    // Delete all brands under this category
+    await Brand.deleteMany({ category_id: Number(id) });
+
+    // Optionally: Delete products directly linked to category (if any)
+    await Product.deleteMany({ category_id: Number(id) });
+
+    // Delete the category itself
     const result = await Category.findOneAndDelete({ category_id: Number(id) });
     if (!result) return res.status(404).json({ error: 'Category not found' });
-    res.json({ message: 'Category deleted successfully' });
+
+    res.json({ message: 'Category, related brands, and products deleted successfully' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
