@@ -100,3 +100,17 @@ exports.clearCart = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// Get cart count (sum of quantities) for user
+exports.getCartCount = async (req, res) => {
+  const user_id = req.user.id; // get from auth middleware token payload
+  try {
+    const cart = await Cart.findOne({ user_id });
+    if (!cart) return res.status(200).json({ count: 0 });
+
+    const count = cart.items.reduce((acc, item) => acc + item.quantity, 0);
+    res.status(200).json({ count });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

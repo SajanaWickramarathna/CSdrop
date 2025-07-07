@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import Nav from "../components/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useCart } from "../context/CartContext";
 
 export default function Shop() {
   const [products, setProducts] = useState([]);
@@ -16,6 +17,7 @@ export default function Shop() {
   const [maxPrice, setMaxPrice] = useState(1000000);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const { fetchCartCount } = useCart();
 
   const token = localStorage.getItem("token");
 
@@ -90,20 +92,20 @@ export default function Shop() {
   }, [selectedBrands, maxPrice, searchQuery, products]);
 
   const handleAddToCart = (product_id) => {
-    axios
-      .post(
-        "http://localhost:3001/api/cart/addtocart",
-        { product_id, quantity: 1 },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      .then(() => {
-        toast.success("Product added to cart");
-      })
-      .catch((err) => {
-        toast.error("Error adding to cart");
-        console.error("Error adding to cart:", err);
-      });
-  };
+  axios
+    .post(
+      "http://localhost:3001/api/cart/addtocart",
+      { product_id, quantity: 1 },
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    .then(() => {
+      toast.success("Product added to cart");
+      fetchCartCount(); // 🔄 refresh cart count
+    })
+    .catch(() => {
+      toast.error("Error adding to cart");
+    });
+};
 
   const handleCategoryClick = async (category_id) => {
     setSelectedCategory(category_id);

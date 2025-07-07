@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import Nav from "../components/navigation";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useCart } from "../context/CartContext";
 
 const CartIcon = () => <span style={{ marginRight: 6 }}>🛒</span>;
 
@@ -12,8 +13,10 @@ const ProductViewPage = () => {
   const [product, setProduct] = useState(null);
   const [brand, setBrand] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { fetchCartCount } = useCart();
 
-  // Fetch product and brand details
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
     async function fetchProductAndBrand() {
       try {
@@ -23,7 +26,6 @@ const ProductViewPage = () => {
         setProduct(productRes.data);
 
         if (productRes.data.brand_id) {
-          // Fetch brand details from repo endpoint
           const brandRes = await axios.get(
             `http://localhost:3001/api/brands/${productRes.data.brand_id}`
           );
@@ -33,11 +35,28 @@ const ProductViewPage = () => {
         }
         setLoading(false);
       } catch (err) {
+        console.error("Error fetching product or brand:", err);
         setLoading(false);
       }
     }
     fetchProductAndBrand();
   }, [id]);
+
+ const handleAddToCart = (product_id) => {
+  axios
+    .post(
+      "http://localhost:3001/api/cart/addtocart",
+      { product_id, quantity: 1 },
+      { headers: { Authorization: `Bearer ${token}` } }
+    )
+    .then(() => {
+      toast.success("Product added to cart");
+      fetchCartCount(); // 🔄 refresh cart count
+    })
+    .catch(() => {
+      toast.error("Error adding to cart");
+    });
+};
 
   const getProductImageSrc = (imgPath) => {
     if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
@@ -68,7 +87,6 @@ const ProductViewPage = () => {
     product_status,
   } = product;
 
-  // Availability logic
   const isAvailable =
     product_status && (product_status.toLowerCase() === "active" || product_status === 1);
 
@@ -130,6 +148,7 @@ const ProductViewPage = () => {
             </div>
           </div>
         </div>
+
         {/* Right: Price, description, actions */}
         <div className="flex-1 flex flex-col justify-start items-start pl-0 md:pl-20 pt-10 md:pt-0 max-w-xl w-full">
           <div className="mt-4 text-3xl font-bold mb-4">
@@ -141,7 +160,7 @@ const ProductViewPage = () => {
           <button
             className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded font-bold flex items-center transition-all"
             style={{ letterSpacing: "1px" }}
-            onClick={() => {/* TODO: Implement Add to Cart */}}
+            onClick={handleAddToCart}
             disabled={!isAvailable}
           >
             <CartIcon /> Add to Cart

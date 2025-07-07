@@ -70,9 +70,11 @@ exports.getBrandsByCategory = async (req, res) => {
   }
 };
 
+// Get brand by ID
 exports.getBrandById = async (req, res) => {
   try {
     const { id } = req.params;
+    // If your primary key is brand_id (number), use this:
     const brand = await Brand.findOne({ brand_id: Number(id) });
     if (!brand) return res.status(404).json({ error: 'Brand not found' });
     res.json(brand);

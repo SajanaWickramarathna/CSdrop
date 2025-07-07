@@ -1,30 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import Logo from '../assets/logo 4.png';
-import ProfileIcon from '@mui/icons-material/AccountCircleRounded';
-import LogoutIcon from '@mui/icons-material/Logout';
-import CartIcon from '@mui/icons-material/ShoppingCart';
+import Logo from "../assets/logo 4.png";
+import ProfileIcon from "@mui/icons-material/AccountCircleRounded";
+import LogoutIcon from "@mui/icons-material/Logout";
+import CartIcon from "@mui/icons-material/ShoppingCart";
 import axios from "axios";
+import { useCart } from "../context/CartContext";
 
 function Nav() {
   const [isOpen, setIsOpen] = useState(false);
   const [token, setToken] = useState(localStorage.getItem("token"));
-  const location = useLocation();  // To get the current route
+  const location = useLocation(); // To get the current route
   const [userData, setUserData] = useState(null);
   const [cartLength, setCartLength] = useState();
-  
+  const { cartCount } = useCart();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch user data
-        const userResponse = await axios.get("http://localhost:3001/api/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const userResponse = await axios.get(
+          "http://localhost:3001/api/users/me",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setUserData(userResponse.data);
 
         // After user data is set, fetch the cart length
-        const cartResponse = await axios.get(`http://localhost:3001/api/cart/getcart/${userResponse.data.user_id}`);
+        const cartResponse = await axios.get(
+          `http://localhost:3001/api/cart/getcart/${userResponse.data.user_id}`
+        );
         const length = cartResponse?.data?.items?.length || 0;
         setCartLength(length);
       } catch (error) {
@@ -36,7 +42,6 @@ function Nav() {
       fetchData();
     }
   }, [token]);
-
 
   // Handle logout and redirect
   const handleLogout = () => {
@@ -60,11 +65,7 @@ function Nav() {
       <div className="mx-auto max-w-7xl flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="text-2xl font-bold">
-          <img
-            src={Logo}
-            alt="KHB Logo"
-            className="w-32 h-auto"
-          />
+          <img src={Logo} alt="KHB Logo" className="w-32 h-auto" />
         </Link>
 
         {/* Mobile Menu Button */}
@@ -74,12 +75,34 @@ function Nav() {
           aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           {isOpen ? (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           ) : (
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16m-7 6h7"
+              />
             </svg>
           )}
         </button>
@@ -93,7 +116,11 @@ function Nav() {
           <li>
             <Link
               to="/"
-              className={`block py-2 lg:py-0 ${isActive("/") ? "text-purple-700 font-semibold" : "hover:text-purple-700"}`}
+              className={`block py-2 lg:py-0 ${
+                isActive("/")
+                  ? "text-purple-700 font-semibold"
+                  : "hover:text-purple-700"
+              }`}
             >
               Home
             </Link>
@@ -101,7 +128,11 @@ function Nav() {
           <li>
             <Link
               to="/shop"
-              className={`block py-2 lg:py-0 ${isActive("/shop") ? "text-purple-700 font-semibold" : "hover:text-purple-700"}`}
+              className={`block py-2 lg:py-0 ${
+                isActive("/shop")
+                  ? "text-purple-700 font-semibold"
+                  : "hover:text-purple-700"
+              }`}
             >
               Shop
             </Link>
@@ -109,7 +140,11 @@ function Nav() {
           <li>
             <Link
               to="/contactform"
-              className={`block py-2 lg:py-0 ${isActive("/contactform") ? "text-purple-700 font-semibold" : "hover:text-purple-700"}`}
+              className={`block py-2 lg:py-0 ${
+                isActive("/contactform")
+                  ? "text-purple-700 font-semibold"
+                  : "hover:text-purple-700"
+              }`}
             >
               Contact Us
             </Link>
@@ -121,7 +156,11 @@ function Nav() {
               <li>
                 <Link
                   to="/signin"
-                  className={`block py-2 lg:py-0 ${isActive("/signin") ? "text-purple-700 font-semibold" : "hover:text-purple-700"}`}
+                  className={`block py-2 lg:py-0 ${
+                    isActive("/signin")
+                      ? "text-purple-700 font-semibold"
+                      : "hover:text-purple-700"
+                  }`}
                 >
                   Sign In
                 </Link>
@@ -129,7 +168,11 @@ function Nav() {
               <li>
                 <Link
                   to="/signup"
-                  className={`block py-2 lg:py-0 ${isActive("/signup") ? "text-purple-700 font-semibold" : "hover:text-purple-700"}`}
+                  className={`block py-2 lg:py-0 ${
+                    isActive("/signup")
+                      ? "text-purple-700 font-semibold"
+                      : "hover:text-purple-700"
+                  }`}
                 >
                   Sign Up
                 </Link>
@@ -139,23 +182,27 @@ function Nav() {
             <>
               <div className="flex justify-end gap-4">
                 <li>
-                  <Link to="/customer-dashboard" className="block py-2 lg:py-0 hover:text-purple-700">
+                  <Link
+                    to="/customer-dashboard"
+                    className="block py-2 lg:py-0 hover:text-purple-700"
+                  >
                     <ProfileIcon />
                   </Link>
                 </li>
                 <li>
                   <Link to="/cart" className="block py-2 lg:py-0 hover:text-purple-700 relative">
                     <CartIcon />
-                    {cartLength > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                        {cartLength}
-                      </span>
-                    )}
+                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                      {cartCount}
+                    </span>
                   </Link>
                 </li>
 
                 <li>
-                   <Link to="/logout" className="block py-2 px-10 lg:py-0 hover:text-red-700">
+                  <Link
+                    to="/logout"
+                    className="block py-2 px-10 lg:py-0 hover:text-red-700"
+                  >
                     <LogoutIcon />
                   </Link>
                 </li>

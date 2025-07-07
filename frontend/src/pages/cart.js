@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Nav from '../components/navigation';
+import { useCart } from "../context/CartContext";
 
 export default function Cart() {
   const [cart, setCart] = useState(null);
@@ -12,6 +13,16 @@ export default function Cart() {
   const [user_id, setUserId] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);  
   const [products, setProducts] = useState([]);
+  const { fetchCartCount } = useCart();
+
+  // Helper for correct image path
+  const getProductImageSrc = (imgPath) => {
+    if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
+    if (imgPath.startsWith("http")) return imgPath;
+    if (imgPath.startsWith("/uploads")) return `http://localhost:3001${imgPath}`;
+    if (imgPath.startsWith("uploads")) return `http://localhost:3001/${imgPath}`;
+    return `http://localhost:3001/uploads/${imgPath}`;
+  };
 
   // Fetch user data
   useEffect(() => {
@@ -52,8 +63,9 @@ export default function Cart() {
 
         const productPromises = cartData.items.map(async (item) => {
           try {
-            const res = await axios.get(`http://localhost:3001/api/products/product?id=${item.product_id}`);
-            return { ...item, product: res.data };
+            // FIX: Use /product/:id, not query param!
+            const res = await axios.get(`http://localhost:3001/api/products/product/${item.product_id}`);
+            return res.data;
           } catch (err) {
             console.warn(`Product with ID ${item.product_id} not found or deleted.`);
             return null;
@@ -86,7 +98,7 @@ export default function Cart() {
     if (!cart || !userData) return;
 
     const total = cart.items.reduce((acc, item) => {
-      const product = products.find(p => p.product_id === item.product_id)?.product;
+      const product = products.find(p => p.product_id === item.product_id);
       return acc + (product?.product_price || 0) * item.quantity;
     }, 0);
 
@@ -107,6 +119,7 @@ export default function Cart() {
     })
       .then(response => {
         setCart(response.data);
+        fetchCartCount(); // ✅ update count
       })
       .catch(() => {
         setError('Error removing from cart');
@@ -120,6 +133,7 @@ export default function Cart() {
         setTimeout(() => {
           window.location.href = '/shop';
         }, 1000);
+        fetchCartCount(); // ✅ update count
       })
       .catch(() => {
         setError('Error clearing cart');
@@ -133,6 +147,7 @@ export default function Cart() {
     })
       .then(response => {
         setCart(response.data);
+        fetchCartCount(); // ✅ update count
       })
       .catch(() => {
         setError('Error updating cart item');
@@ -181,15 +196,16 @@ export default function Cart() {
         <h2 className="text-3xl font-semibold text-gray-900 mb-6">Your Cart</h2>
         <div className="space-y-6">
           {cart.items.map(item => {
-            const product = products.find(p => p.product_id === item.product_id)?.product;
+            const product = products.find(p => p.product_id === item.product_id);
             if (!product) return null;
 
             return (
               <div key={item.product_id} className="flex items-center bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out">
                 <img
-                  src={`http://localhost:3001${product.product_image}`}
+                  src={getProductImageSrc(product.product_image)}
                   alt={product.product_name}
                   className="w-24 h-24 object-cover rounded-lg shadow-md"
+                  onError={e => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/300x200?text=No+Image"; }}
                 />
                 <div className="ml-6 flex-1">
                   <h3 className="text-xl font-semibold text-gray-900">{product.product_name}</h3>
