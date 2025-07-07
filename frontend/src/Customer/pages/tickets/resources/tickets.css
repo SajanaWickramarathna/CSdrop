@@ -1,0 +1,56 @@
+
+/* General Layout */
+.TicketUser-dashboard {
+    @apply flex min-h-screen bg-gray-100;
+  }
+  
+
+  /* Main Content */
+.tkucontainer {
+    @apply flex-1 p-6;
+  }
+  
+  .headingtku {
+    @apply text-3xl font-black text-black mb-6;
+  }
+  
+  /* Table Styles */
+  .message-tabletku {
+    @apply w-full bg-white shadow-md rounded-lg overflow-hidden;
+  }
+  
+  .message-tabletku th {
+    @apply text-black uppercase text-[14px];
+  }
+  
+  .message-tabletku th,
+  .message-tabletku td {
+    @apply px-4 py-3 border-b text-center;
+  }
+
+  .update-btntku {
+    @apply bg-purple-500 hover:bg-gradient-to-r from-purple-500 to-purple-700 text-white font-medium py-1 px-3 rounded-lg transition duration-200;
+  }
+  
+  .delete-btntku {
+    @apply bg-red-500 hover:bg-red-700 text-white font-medium py-1 px-3 rounded-lg transition duration-200 ml-2;
+  }
+
+  
+  @media (max-width: 768px) {
+    .TicketUser-dashboard {
+      @apply flex-col;
+    }
+  
+    .sidebar {
+      @apply w-full flex-row justify-around py-3;
+    }
+
+    .tkucontainer {
+        @apply p-4;
+      }
+    
+      .message-tabletku {
+        @apply text-sm;
+      }
+  }

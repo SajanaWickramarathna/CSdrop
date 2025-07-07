@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.dashboard-container {
+  @apply w-full p-4;
+}
+
+.dashboard-header {
+  @apply text-4xl font-extrabold text-center mb-8;
+}
+
+.dashboard-pair-container {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.dashboard-group {
+  @apply flex flex-col gap-4;
+}
+
+.dashboard-card {
+  @apply p-4 bg-white rounded-2xl text-center shadow;
+}
+
+.dashboard-title {
+  @apply font-semibold text-lg text-gray-600;
+}
+
+.dashboard-count {
+  @apply text-2xl font-bold text-gray-800;
+}
+
+.dashboard-button {
+  @apply mt-2 w-full py-2 bg-purple-500 hover:bg-purple-900 text-white font-semibold rounded-xl shadow transition duration-200;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    @apply text-2xl p-3;
+  }
+
+  .dashboard-title {
+    @apply text-base;
+  }
+
+  .dashboard-count {
+    @apply text-xl;
+  }
+}

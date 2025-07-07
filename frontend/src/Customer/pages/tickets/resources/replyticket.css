@@ -1,0 +1,66 @@
+/* Main Container */
+.Viweticket-dashboard {
+    @apply flex min-h-screen bg-gray-100;
+  }
+  
+  /* Sidebar */
+.sidebar {
+    @apply w-64 bg-gray-800 text-white py-6 px-4 flex flex-col;
+  }
+  
+  .sidebar h2 {
+    @apply text-xl font-semibold mb-4;
+  }
+  
+  .sidebar ul {
+    @apply space-y-2;
+  }
+  
+  .sidebar li a {
+    @apply block py-2 px-3 rounded-lg transition duration-300 bg-gray-700 hover:bg-gray-600;
+  }
+  
+  
+  /* Ticket Details Section */
+  .view-ticket {
+    @apply flex-1 p-8 bg-white shadow-lg rounded-lg mx-8 my-6;
+  }
+  
+  .view-ticket h1 {
+    @apply text-2xl font-black text-gray-900 mb-6 text-center;
+  }
+  
+  .ticket-actions {
+    @apply bg-gray-50 p-6 rounded-lg shadow-md;
+  }
+  
+  .ticket-actions p {
+    @apply text-gray-700 text-lg mb-3 border-b pb-2;
+  }
+  
+  .ticket-actions strong {
+    @apply font-semibold text-gray-900;
+  }
+  /* Chat Container */
+.chat-container {
+  @apply flex h-[50vh] w-[1000px] bg-gray-50 border border-gray-300 rounded-t-lg flex flex-col overflow-hidden mt-8;
+}
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .Viweticket-dashboard {
+      @apply flex-col;
+    }
+  
+    .sidebar {
+      @apply w-full flex-row justify-around py-3;
+    }
+  
+    .view-ticket {
+      @apply p-6 mx-4;
+    }
+
+    .chat-container {
+      @apply w-full;
+    }
+  }

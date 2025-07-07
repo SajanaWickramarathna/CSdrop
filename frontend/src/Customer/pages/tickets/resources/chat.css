@@ -1,0 +1,39 @@
+.chat-container {
+    @apply flex flex-col h-screen w-full max-w-[1600px] mx-auto bg-gray-100 border border-gray-300 rounded-lg shadow-md;
+}
+  .chat-messages {
+    @apply flex-1 overflow-y-auto p-4 space-y-3;
+  }
+  
+  /* User Message (Right-aligned) */
+  .chat-message.sent {
+    @apply flex justify-end;
+  }
+  .chat-message.sent p {
+    @apply bg-purple-500 text-white rounded-lg p-3 max-w-xs md:max-w-sm;
+  }
+  .chat-message.sent span {
+    @apply text-xs text-gray-500 mt-1 block text-right;
+  }
+  
+  /* Admin Message (Left-aligned) */
+  .chat-message.received {
+    @apply flex justify-start;
+  }
+  .chat-message.received p {
+    @apply bg-gray-300 text-gray-800 rounded-lg p-3 max-w-xs md:max-w-sm;
+  }
+  .chat-message.received span {
+    @apply text-xs text-gray-500 mt-1 block text-left;
+  }
+  
+  /* Chat Input */
+  .chat-input {
+    @apply flex items-center gap-2 border-t border-gray-300 p-3 bg-white;
+  }
+  .chat-input input {
+    @apply flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black;
+  }
+  .chat-input button {
+    @apply px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded-lg hover:bg-purple-700 transition;
+  }

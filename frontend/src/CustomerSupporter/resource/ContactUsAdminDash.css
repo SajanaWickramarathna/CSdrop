@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.forms-container {
+  @apply min-h-screen bg-gray-100 p-6;
+}
+
+.heading {
+  @apply text-3xl font-bold mb-4;
+}
+
+.filter-buttons {
+  @apply flex flex-wrap gap-3 mb-4;
+}
+
+.filter-button {
+  @apply px-4 py-2 rounded bg-gray-200;
+}
+
+.filter-button-active {
+  @apply bg-purple-600 text-white;
+}
+
+.generate-pdf-button {
+  @apply bg-purple-600 text-white px-4 py-2 rounded mb-6 hover:bg-purple-800 transition;
+}
+
+.table-container {
+  @apply hidden md:block overflow-x-auto;
+}
+
+.table {
+  @apply w-full bg-white rounded shadow;
+}
+
+.table-header {
+  @apply bg-gray-200 text-left;
+}
+
+.table-cell {
+  @apply p-3;
+}
+
+.status-badge {
+  @apply px-2 py-1 rounded-full text-xs;
+}
+
+.replied {
+  @apply bg-green-200 text-green-800;
+}
+
+.pending {
+  @apply bg-red-200 text-red-800;
+}
+
+.reply-button {
+  @apply bg-blue-500 text-white px-3 py-1 mr-2 rounded hover:bg-blue-700;
+}
+
+.delete-button {
+  @apply bg-red-500 text-white px-3 py-1 rounded hover:bg-red-700;
+}
+
+.card-container {
+  @apply md:hidden space-y-4;
+}
+
+.card {
+  @apply bg-white shadow rounded p-4;
+}
+
+.card-reply-button {
+  @apply w-full bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-700;
+}
+
+.card-delete-button {
+  @apply w-full bg-red-500 text-white px-3 py-2 rounded hover:bg-red-700;
+}

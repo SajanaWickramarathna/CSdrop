@@ -1,0 +1,116 @@
+/* analytics.css */
+
+/* Container for the page */
+.page-container {
+  @apply p-4 w-full max-w-screen-xl mx-auto;
+}
+
+/* Header section */
+.header-title {
+  @apply text-4xl font-extrabold text-center mb-8;
+}
+
+/* Grid container for statistics */
+.grid-container {
+  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-8;
+}
+
+/* Card styles for statistics */
+.card {
+  @apply p-4 bg-white rounded-2xl text-center shadow;
+}
+
+/* Title for cards */
+.card-title {
+  @apply font-semibold text-lg text-gray-600 mb-2;
+}
+
+/* Value inside the cards */
+.card-value {
+  @apply text-2xl font-bold text-gray-800;
+}
+
+/* Chart container */
+.chart-container {
+  @apply bg-white rounded-2xl shadow-lg p-4 mb-8;
+}
+
+.chart {
+  @apply relative h-[400px] w-full;
+}
+
+.top-users-container {
+  @apply mt-5 p-5 bg-gray-100 rounded-lg shadow;
+}
+
+.header-title {
+  @apply text-2xl font-bold text-center mb-8;
+}
+
+.top-users-container h2::before {
+  content: "👤";
+  margin-right: 0.5rem; /* Tailwind doesn't support pseudo-elements in @apply */
+}
+
+.top-users-table {
+  @apply w-full border-collapse mt-2;
+}
+
+.top-users-table th,
+.top-users-table td {
+  @apply text-left p-2 border;
+}
+
+.top-users-table th {
+  @apply bg-gray-100 font-bold text-gray-600;
+}
+
+.top-users-table tr:nth-child(even) {
+  @apply bg-gray-50;
+}
+
+.top-users-table tr:hover {
+  @apply bg-gray-100;
+}
+
+.top-users-table td {
+  @apply text-gray-800;
+}
+
+
+.top-categories-container {
+  @apply mt-5 p-5 bg-gray-100 rounded-lg shadow;
+}
+
+.header-title {
+  @apply text-2xl font-bold text-center mb-8;
+}
+
+.top-categories-container h2::before {
+  margin-right: 0.5rem; /* Tailwind doesn't support pseudo-elements in @apply */
+}
+
+.top-categories-table {
+  @apply w-full border-collapse mt-2;
+}
+
+.top-categories-table th,
+.top-categories-table td {
+  @apply text-left p-2 border;
+}
+
+.top-categories-table th {
+  @apply bg-gray-100 font-bold text-gray-600;
+}
+
+.top-categories-table tr:nth-child(even) {
+  @apply bg-gray-50;
+}
+
+.top-categories-table tr:hover {
+  @apply bg-gray-100;
+}
+
+.top-categories-table td {
+  @apply text-gray-800;
+}

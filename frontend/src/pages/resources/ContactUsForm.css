@@ -1,0 +1,120 @@
+.contact-container {
+    @apply flex flex-col items-center py-12 px-5 bg-gray-100;
+  }
+  
+  .title {
+    @apply text-4xl font-black text-center mb-2;
+  }
+  
+  .subtitle {
+    @apply text-xl text-center mb-8 text-gray-600;
+  }
+  
+  .contact-wrapper {
+    @apply flex flex-col md:flex-row justify-between w-full max-w-6xl bg-white rounded-lg shadow-md p-10 gap-8;
+  }
+  
+  .contact-info {
+    @apply flex-1 p-8 bg-white rounded-lg;
+  }
+  
+  .contact-info {
+    @apply flex flex-col justify-between;
+  }
+  
+  .contact-info h2 {
+    @apply text-4xl mb-4 font-semibold;
+  }
+  
+  .info-box {
+    @apply flex items-center mb-6 mt-8;
+  }
+  
+  .icon-location {
+    @apply text-5xl text-red-600 mr-4;
+  }
+  
+  .icon-email {
+    @apply text-5xl text-gray-600 mr-4;
+  }
+  
+  .icon-call {
+    @apply text-5xl text-black mr-4;
+  }
+  
+  .info-box h3 {
+    @apply text-xl text-black font-bold mb-2;
+  }
+  
+  .info-box p {
+    @apply text-base text-gray-600 font-medium;
+  }
+  .hr {
+    @apply h-px my-8 bg-gray-500 border-0;
+  }
+  
+  .Followtxt {
+    @apply text-4xl font-extrabold subpixel-antialiased mb-4;
+  }
+  
+  .social-links {
+    @apply mt-auto;
+  }
+  
+  .social-links a {
+    @apply inline-flex items-center text-gray-600 mr-3 hover:text-gray-900 hover:underline;
+  }
+  
+  .social-links .icon-socialfb {
+    @apply text-3xl mr-2 text-blue-500;
+  }
+  
+  .social-links .icon-socialtw {
+    @apply text-3xl mr-2 ml-3 text-black;
+  }
+  
+  .social-links .icon-socialin {
+    @apply text-3xl ml-3 mr-2 text-orange-500;
+  }
+  
+  /*contact form*/
+  .container {
+    @apply flex-1 p-1 bg-white rounded-lg; 
+  }
+  
+  .container h2 {
+    @apply text-3xl mb-4 font-bold text-left;
+  }
+  
+  .input-box {
+    @apply mb-4;
+  }
+  
+  .label {
+    @apply block text-lg mb-2 font-normal;
+  }
+  
+  .field,
+  .field.textarea {
+    @apply w-full p-3 border border-gray-300 rounded;
+  }
+  
+  .field.textarea {
+    @apply h-32 resize-none;
+  }
+  
+  .btn {
+    @apply w-full p-3 text-lg bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded transition-opacity duration-300 hover:opacity-80;
+  }
+  
+  @media (max-width: 900px) {
+    .contact-wrapper {
+      @apply flex-col p-5;
+    }
+  
+    .contact-info,
+    .container {
+      @apply w-full;
+    }
+  }
+  

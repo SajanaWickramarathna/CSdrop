@@ -1,0 +1,13 @@
+/* src/styles/Home.css */
+.home-container {
+    @apply h-screen w-full flex flex-col items-center justify-center bg-cover bg-center;
+    background-image: url('https://images.pexels.com/photos/7147454/pexels-photo-7147454.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+  }
+  
+  .home-title {
+    @apply text-white font-bold drop-shadow-lg;
+    font-size: 12rem; /* Adjust size if needed */
+    text-align: center;
+    color: blueviolet;
+  }
+  
