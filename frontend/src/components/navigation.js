@@ -65,7 +65,7 @@ function Nav() {
       <div className="mx-auto max-w-7xl flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="text-2xl font-bold">
-          <img src={Logo} alt="KHB Logo" className="w-32 h-auto" />
+          <img src={Logo} alt="CS Logo" className="w-32 h-auto" />
         </Link>
 
         {/* Mobile Menu Button */}

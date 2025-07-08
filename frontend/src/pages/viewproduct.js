@@ -91,83 +91,62 @@ const ProductViewPage = () => {
     product_status && (product_status.toLowerCase() === "active" || product_status === 1);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#fff" }}>
-      <Nav />
-      <ToastContainer position="top-center" autoClose={3000} />
-      <div
-        className="flex flex-col md:flex-row w-full justify-center items-start px-8 pt-32 pb-12"
-        style={{
-          minHeight: "100vh",
-          color: "#2D2D2D",
-          background: "#fff",
-        }}
-      >
-        {/* Left: Image and info */}
-        <div className="flex-1 flex flex-col items-center max-w-lg">
-          <div className="text-3xl md:text-4xl font-bold mb-4 tracking-wide text-left w-full">
-            {product_name}
-          </div>
-          <div
-            className="shadow-xl rounded-lg border border-gray-300 bg-white mb-2 w-full p-6 flex flex-col items-center"
-            style={{ minWidth: 350 }}
-          >
-            <img
-              src={getProductImageSrc(product_image)}
-              alt={product_name}
-              className="rounded-lg shadow-md w-96 h-72 object-contain"
-              style={{ background: "#f5f5f5" }}
-            />
-          </div>
-          <div className="mt-6 flex w-full max-w-lg">
-            <div className="flex flex-col gap-2 w-1/2">
-              <div className="text-gray-700">Availability</div>
-              <div className="text-gray-700">Brand</div>
-            </div>
-            <div className="flex flex-col gap-2 w-1/2">
-              <div
-                className="font-semibold"
-                style={{
-                  color: isAvailable ? "#22c55e" : "#ef4444",
-                  background: "none",
-                }}
-              >
-                {isAvailable ? "Available" : "Not Available"}
-              </div>
-              <div
-                className="font-semibold text-gray-900"
-                style={{
-                  background: "none",
-                  display: "inline-block",
-                  padding: "0 6px",
-                  borderRadius: 4,
-                  fontSize: 18,
-                }}
-              >
-                {brand?.brand_name || "N/A"}
-              </div>
-            </div>
-          </div>
+     <div className="bg-gray-100 min-h-screen">
+    <Nav />
+    <ToastContainer position="top-center" autoClose={3000} />
+
+    <div className="flex justify-center items-center pt-24 pb-12 px-6">
+      <div className="bg-white rounded-xl shadow-xl p-8 max-w-4xl w-full flex flex-col md:flex-row gap-10">
+        {/* Product Image */}
+        <div className="flex-1 flex justify-center items-center">
+          <img
+            src={getProductImageSrc(product_image)}
+            alt={product_name}
+            className="rounded-lg shadow-md w-full max-w-md h-80 object-contain bg-gray-100"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = "https://via.placeholder.com/300x200?text=No+Image";
+            }}
+          />
         </div>
 
-        {/* Right: Price, description, actions */}
-        <div className="flex-1 flex flex-col justify-start items-start pl-0 md:pl-20 pt-10 md:pt-0 max-w-xl w-full">
-          <div className="mt-4 text-3xl font-bold mb-4">
-            {Number(product_price).toLocaleString("en-US")} LKR
+        {/* Product Details */}
+        <div className="flex-1 flex flex-col justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{product_name}</h2>
+            <p className="text-gray-700 mb-4 whitespace-pre-line">{product_description}</p>
+            <div className="text-2xl font-semibold text-blue-700 mb-4">
+              LKR {Number(product_price).toLocaleString("en-US")}
+            </div>
+            <div className="flex flex-col gap-2 text-sm text-gray-700">
+              <span>
+                <strong>Availability:</strong>{" "}
+                <span className={isAvailable ? "text-green-600" : "text-red-600"}>
+                  {isAvailable ? "Available" : "Not Available"}
+                </span>
+              </span>
+              <span>
+                <strong>Brand:</strong> {brand?.brand_name || "N/A"}
+              </span>
+            </div>
           </div>
-          <div className="mb-6 text-base text-gray-700 whitespace-pre-line">
-            {product_description}
-          </div>
+
+          {/* Add to Cart Button */}
           <button
-            className="px-8 py-3 bg-orange-500 hover:bg-orange-600 text-white text-lg rounded font-bold flex items-center transition-all"
-            style={{ letterSpacing: "1px" }}
-            onClick={handleAddToCart}
+            className={`mt-6 py-3 text-white rounded-lg ${
+              isAvailable
+                ? "bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800"
+                : "bg-gray-400 cursor-not-allowed"
+            } transition duration-300`}
+            onClick={() => handleAddToCart(product.product_id)}
             disabled={!isAvailable}
           >
-            <CartIcon /> Add to Cart
+            Add to Cart
           </button>
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

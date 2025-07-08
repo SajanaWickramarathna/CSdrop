@@ -18,6 +18,8 @@ import VerifyEmail from "./components/verifyemail";
 import ForgotPassword from "./pages/forgotPassword";
 import ResetPassword from "./components/resetPassword";
 import ViewProduct from "./pages/viewproduct";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/termsofservice";
 
 function App() {
   return (
@@ -26,6 +28,10 @@ function App() {
         <Route path="/" element={<Home />} />
 
         <Route path="/shop" element={<Shop />} />
+
+        <Route path="/privacypolicy" element={<PrivacyPolicy />} />
+        
+        <Route path="/termsofservice" element={<TermsOfService />} />
 
         <Route path="/product/:id" element={<ViewProduct />} />
 
