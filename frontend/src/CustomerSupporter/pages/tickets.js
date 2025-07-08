@@ -21,7 +21,7 @@ export default function Tickets() {
       });
   }, []);
 
-  const deleteTicket = async (id, status) => {
+  const deleteTicket = async (ticketId, status) => {
     if (status !== "Closed") {
       alert("Only tickets with the status 'Closed' can be deleted.");
       return;
@@ -29,9 +29,14 @@ export default function Tickets() {
 
     if (window.confirm("Are you sure you want to delete this ticket?")) {
       try {
-        await axios.delete(`http://localhost:3001/api/tickets/${id}`);
+        // Use the route that deletes by ticket_id, assuming backend uses this path:
+        await axios.delete(
+          `http://localhost:3001/api/tickets/ticket/${ticketId}`
+        );
+
+        // Update state filtering by ticket_id
         setTickets((prevTickets) =>
-          prevTickets.filter((ticket) => ticket._id !== id)
+          prevTickets.filter((ticket) => ticket.ticket_id !== ticketId)
         );
       } catch (err) {
         console.error("Error deleting ticket:", err);
@@ -40,64 +45,63 @@ export default function Tickets() {
   };
 
   const generatePDF = () => {
-  if (tickets.length === 0) {
-    alert("No tickets available to generate the report.");
-    return;
-  }
+    if (tickets.length === 0) {
+      alert("No tickets available to generate the report.");
+      return;
+    }
 
-  const doc = new jsPDF();
-  const currentDate = new Date().toLocaleString();
+    const doc = new jsPDF();
+    const currentDate = new Date().toLocaleString();
 
-  // Title and date
-  doc.setFontSize(16);
-  doc.text("Tickets Report", 14, 15);
-  doc.setFontSize(10);
-  doc.text(`Generated on: ${currentDate}`, 14, 22);
+    // Title and date
+    doc.setFontSize(16);
+    doc.text("Tickets Report", 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${currentDate}`, 14, 22);
 
-  // Table columns and rows
-  const tableColumn = [
-    "Name",
-    "Gmail",
-    "Phone",
-    "Categories",
-    "Priority",
-    "Status",
-    "Message",
-  ];
+    // Table columns and rows
+    const tableColumn = [
+      "Name",
+      "Gmail",
+      "Phone",
+      "Categories",
+      "Priority",
+      "Status",
+      "Message",
+    ];
 
-  const tableRows = tickets.map((ticket) => [
-    ticket.name,
-    ticket.gmail,
-    ticket.phoneNumber,
-    ticket.Categories,
-    ticket.priority,
-    ticket.status,
-    ticket.message,
-  ]);
+    const tableRows = tickets.map((ticket) => [
+      ticket.name,
+      ticket.gmail,
+      ticket.phoneNumber,
+      ticket.Categories,
+      ticket.priority,
+      ticket.status,
+      ticket.message,
+    ]);
 
-  // Generate table with autoTable
-  autoTable(doc, {
-    startY: 30,
-    head: [tableColumn],
-    body: tableRows,
-    styles: { fontSize: 9, cellPadding: 3 },
-    headStyles: { fillColor: [22, 160, 133] }, // Teal heading
-    didDrawPage: function (data) {
-      // Optional footer with page number
-      const pageCount = doc.internal.getNumberOfPages();
-      doc.setFontSize(8);
-      doc.text(
-        `Page ${pageCount}`,
-        doc.internal.pageSize.getWidth() - 20,
-        doc.internal.pageSize.getHeight() - 10
-      );
-    },
-  });
+    // Generate table with autoTable
+    autoTable(doc, {
+      startY: 30,
+      head: [tableColumn],
+      body: tableRows,
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [22, 160, 133] }, // Teal heading
+      didDrawPage: function (data) {
+        // Optional footer with page number
+        const pageCount = doc.internal.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.text(
+          `Page ${pageCount}`,
+          doc.internal.pageSize.getWidth() - 20,
+          doc.internal.pageSize.getHeight() - 10
+        );
+      },
+    });
 
-  // Save the PDF
-  doc.save("tickets_report.pdf");
-};
-
+    // Save the PDF
+    doc.save("tickets_report.pdf");
+  };
 
   // Filter tickets based on selected filters
   const filteredTickets = tickets.filter((ticket) => {
@@ -234,12 +238,15 @@ export default function Tickets() {
                     <strong>Status:</strong>{" "}
                     <strong className="Highlight">{ticket.status}</strong>
                   </p>
-                  <Link to={`/support-dashboard/replyticket/${ticket.ticket_id}`}>
-                  
+                  <Link
+                    to={`/support-dashboard/replyticket/${ticket.ticket_id}`}
+                  >
                     Reply
                   </Link>
                   <button
-                    onClick={() => deleteTicket(ticket._id, ticket.status)}
+                    onClick={() =>
+                      deleteTicket(ticket.ticket_id, ticket.status)
+                    }
                   >
                     Delete
                   </button>

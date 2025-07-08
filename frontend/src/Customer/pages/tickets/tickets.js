@@ -24,38 +24,40 @@ function TicketUserDash() {
     }
   }, [userId]); // Add userId as a dependency
 
-  const deleteTicket = async (id, status) => {
-  console.log("Attempting to delete ticket:", id, "with status:", status);
-
-  if (typeof status !== "string" || status.trim().toLowerCase() !== "closed") {
-    alert("Only tickets with the status 'Closed' can be deleted.");
-    return;
-  }
-
-  if (!id) {
-    alert("Invalid ticket ID.");
-    return;
-  }
-
-  const confirmDelete = window.confirm("Are you sure you want to delete this ticket?");
-  if (!confirmDelete) return;
-
-  try {
-    const response = await axios.delete(`http://localhost:3001/api/tickets/${id}`);
-    if (response.status === 200) {
-      setTickets((prevTickets) => prevTickets.filter((ticket) => ticket._id !== id));
-      alert("Ticket deleted successfully.");
-    } else {
-      console.error("Unexpected response:", response);
-      alert("Failed to delete the ticket. Please try again.");
+  const deleteTicket = async (ticketId, status) => {
+    if (
+      typeof status !== "string" ||
+      status.trim().toLowerCase() !== "closed"
+    ) {
+      alert("Only tickets with the status 'Closed' can be deleted.");
+      return;
     }
-  } catch (err) {
-    console.error("Error deleting ticket:", err);
-    const message = err.response?.data?.message || "Server error occurred while deleting the ticket.";
-    alert(message);
-  }
-};
 
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this ticket?"
+    );
+    if (!confirmDelete) return;
+
+    try {
+      const response = await axios.delete(
+        `http://localhost:3001/api/tickets/ticket/${ticketId}`
+      );
+      if (response.status === 200) {
+        setTickets((prevTickets) =>
+          prevTickets.filter((t) => t.ticket_id !== ticketId)
+        );
+        alert("Ticket deleted successfully.");
+      } else {
+        alert("Failed to delete the ticket. Please try again.");
+      }
+    } catch (err) {
+      console.error("Error deleting ticket:", err);
+      const message =
+        err.response?.data?.message ||
+        "Server error occurred while deleting the ticket.";
+      alert(message);
+    }
+  };
 
   return (
     <div>
@@ -71,25 +73,27 @@ function TicketUserDash() {
             </tr>
           </thead>
           <tbody>
-            {[...tickets] // Create a copy of the array
-              .reverse() // Reverse the order
-              .map((ticket) => (
-                <tr key={ticket._id}>
-                  <td>{ticket.Categories}</td>
-                  <td>{ticket.status}</td>
-                  <td>
-                    <Link to={`/customer-dashboard/viewticket/${ticket.ticket_id}`}>
-                      <button className="update-btntku">Chat</button>
-                    </Link>
-                    <button
-                      className="delete-btntku"
-                      onClick={() => deleteTicket(ticket._id, ticket.status)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
+            {[...tickets].reverse().map((ticket) => (
+              <tr key={ticket._id}>
+                <td>{ticket.Categories}</td>
+                <td>{ticket.status}</td>
+                <td>
+                  <Link
+                    to={`/customer-dashboard/viewticket/${ticket.ticket_id}`}
+                  >
+                    <button className="update-btntku">Chat</button>
+                  </Link>
+                  <button
+                    className="delete-btntku"
+                    onClick={() =>
+                      deleteTicket(ticket.ticket_id, ticket.status)
+                    }
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

@@ -7,6 +7,7 @@ router.post("/", ticketController.addTicket);
 router.get("/ticket/:id", ticketController.getTicketByID);
 router.get("/tickets/:user_id", ticketController.getTicketsByUserID);
 router.put("/:id", ticketController.updateTicket);
-router.delete("/:id", ticketController.deleteTicket);
+// Optionally change the route name for clarity (optional)
+router.delete("/ticket/:id", ticketController.deleteTicket);
 
 module.exports = router;

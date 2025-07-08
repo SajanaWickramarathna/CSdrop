@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Chat = require("../Models/chatModel");
 const Ticket = require("../Models/ticketModel");
 const Notification = require("../Models/notification");
@@ -6,8 +7,12 @@ const Notification = require("../Models/notification");
 const getChatsByTicketId = async (req, res) => {
   const ticketId = req.params.ticketId;
 
+  if (!mongoose.Types.ObjectId.isValid(ticketId)) {
+    return res.status(400).json({ message: "Invalid ticket ID format" });
+  }
+
   try {
-    const chats = await Chat.find({ ticket_id: new mongoose.Types.ObjectId(ticketId) }).sort("timestamp");
+    const chats = await Chat.find({ ticket_id: ticketId }).sort("timestamp");
     res.status(200).json(chats);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -17,20 +22,21 @@ const getChatsByTicketId = async (req, res) => {
 // Add new chat message
 const addChatMessage = async (req, res) => {
   const { ticket_id, sender, message } = req.body;
+  console.log("Received chat message:", req.body);
+
+  if (!mongoose.Types.ObjectId.isValid(ticket_id)) {
+    return res.status(400).json({ message: "Invalid ticket ID format" });
+  }
 
   try {
-    const ticket = await Ticket.findById(ticket_id); // ticket_id should be MongoDB _id
+    const ticket = await Ticket.findById(ticket_id);
 
     if (!ticket) {
       return res.status(404).json({ message: "Ticket not found" });
     }
 
-    const lastChat = await Chat.findOne().sort({ Chat_id: -1 });
-    const newChatId = lastChat ? lastChat.Chat_id + 1 : 1;
-
     const newChat = new Chat({
       ticket_id,
-      Chat_id: newChatId,
       sender,
       message,
     });
@@ -46,10 +52,10 @@ const addChatMessage = async (req, res) => {
 
     res.status(201).json(savedChat);
   } catch (error) {
+    console.error("Chat message error:", error);
     res.status(500).json({ message: error.message });
   }
 };
-
 
 module.exports = {
   getChatsByTicketId,
