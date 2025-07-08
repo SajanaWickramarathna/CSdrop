@@ -39,7 +39,7 @@ const Chat = ({ ticketId, user }) => {
     if (newMessage.trim()) {
       try {
         const response = await axios.post('http://localhost:3001/api/chats', {
-          ticketId,
+          ticket_id: ticketId, // ✅ should be MongoDB _id
           sender: user,
           message: newMessage,
         });

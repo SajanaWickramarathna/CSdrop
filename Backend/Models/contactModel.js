@@ -1,7 +1,15 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const userSchema = new Schema({
+// Counter Schema to keep track of `ticket_id`
+const counterSchema = new Schema({
+  name: { type: String, required: true, unique: true },
+  value: { type: Number, required: true, default: 0 },
+});
+const Counter =
+  mongoose.models.counter || mongoose.model("counter", counterSchema);
+
+const ContactSchema = new Schema({
   contact_id: {
     type: Number,
     unique: true,
@@ -29,7 +37,23 @@ const userSchema = new Schema({
   },
 });
 
+// Pre-save middleware to auto-increment `product_id`
+ContactSchema.pre("save", async function (next) {
+  if (!this.isNew) return next();
+  try {
+    const counter = await Counter.findOneAndUpdate(
+      { name: "contact_id" },
+      { $inc: { value: 1 } },
+      { new: true, upsert: true }
+    );
+    this.contact_id = counter.value;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = mongoose.model(
   "contactUs", //Filename
-  userSchema //Function Name
+  ContactSchema //Function Name
 );

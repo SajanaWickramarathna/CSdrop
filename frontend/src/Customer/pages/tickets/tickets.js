@@ -25,20 +25,37 @@ function TicketUserDash() {
   }, [userId]); // Add userId as a dependency
 
   const deleteTicket = async (id, status) => {
-    if (status !== "Closed") {
-      alert("Only tickets with the status 'Closed' can be deleted.");
-      return;
+  console.log("Attempting to delete ticket:", id, "with status:", status);
+
+  if (typeof status !== "string" || status.trim().toLowerCase() !== "closed") {
+    alert("Only tickets with the status 'Closed' can be deleted.");
+    return;
+  }
+
+  if (!id) {
+    alert("Invalid ticket ID.");
+    return;
+  }
+
+  const confirmDelete = window.confirm("Are you sure you want to delete this ticket?");
+  if (!confirmDelete) return;
+
+  try {
+    const response = await axios.delete(`http://localhost:3001/api/tickets/${id}`);
+    if (response.status === 200) {
+      setTickets((prevTickets) => prevTickets.filter((ticket) => ticket._id !== id));
+      alert("Ticket deleted successfully.");
+    } else {
+      console.error("Unexpected response:", response);
+      alert("Failed to delete the ticket. Please try again.");
     }
-  
-    if (window.confirm("Are you sure you want to delete this ticket?")) {
-      try {
-        await axios.delete(`http://localhost:3001/api/tickets/${id}`);
-        setTickets((prevTickets) => prevTickets.filter((ticket) => ticket._id !== id));
-      } catch (err) {
-        console.error("Error deleting ticket:", err);
-      }
-    }
-  };
+  } catch (err) {
+    console.error("Error deleting ticket:", err);
+    const message = err.response?.data?.message || "Server error occurred while deleting the ticket.";
+    alert(message);
+  }
+};
+
 
   return (
     <div>
@@ -61,7 +78,7 @@ function TicketUserDash() {
                   <td>{ticket.Categories}</td>
                   <td>{ticket.status}</td>
                   <td>
-                    <Link to={`/customer-dashboard/viewticket/${ticket._id}`}>
+                    <Link to={`/customer-dashboard/viewticket/${ticket.ticket_id}`}>
                       <button className="update-btntku">Chat</button>
                     </Link>
                     <button

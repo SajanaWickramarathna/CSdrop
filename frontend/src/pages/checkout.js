@@ -2,15 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import Nav from '../components/navigation';
+import Swal from 'sweetalert2';
+import { useCart } from "../context/CartContext";
 
 const Checkout = ({ userId, cartTotal }) => {
   const [cart, setCart] = useState(null);
   const [products, setProducts] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [discountedPrice, setDiscountedPrice] = useState(0);
-  const [promoCode, setPromoCode] = useState('');
-  const [promoError, setPromoError] = useState('');
-  const [promoSuccess, setPromoSuccess] = useState('');
   const [form, setForm] = useState({ fullName: '', address: '', phone: '' });
   const [formError, setFormError] = useState({});
   const [userData, setUserData] = useState(null);
@@ -20,9 +18,17 @@ const Checkout = ({ userId, cartTotal }) => {
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const [paymentSlip, setPaymentSlip] = useState(null);
   const [paymentError, setPaymentError] = useState('');
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-
+  const { fetchCartCount } = useCart();
   const navigate = useNavigate();
+
+  // Helper function to get product image source
+  const getProductImageSrc = (imgPath) => {
+    if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
+    if (imgPath.startsWith("http")) return imgPath;
+    if (imgPath.startsWith("/uploads")) return `http://localhost:3001${imgPath}`;
+    if (imgPath.startsWith("uploads")) return `http://localhost:3001/${imgPath}`;
+    return `http://localhost:3001/uploads/${imgPath}`;
+  };
 
   const fetchUserData = async () => {
     try {
@@ -55,11 +61,17 @@ const Checkout = ({ userId, cartTotal }) => {
 
       const productDetails = await Promise.all(
         response.data.items.map(async (item) => {
-          const res = await axios.get(`http://localhost:3001/api/products/product?id=${item.product_id}`);
-          return { ...item, product: res.data };
+          try {
+            const res = await axios.get(`http://localhost:3001/api/products/product/${item.product_id}`);
+            return { ...item, product: res.data };
+          } catch (err) {
+            console.warn(`Product with ID ${item.product_id} not found`);
+            return { ...item, product: null };
+          }
         })
       );
 
+      setProducts(productDetails);
       calculatePrices(productDetails);
     } catch (err) {
       console.error('Error fetching cart:', err);
@@ -68,12 +80,9 @@ const Checkout = ({ userId, cartTotal }) => {
   };
 
   const calculatePrices = (productDetails) => {
-    setProducts(productDetails);
-
     const total = productDetails.reduce((acc, item) => {
-      return acc + (item.product?.product_price || 0) * item.quantity;
+      return acc + ((item.product?.product_price || 0) * item.quantity);
     }, 0);
-
     setTotalPrice(total);
   };
 
@@ -95,24 +104,6 @@ const Checkout = ({ userId, cartTotal }) => {
       fetchCart(userData.user_id);
     }
   }, [userData]);
-
-  const handlePromoCodeApply = async () => {
-    setPromoError('');
-    setPromoSuccess('');
-    try {
-      const response = await axios.post('http://localhost:3001/api/game/redeem', {id:userData.user_id, promoCode: promoCode });
-      if (response.data.discount) {
-        const discount = (totalPrice * response.data.discount) / 100;
-        setDiscountedPrice(discount);
-        setPromoSuccess('Promo code applied successfully!');
-      } else {
-        setPromoError(response.data.message || 'Invalid promo code.');
-      }
-    } catch (err) {
-      console.error('Error validating promo code:', err);
-      setPromoError('Failed to validate promo code.');
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -145,7 +136,7 @@ const Checkout = ({ userId, cartTotal }) => {
     if (!form.fullName) errors.fullName = 'Full Name is required.';
     if (!form.address) errors.address = 'Address is required.';
     if (!/^\+?\d{9,13}$/.test(form.phone)) {
-      errors.phone = 'Phone number must be numeric, start with optional +, and be 9–13 characters.';
+      errors.phone = 'Phone number must be 9–13 digits and may start with +.';
     }
     if (paymentMethod === 'Payment Slip' && !paymentSlip) {
       errors.paymentSlip = 'Please upload a payment slip.';
@@ -155,60 +146,111 @@ const Checkout = ({ userId, cartTotal }) => {
   };
 
   const handlePlaceOrder = async () => {
-    if (!validateForm()) return;
+  if (!validateForm()) return;
+  setLoading(true);
 
-    setLoading(true);
+  try {
+    const formData = new FormData();
+    formData.append('user_id', userData.user_id);
+    formData.append('email', userData.email);
+    formData.append('shipping_address', `${form.fullName}, ${form.address}, ${form.phone}`);
+    formData.append('total_price', totalPrice);
+    formData.append('payment_method', paymentMethod);
+
+    if (paymentMethod === 'Payment Slip') {
+      formData.append('payment_slip', paymentSlip);
+    }
+
+    products.forEach((item, index) => {
+      formData.append(`items[${index}][product_id]`, item.product_id);
+      formData.append(`items[${index}][quantity]`, item.quantity);
+      formData.append(`items[${index}][price]`, item.product?.product_price || 0);
+    });
+
+    const orderResponse = await axios.post('http://localhost:3001/api/orders/create', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!orderResponse.data || !orderResponse.data.order) {
+      throw new Error('Order creation failed - no response data');
+    }
+
+    await axios.delete(`http://localhost:3001/api/cart/clearcart/${userData.user_id}`);
+    await fetchCartCount();
+
+    // Show success alert and handle navigation in the then() block
+    await Swal.fire({
+      title: 'Order Placed Successfully!',
+      text: 'Thank you for your purchase. Your order has been confirmed.',
+      icon: 'success',
+      confirmButtonColor: '#3085d6',
+      confirmButtonText: 'Continue Shopping',
+      timer: 3000, // Auto-close after 3 seconds
+      timerProgressBar: true,
+    }).then((result) => {
+      // This will run when the alert is closed (either by timer or button click)
+      navigate('/shop');
+    });
+
+    // Remove the separate navigate('/shop') call that was here before
+
+  } catch (err) {
+    console.error('Error placing order:', err);
+    
+    let errorMessage = 'There was an error processing your order. Please try again.';
+    if (err.response) {
+      errorMessage = err.response.data.message || errorMessage;
+    } else if (err.request) {
+      errorMessage = 'Network error - please check your connection and try again.';
+    } else if (err.message.includes('Order creation failed')) {
+      errorMessage = 'Order could not be processed. Please contact support.';
+    }
+
+    await Swal.fire({
+      title: 'Order Not Processed',
+      html: `
+        <div>
+          <p>${errorMessage}</p>
+          <p class="mt-2 text-sm text-gray-500">Order ID: Not assigned</p>
+          <p class="text-sm text-gray-500">Status: Failed</p>
+        </div>
+      `,
+      icon: 'error',
+      confirmButtonText: 'OK',
+      footer: '<a href="/contactform" class="text-blue-500 hover:underline">Contact Support</a>'
+    });
 
     try {
-      const formData = new FormData();
-      formData.append('user_id', userData.user_id);
-      formData.append('email', userData.email);
-      formData.append('shipping_address', `${form.fullName}, ${form.address}, ${form.phone}`);
-      formData.append('total_price', discountedPrice !== 0 ? totalPrice - discountedPrice : totalPrice);
-      formData.append('payment_method', paymentMethod);
-      
-
-      if (paymentMethod === 'Payment Slip') {
-        formData.append('payment_slip', paymentSlip);
+      if (cart && cart.items.length > 0) {
+        await axios.post(`http://localhost:3001/api/cart/restore`, {
+          user_id: userData.user_id,
+          items: cart.items
+        });
       }
-
-      cart.items.forEach((item, index) => {
-        formData.append(`items[${index}][product_id]`, item.product_id);
-        formData.append(`items[${index}][quantity]`, item.quantity);
-        formData.append(`items[${index}][price]`, item.product?.product_price || 0);
-      });
-
-      await axios.post('http://localhost:3001/api/orders/create', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      await axios.post('http://localhost:3001/api/game/add', {id: userData.user_id, totalPrice: totalPrice});
-
-      setShowSuccessModal(true);
-    } catch (err) {
-      console.error('Error placing order:', err);
-      setFormError({ general: 'Order failed. Please try again.' });
-    } finally {
-      setLoading(false);
+    } catch (restoreError) {
+      console.error('Failed to restore cart:', restoreError);
     }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
-  if (isLoading) return <div>Loading user data...</div>;
+  if (isLoading) return <div className="flex justify-center items-center h-screen">Loading user data...</div>;
 
   if (!token) {
     return (
       <div>
-        <Nav/>
+        <Nav />
         <div className="flex flex-col items-center py-32">
           <p className="text-center text-gray-500 text-lg font-semibold mt-4">
             Please log in to checkout
           </p>
           <Link
             to="/signin"
-            className="mt-6 px-8 py-3 bg-custom-gradient text-white rounded-lg text-center"
+            className="mt-6 px-8 py-3 bg-blue-600 text-white rounded-lg text-center hover:bg-blue-700 transition-colors"
           >
             Log in
           </Link>
@@ -217,157 +259,206 @@ const Checkout = ({ userId, cartTotal }) => {
     );
   }
 
-  if (!cart) return <div>Loading cart...</div>;
-  if (!cart.items || cart.items.length === 0) return <div>Your cart is empty.</div>;
+  if (!cart) return <div className="flex justify-center items-center h-screen">Loading cart...</div>;
+  if (!cart.items || cart.items.length === 0) {
+    return (
+      <div>
+        <Nav />
+        <div className="flex flex-col items-center py-32">
+          <p className="text-center text-gray-500 text-lg font-semibold">
+            Your cart is empty
+          </p>
+          <Link
+            to="/shop"
+            className="mt-6 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Continue Shopping
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <Nav/>
-      <div className="max-w-3xl mx-auto p-4 mt-6 py-32">
-        <h1 className="text-2xl font-bold mb-4">Checkout</h1>
+    <div className="min-h-screen bg-gray-100">
+      <Nav />
+      <div className="max-w-3xl mx-auto p-4 mt-6 py-12">
+        <h1 className="text-2xl font-bold mb-6 text-gray-800">Checkout</h1>
 
-        {/* Shipping Information */}
-        <div className="bg-white rounded shadow p-4 mb-6">
-          <h2 className="font-semibold text-lg mb-2">Shipping Information</h2>
-          <input
-            type="text"
-            name="fullName"
-            placeholder="Full Name"
-            value={form.fullName}
-            onChange={handleChange}
-            className="w-full border p-2 mb-2 rounded"
-          />
-          {formError.fullName && <p className="text-red-500 text-sm">{formError.fullName}</p>}
-          <input
-            type="text"
-            name="address"
-            placeholder="Address"
-            value={form.address}
-            onChange={handleChange}
-            className="w-full border p-2 mb-2 rounded"
-          />
-          {formError.address && <p className="text-red-500 text-sm">{formError.address}</p>}
-          <input
-            type="text"
-            name="phone"
-            placeholder="+947XXXXXXXX"
-            value={form.phone}
-            onChange={handleChange}
-            maxLength={12}
-            className="w-full border p-2 mb-2 rounded"
-          />
-          {formError.phone && <p className="text-red-500 text-sm">{formError.phone}</p>}
-        </div>
-
-        {/* Promo Code */}
-        <div className="bg-white rounded shadow p-4 mb-6">
-          <h2 className="font-semibold text-lg mb-2">Promo Code</h2>
-          <div className="flex items-center">
-            <input
-              type="text"
-              placeholder="Enter promo code"
-              value={promoCode}
-              onChange={(e) => setPromoCode(e.target.value)}
-              className="w-full border p-2 rounded mr-2"
-            />
-            <button
-              onClick={handlePromoCodeApply}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Apply
-            </button>
-          </div>
-          {promoError && <p className="text-red-500 text-sm mt-2">{promoError}</p>}
-          {promoSuccess && <p className="text-green-500 text-sm mt-2">{promoSuccess}</p>}
-        </div>
-
-        {/* Order Summary */}
-        <div className="bg-white rounded shadow p-4 mb-6">
-          <h2 className="font-semibold text-lg mb-2">Order Summary</h2>
-          <div className="flex justify-between mb-1">
-            <span>Product ({cart.items.length})</span>
-            <span>LKR {totalPrice.toLocaleString()}</span>
-          </div>
-          {discountedPrice != 0 && (
-            <div className="flex justify-between mb-1 text-green-600">
-              <span>Discount Applied</span>
-              <span>- LKR {(totalPrice - discountedPrice).toLocaleString()}</span>
-            </div>
-          )}
-          <div className="font-bold text-lg">
-            Total: LKR {(totalPrice - discountedPrice).toLocaleString()}
-          </div>
-        </div>
-
-        {/* Payment Options */}
-        <div className="bg-white rounded shadow p-4 mb-6">
-          <h2 className="font-semibold text-lg mb-2">Payment</h2>
-          <label className="block mb-2">
-            <input
-              type="radio"
-              value="COD"
-              checked={paymentMethod === 'COD'}
-              onChange={handlePaymentMethodChange}
-              className="mr-2"
-            />
-            Cash on Delivery (COD)
-          </label>
-          <label className="block">
-            <input
-              type="radio"
-              value="Payment Slip"
-              checked={paymentMethod === 'Payment Slip'}
-              onChange={handlePaymentMethodChange}
-              className="mr-2"
-            />
-            Payment Slip
-          </label>
-
-          {paymentMethod === 'Payment Slip' && (
-            <div className="mt-4">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="font-semibold text-lg mb-4 text-gray-700">Shipping Information</h2>
+          <div className="space-y-4">
+            <div>
               <input
-                type="file"
-                accept="image/*"
-                onChange={handlePaymentSlipUpload}
-                className="border p-2 rounded w-full"
+                type="text"
+                name="fullName"
+                placeholder="Full Name"
+                value={form.fullName}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
               />
-              {paymentError && <p className="text-red-500 text-sm mt-2">{paymentError}</p>}
-              {paymentSlip && (
-                <p className="mt-2 text-green-600">Uploaded: {paymentSlip.name}</p>
-              )}
+              {formError.fullName && <p className="text-red-500 text-sm mt-1">{formError.fullName}</p>}
             </div>
-          )}
+            <div>
+              <input
+                type="text"
+                name="address"
+                placeholder="Address"
+                value={form.address}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              />
+              {formError.address && <p className="text-red-500 text-sm mt-1">{formError.address}</p>}
+            </div>
+            <div>
+              <input
+                type="text"
+                name="phone"
+                placeholder="+947XXXXXXXX"
+                value={form.phone}
+                onChange={handleChange}
+                maxLength={12}
+                className="w-full border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              />
+              {formError.phone && <p className="text-red-500 text-sm mt-1">{formError.phone}</p>}
+            </div>
+          </div>
         </div>
 
-        {/* Buttons */}
-        <button
-          onClick={handlePlaceOrder}
-          disabled={loading}
-          className="w-full bg-green-500 text-white py-3 rounded mb-3 hover:bg-green-600"
-        >
-          {loading ? 'Placing Order...' : 'Place Order'}
-        </button>
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="font-semibold text-lg mb-4 text-gray-700">Order Summary</h2>
+          
+          <div className="space-y-4 mb-4">
+            {products.map((item) => {
+              const product = item.product;
+              if (!product) return null;
+              
+              return (
+                <div key={item.product_id} className="flex items-center border-b border-gray-100 pb-4">
+                  <img
+                    src={getProductImageSrc(product.product_image)}
+                    alt={product.product_name}
+                    className="w-20 h-20 object-cover rounded-lg shadow-sm"
+                    onError={e => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/300x200?text=No+Image"; }}
+                  />
+                  <div className="ml-4 flex-1">
+                    <h3 className="font-medium text-gray-900">{product.product_name}</h3>
+                    <div className="flex justify-between mt-1">
+                      <div>
+                        <span className="text-gray-600">Qty: {item.quantity}</span>
+                        <span className="ml-4 text-gray-600">Price: LKR {product.product_price.toLocaleString()}</span>
+                      </div>
+                      <span className="font-medium">LKR {(product.product_price * item.quantity).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
 
-        <button
-          onClick={() => window.history.back()}
-          className="w-full bg-gray-700 text-white py-3 rounded hover:bg-gray-800"
-        >
-          Back to Cart
-        </button>
-
-        {/* Success Modal */}
-        {showSuccessModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
-              <h2 className="text-xl font-semibold text-green-600 mb-2">Order Placed!</h2>
-              <p className="mb-4">Your order has been placed successfully.</p>
-              <button
-                onClick={() => navigate('/shop')}
-                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full"
-              >
-                OK
-              </button>
+          <div className="space-y-2 pt-4 border-t border-gray-200">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Subtotal</span>
+              <span className="font-medium">LKR {totalPrice.toLocaleString()}</span>
             </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Shipping</span>
+              <span className="font-medium">Free</span>
+            </div>
+            <div className="border-t border-gray-200 my-2"></div>
+            <div className="flex justify-between font-bold text-lg">
+              <span>Total</span>
+              <span>LKR {totalPrice.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h2 className="font-semibold text-lg mb-4 text-gray-700">Payment Method</h2>
+          <div className="space-y-4">
+            <label className="flex items-center space-x-3">
+              <input
+                type="radio"
+                value="COD"
+                checked={paymentMethod === 'COD'}
+                onChange={handlePaymentMethodChange}
+                className="h-5 w-5 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-gray-700">Cash on Delivery (COD)</span>
+            </label>
+            <label className="flex items-center space-x-3">
+              <input
+                type="radio"
+                value="Payment Slip"
+                checked={paymentMethod === 'Payment Slip'}
+                onChange={handlePaymentMethodChange}
+                className="h-5 w-5 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-gray-700">Payment Slip</span>
+            </label>
+
+            {paymentMethod === 'Payment Slip' && (
+              <div className="mt-4">
+                <div className="flex items-center justify-center w-full">
+                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <svg className="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                      </svg>
+                      <p className="mb-2 text-sm text-gray-500">
+                        <span className="font-semibold">Click to upload</span> or drag and drop
+                      </p>
+                      <p className="text-xs text-gray-500">PNG, JPG (MAX. 5MB)</p>
+                    </div>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handlePaymentSlipUpload} 
+                      className="hidden" 
+                    />
+                  </label>
+                </div>
+                {paymentError && <p className="text-red-500 text-sm mt-2">{paymentError}</p>}
+                {paymentSlip && (
+                  <div className="mt-2 p-3 bg-green-50 rounded-lg">
+                    <p className="text-green-600 font-medium">Uploaded: {paymentSlip.name}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            onClick={handlePlaceOrder}
+            disabled={loading}
+            className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-colors ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+          >
+            {loading ? (
+              <span className="flex items-center justify-center">
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing Order...
+              </span>
+            ) : (
+              'Place Order'
+            )}
+          </button>
+
+          <button
+            onClick={() => window.history.back()}
+            className="w-full py-3 px-4 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition-colors"
+          >
+            Back to Cart
+          </button>
+        </div>
+
+        {formError.general && (
+          <div className="mt-4 p-3 bg-red-50 rounded-lg">
+            <p className="text-red-500">{formError.general}</p>
           </div>
         )}
       </div>

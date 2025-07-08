@@ -190,11 +190,16 @@ function Nav() {
                   </Link>
                 </li>
                 <li>
-                  <Link to="/cart" className="block py-2 lg:py-0 hover:text-purple-700 relative">
+                  <Link
+                    to="/cart"
+                    className="block py-2 lg:py-0 hover:text-purple-700 relative"
+                  >
                     <CartIcon />
-                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                      {cartCount}
-                    </span>
+                    {cartCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {cartCount}
+                      </span>
+                    )}
                   </Link>
                 </li>
 
