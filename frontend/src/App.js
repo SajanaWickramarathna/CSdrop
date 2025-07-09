@@ -20,6 +20,7 @@ import ResetPassword from "./components/resetPassword";
 import ViewProduct from "./pages/viewproduct";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/termsofservice";
+import Notifications from "./pages/notification";
 
 function App() {
   return (
@@ -30,8 +31,10 @@ function App() {
         <Route path="/shop" element={<Shop />} />
 
         <Route path="/privacypolicy" element={<PrivacyPolicy />} />
-        
+
         <Route path="/termsofservice" element={<TermsOfService />} />
+
+        <Route path="/notifications" element={<Notifications />} />
 
         <Route path="/product/:id" element={<ViewProduct />} />
 

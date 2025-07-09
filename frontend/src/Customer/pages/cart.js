@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { useCart } from "../../context/CartContext";
 
 export default function Cart() {
   const [cart, setCart] = useState(null);
@@ -11,6 +12,16 @@ export default function Cart() {
   const [user_id, setUserId] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);  
   const [products, setProducts] = useState([]);
+  const { fetchCartCount } = useCart();
+
+  // Helper for correct image path
+  const getProductImageSrc = (imgPath) => {
+    if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
+    if (imgPath.startsWith("http")) return imgPath;
+    if (imgPath.startsWith("/uploads")) return `http://localhost:3001${imgPath}`;
+    if (imgPath.startsWith("uploads")) return `http://localhost:3001/${imgPath}`;
+    return `http://localhost:3001/uploads/${imgPath}`;
+  };
 
   // Fetch user data
   useEffect(() => {
@@ -51,8 +62,8 @@ export default function Cart() {
 
         const productPromises = cartData.items.map(async (item) => {
           try {
-            const res = await axios.get(`http://localhost:3001/api/products/product?id=${item.product_id}`);
-            return { ...item, product: res.data };
+            const res = await axios.get(`http://localhost:3001/api/products/product/${item.product_id}`);
+            return res.data;
           } catch (err) {
             console.warn(`Product with ID ${item.product_id} not found or deleted.`);
             return null;
@@ -85,7 +96,7 @@ export default function Cart() {
     if (!cart || !userData) return;
 
     const total = cart.items.reduce((acc, item) => {
-      const product = products.find(p => p.product_id === item.product_id)?.product;
+      const product = products.find(p => p.product_id === item.product_id);
       return acc + (product?.product_price || 0) * item.quantity;
     }, 0);
 
@@ -106,6 +117,7 @@ export default function Cart() {
     })
       .then(response => {
         setCart(response.data);
+        fetchCartCount();
       })
       .catch(() => {
         setError('Error removing from cart');
@@ -116,6 +128,7 @@ export default function Cart() {
     axios.delete(`http://localhost:3001/api/cart/clearcart/${userData.user_id}`)
       .then(() => {
         setCart(null);
+        fetchCartCount();
         setTimeout(() => {
           window.location.href = '/shop';
         }, 1000);
@@ -132,6 +145,7 @@ export default function Cart() {
     })
       .then(response => {
         setCart(response.data);
+        fetchCartCount();
       })
       .catch(() => {
         setError('Error updating cart item');
@@ -141,96 +155,107 @@ export default function Cart() {
   // Render logic
   if (!token) {
     return (
-      <div>
-        <div className="flex flex-col items-center">
-          <p className="text-center text-gray-500 text-lg font-semibold mt-4">
-            Please log in to view your cart
-          </p>
-          <Link to="/signin" className="mt-6 px-8 py-3 bg-custom-gradient text-white rounded-lg text-center">
-            Log in
-          </Link>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-gray-100">
+        <p className="text-center text-gray-500 text-lg font-semibold mb-6">
+          Please log in to view your cart
+        </p>
+        <Link 
+          to="/signin" 
+          className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg text-lg shadow-md hover:shadow-xl transition-all duration-200"
+        >
+          Log in
+        </Link>
       </div>
     );
   }
 
-  if (isLoading) return <div>Loading user data...</div>;
-  if (error) return <p>{error}</p>;
+  if (isLoading) return <div className="text-center text-gray-600">Loading user data...</div>;
+  if (error) return <p className="text-center text-red-500">{error}</p>;
   if (!cart || cart.items.length === 0) {
     return (
-      <div>
-        <div className="flex flex-col items-center">
-          <p className="text-center text-gray-500 text-lg font-semibold mt-4">
-            Your cart is empty
-          </p>
-          <Link to="/shop" className="mt-6 px-8 py-3 bg-custom-gradient text-white rounded-lg text-center">
-            Back to shop
-          </Link>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-gray-100">
+        <p className="text-center text-gray-500 text-lg font-semibold mb-6">
+          Your cart is empty
+        </p>
+        <Link 
+          to="/shop" 
+          className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg text-lg shadow-md hover:shadow-xl transition-all duration-200"
+        >
+          Back to shop
+        </Link>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="p-10 bg-gray-100 min-h-screen flex flex-col">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Cart</h2>
-        <div className="flex flex-col space-y-6">
-          {cart.items.map(item => {
-            const product = products.find(p => p.product_id === item.product_id)?.product;
-            if (!product) return null;
+    <div className="p-12 bg-gray-50 min-h-screen flex flex-col space-y-4">
+      <h2 className="text-3xl font-semibold text-gray-900 mb-6">Your Cart</h2>
+      <div className="space-y-6">
+        {cart.items.map(item => {
+          const product = products.find(p => p.product_id === item.product_id);
+          if (!product) return null;
 
-            return (
-              <div key={item.product_id} className="flex items-center bg-white p-4 rounded-xl shadow-md">
-                <img
-                  src={`http://localhost:3001${product.product_image}`}
-                  alt={product.product_name}
-                  className="w-20 h-20 object-cover rounded-lg"
-                />
-                <div className="ml-4 flex-1">
-                  <h3 className="text-xl font-semibold text-gray-900">{product.product_name}</h3>
-                  <p className="text-lg text-gray-600">LKR {product.product_price}</p>
-                  <div className="flex items-center mt-2">
-                    <button
-                      className="px-4 py-2 bg-custom-gradient text-white rounded-lg"
-                      onClick={() => handleUpdateQuantity(user_id, item.product_id, item.quantity - 1)}
-                      disabled={item.quantity === 1}
-                    >
-                      -
-                    </button>
-                    <span className="mx-4 text-lg">{item.quantity}</span>
-                    <button
-                      className="px-4 py-2 bg-custom-gradient text-white rounded-lg"
-                      onClick={() => handleUpdateQuantity(user_id, item.product_id, item.quantity + 1)}
-                    >
-                      +
-                    </button>
-                  </div>
+          return (
+            <div 
+              key={item.product_id} 
+              className="flex items-center bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <img
+                src={getProductImageSrc(product.product_image)}
+                alt={product.product_name}
+                className="w-24 h-24 object-cover rounded-lg shadow-md"
+                onError={e => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/300x200?text=No+Image"; }}
+              />
+              <div className="ml-6 flex-1">
+                <h3 className="text-xl font-semibold text-gray-900">{product.product_name}</h3>
+                <p className="text-lg text-gray-600">LKR {product.product_price}</p>
+                <div className="flex items-center mt-4 space-x-4">
+                  <button
+                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow-md hover:bg-gray-400 transition-all duration-200"
+                    onClick={() => handleUpdateQuantity(user_id, item.product_id, item.quantity - 1)}
+                    disabled={item.quantity === 1}
+                  >
+                    -
+                  </button>
+                  <span className="text-lg">{item.quantity}</span>
+                  <button
+                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow-md hover:bg-gray-400 transition-all duration-200"
+                    onClick={() => handleUpdateQuantity(user_id, item.product_id, item.quantity + 1)}
+                  >
+                    +
+                  </button>
                 </div>
-                <button
-                  className="ml-4 px-4 py-2 bg-red-500 text-white rounded-lg"
-                  onClick={() => handleRemoveFromCart(item.product_id)}
-                >
-                  Remove
-                </button>
               </div>
-            );
-          })}
-        </div>
-        <div className="mt-auto flex justify-between items-center">
-          <h3 className="text-2xl font-bold text-gray-900">Total: LKR {totalPrice}</h3>
-          <button
-            className="px-6 py-3 bg-red-500 text-white rounded-lg"
-            onClick={handleClearCart}
-          >
-            Clear Cart
-          </button>
-        </div>
-        <Link to="/checkout" className="mt-6 px-6 py-3 bg-custom-gradient text-white rounded-lg text-center block">
+              <button
+                className="ml-6 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-200"
+                onClick={() => handleRemoveFromCart(item.product_id)}
+              >
+                Remove
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-auto flex justify-between items-center">
+        <h3 className="text-2xl font-semibold text-gray-900">Total: LKR {totalPrice}</h3>
+        <button
+          className="px-6 py-3 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-200"
+          onClick={handleClearCart}
+        >
+          Clear Cart
+        </button>
+      </div>
+      <div className="mt-8 space-y-4">
+        <Link 
+          to="/checkout" 
+          className="block px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg text-lg text-center shadow-md hover:shadow-xl transition-all duration-200"
+        >
           Proceed to Checkout
         </Link>
-        
-        <Link to="/shop" className="mt-4 px-6 py-3 bg-gray-500 text-white rounded-lg text-center block">
+        <Link 
+          to="/shop" 
+          className="block px-6 py-3 bg-gray-500 text-white rounded-lg text-lg text-center shadow-md hover:shadow-xl transition-all duration-200"
+        >
           Back to Shop
         </Link>
       </div>

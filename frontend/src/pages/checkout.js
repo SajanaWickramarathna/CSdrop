@@ -181,6 +181,11 @@ const Checkout = ({ userId, cartTotal }) => {
     await axios.delete(`http://localhost:3001/api/cart/clearcart/${userData.user_id}`);
     await fetchCartCount();
 
+
+    if (!orderResponse.data || !orderResponse.data.order) {
+  throw new Error('Order creation failed - no response data');
+}
+
     // Show success alert and handle navigation in the then() block
     await Swal.fire({
       title: 'Order Placed Successfully!',

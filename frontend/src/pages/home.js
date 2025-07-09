@@ -32,12 +32,7 @@ export default function Home() {
       )
       .catch((error) => console.error("Error fetching brands:", error));
 
-    axios
-      .get("http://localhost:3001/api/categories")
-      .then((response) =>
-        setCategories(response.data.sort(() => 0.5 - Math.random()).slice(0, 5))
-      )
-      .catch((error) => console.error("Error fetching categories:", error));
+    
   }, []);
 
   const handleAddToCart = (product_id) => {
@@ -195,31 +190,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="py-16 bg-gray-100 px-32">
-        <h2 className="text-4xl font-bold text-center mb-8">
-          Product Categories
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-          {categories.map((category) => (
-            <motion.div
-              key={category.category_id}
-              className="p-6 bg-white rounded-lg shadow-md transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105"
-            >
-              <div className="flex justify-center items-center">
-                <img
-                  src={`http://localhost:3001${category.category_image}`}
-                  alt={category.category_name}
-                  className="w-32 h-32 object-cover rounded-lg"
-                />
-              </div>
-              <h4 className="text-lg font-semibold text-center mt-4">
-                {category.category_name}
-              </h4>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      
 
       {/* Footer */}
       <footer className="py-6 bg-custom-gradient text-white text-center space-y-4">
@@ -234,7 +205,7 @@ export default function Home() {
             href="https://www.facebook.com/profile.php?id=100073905762464"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-blue-200 transition-colors flex items-center gap-2"
+            className="hover:text-blue-800 transition-colors flex items-center gap-2"
           >
             <FaFacebook className="text-2xl" /> Facebook
           </a>
@@ -243,7 +214,7 @@ export default function Home() {
             href="https://www.instagram.com/iamsaj.__/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-pink-300 transition-colors flex items-center gap-2"
+            className="hover:text-pink-400 transition-colors flex items-center gap-2"
           >
             <FaInstagram className="text-2xl" /> Instagram
           </a>
@@ -252,7 +223,7 @@ export default function Home() {
             href="https://www.instagram.com/iamsaj.__/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-200 transition-colors flex items-center gap-2"
+            className="hover:text-black transition-colors flex items-center gap-2"
           >
             <FaXTwitter className="text-2xl" /> X
           </a>
@@ -261,7 +232,7 @@ export default function Home() {
             href="https://www.instagram.com/iamsaj.__/"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-gray-200 transition-colors flex items-center gap-2"
+            className="hover:text-black transition-colors flex items-center gap-2"
           >
             <FaTiktok  className="text-2xl" /> Tik tok
           </a>

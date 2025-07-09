@@ -73,20 +73,19 @@ export default function UserOrders() {
   }, [userData]);
 
   const handleOpenDialog = (orderId, status) => {
-    // Validation for already canceled, shipped, or delivered orders
     if (status === "cancelled") {
       setErrorMessage("This order is already canceled.");
-      return; // Do not proceed
+      return;
     }
 
     if (status === "shipped") {
       setErrorMessage("You cannot cancel an order that has been shipped.");
-      return; // Do not proceed
+      return;
     }
 
     if (status === "delivered") {
       setErrorMessage("You cannot cancel an order that has been delivered.");
-      return; // Do not proceed
+      return;
     }
 
     setSelectedOrder(orderId);
@@ -104,7 +103,7 @@ export default function UserOrders() {
     try {
       await axios.put(`http://localhost:3001/api/orders/cancel/${selectedOrder}`);
       fetchUserOrders();
-      setErrorMessage(""); // Clear error message after successful cancellation
+      setErrorMessage("");
     } catch (error) {
       console.error("Error cancelling order:", error);
       setErrorMessage("Failed to cancel the order. Please try again.");
@@ -114,14 +113,13 @@ export default function UserOrders() {
   };
 
   const getStatusColor = (status) => {
-    if (status === "Completed") return "text-green-600";
-    if (status === "Cancelled") return "text-red-500";
+    if (status === "delivered") return "text-green-600";
+    if (status === "cancelled") return "text-red-500";
     return "text-gray-700";
   };
 
   return (
     <div className="p-4">
-      {/* Error Message */}
       {errorMessage && (
         <div className="mb-4 text-center text-red-500 px-4 py-3 rounded relative">
           {errorMessage}
@@ -132,16 +130,21 @@ export default function UserOrders() {
         <Table>
           <TableHead className="bg-gray-200">
             <TableRow>
-              {["Order ID", "Total Price", "Status", "Payment Method", "Actions"].map(
-                (header) => (
-                  <TableCell
-                    key={header}
-                    className="!font-bold !text-[14px] !uppercase !text-gray-800 !text-center"
-                  >
-                    {header}
-                  </TableCell>
-                )
-              )}
+              {[
+                "Order ID",
+                "Total Price",
+                "Status",
+                "Payment Method",
+                "Order Date",
+                "Actions",
+              ].map((header) => (
+                <TableCell
+                  key={header}
+                  className="!font-bold !text-[14px] !uppercase !text-gray-800 !text-center"
+                >
+                  {header}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -157,6 +160,15 @@ export default function UserOrders() {
                   </TableCell>
                   <TableCell className="!text-center">
                     {order.payment_method}
+                  </TableCell>
+                  <TableCell className="!text-center">
+                    {new Date(order.created_at).toLocaleString("en-GB", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </TableCell>
                   <TableCell className="!text-center">
                     <div className="flex justify-center gap-2 flex-wrap">
@@ -184,7 +196,7 @@ export default function UserOrders() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} className="!text-center">
+                <TableCell colSpan={6} className="!text-center">
                   No orders found.
                 </TableCell>
               </TableRow>

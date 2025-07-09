@@ -117,10 +117,11 @@ export default function Sidebar() {
       </div>
 
       <footer className="py-3 text-sm text-center">
-        <div>
-          2025 <Copyright aria-label="Copyright" /> All Rights Reserved.
-        </div>
-        <div>S JAY Web Solutions (Pvt) Ltd.</div>
+        <p>
+          &copy; {new Date().getFullYear()} DROPship. All rights reserved.
+          <br />
+          Developed by Sajana Wickramarathna
+        </p>
       </footer>
     </div>
   );

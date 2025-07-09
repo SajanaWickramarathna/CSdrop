@@ -30,7 +30,8 @@ const sendEmail = (to, subject, text, html) => {
 // CREATE ORDER
 exports.createOrder = async (req, res) => {
   try {
-    const { user_id, email, shipping_address, payment_method,total_price } = req.body;
+    const { user_id, email, shipping_address, payment_method, total_price } =
+      req.body;
     if (!user_id || !email || !shipping_address || !payment_method)
       return res.status(400).json({ message: "All fields are required" });
 
@@ -53,7 +54,7 @@ exports.createOrder = async (req, res) => {
         quantity: item.quantity,
         price: item.price,
       })),
-      total_price: total_price,
+      total_price,
       shipping_address,
       status: "pending",
       payment_status: payment_method === "COD" ? "pending" : "paid",
@@ -62,52 +63,49 @@ exports.createOrder = async (req, res) => {
     });
 
     await newOrder.save();
-    await Cart.findOneAndDelete({ user_id: Number(user_id) });
+await Cart.findOneAndDelete({ user_id: Number(user_id) });
 
     const productDetailsText = newOrder.items
-      .map((p) => `Product ID: ${p.product_id}, Qty: ${p.quantity}`)
-      .join("\n");
-    const productDetailsHTML = newOrder.items
-      .map((p) => `<li>Product ID: ${p.product_id}, Qty: ${p.quantity}</li>`)
-      .join("");
+  .map((p) => `Product ID: ${p.product_id}, Qty: ${p.quantity}`)
+  .join("\n");
+
+const productDetailsHTML = newOrder.items
+  .map((p) => `<li>Product ID: ${p.product_id}, Qty: ${p.quantity}</li>`)
+  .join("");
 
     // Customer email
     sendEmail(
-      email,
-      "🛒 Order Confirmation - KHB Associates",
-      `Hi ${user?.firstName || "Customer"},\nThanks for ordering!\nOrder ID: ${
-        newOrder._id
-      }\nTotal: LKR${newOrder.total_price}\n\n${productDetailsText}`,
-      `<h3>Hi ${
-        user?.firstName || "Customer"
-      },</h3><p>Thanks for your order with <strong>KHB Associates</strong>.</p><p><strong>Order ID:</strong> ${
-        newOrder._id
-      }</p><p><strong>Total:</strong> LKR${
-        newOrder.total_price
-      }</p><ul>${productDetailsHTML}</ul>`
-    );
+  email,
+  "🛒 Order Confirmation - KHB Associates",
+  `Hi ${user?.firstName || "Customer"},\nThanks for ordering!\nOrder ID: ${
+    newOrder.order_id
+  }\nTotal: LKR${newOrder.total_price}\n\n${productDetailsText}`,
+  `<h3>Hi ${user?.firstName || "Customer"},</h3>
+   <p>Thanks for your order with <strong>KHB Associates</strong>.</p>
+   <p><strong>Order ID:</strong> ${newOrder.order_id}</p>
+   <p><strong>Total:</strong> LKR${newOrder.total_price}</p>
+   <ul>${productDetailsHTML}</ul>`
+);
 
     // Admin email
     sendEmail(
-      "sajanaanupama123@gmail.com",
-      "📦 New Order Received - KHB Associates",
-      `New order from ${user?.firstName || "N/A"} (${user?.email})\nOrder ID: ${
-        newOrder._id
-      }\nTotal: LKR${newOrder.total_price}\n${productDetailsText}`,
-      `<h3>New Order Received</h3><p><strong>Customer:</strong> ${
-        user?.firstName || "N/A"
-      } (${user?.email})</p><p><strong>Order ID:</strong> ${
-        newOrder._id
-      }</p><p><strong>Total:</strong> LKR${
-        newOrder.total_price
-      }</p><ul>${productDetailsHTML}</ul>`
-    );
+  "sajanaanupama123@gmail.com",
+  "📦 New Order Received - KHB Associates",
+  `New order from ${user?.firstName || "N/A"} (${user?.email})\nOrder ID: ${
+    newOrder.order_id
+  }\nTotal: LKR${newOrder.total_price}\n${productDetailsText}`,
+  `<h3>New Order Received</h3>
+   <p><strong>Customer:</strong> ${user?.firstName || "N/A"} (${user?.email})</p>
+   <p><strong>Order ID:</strong> ${newOrder.order_id}</p>
+   <p><strong>Total:</strong> LKR${newOrder.total_price}</p>
+   <ul>${productDetailsHTML}</ul>`
+);
 
     // 🔔 Notification for User
     await Notification.create({
-      user_id: Number(user_id),
-      message: `Your order has been placed successfully! Order ID: ${newOrder._id}`,
-    });
+  user_id: Number(user_id),
+  message: `Your order has been placed successfully! Order ID: ${newOrder.order_id}`,
+});
 
     return res
       .status(201)
@@ -163,17 +161,18 @@ exports.updateOrderStatus = async (req, res) => {
 
     // 🔔 Notification
     await Notification.create({
-      user_id: Number(updatedOrder.user_id),
-      message: `Order ${order_id} status updated to ${status}`,
-    });
+  user_id: Number(updatedOrder.user_id),
+  message: `Order ${updatedOrder.order_id} status updated to ${status}`,
+});
 
     // 📧 Send Email Notification
     sendEmail(
-      user.email,
-      `📦 Order Status Update - KHB Associates`,
-      `Hi ${user.firstName || "Customer"},\nYour order (ID: ${order_id}) status has been updated to "${status}".`,
-      `<h3>Hi ${user.firstName || "Customer"},</h3><p>Your order (ID: <strong>${order_id}</strong>) status has been updated to "<strong>${status}</strong>".</p>`
-    );
+  user.email,
+  "📦 Order Status Update - KHB Associates",
+  `Hi ${user.firstName || "Customer"},\nYour order (ID: ${updatedOrder.order_id}) status has been updated to "${status}".`,
+  `<h3>Hi ${user.firstName || "Customer"},</h3>
+   <p>Your order (ID: <strong>${updatedOrder.order_id}</strong>) status has been updated to "<strong>${status}</strong>".</p>`
+);
 
     res
       .status(200)
@@ -188,7 +187,7 @@ exports.updateOrderStatus = async (req, res) => {
 exports.getOrderById = async (req, res) => {
   try {
     const { order_id } = req.params;
-    const order = await Order.findOne({ order_id: Number(order_id) });  
+    const order = await Order.findOne({ order_id: Number(order_id) });
     if (!order) return res.status(404).json({ message: "Order not found" });
     // const productDetails = await Promise.all(
     //   order.items.map(async (item) => {
@@ -201,13 +200,11 @@ exports.getOrderById = async (req, res) => {
     //   })
     // );
     res.status(200).json(order);
-  }
-  catch (error) {
+  } catch (error) {
     console.error("❌ getOrderById Error:", error);
     res.status(500).json({ message: "Internal Server Error", error });
-  } 
+  }
 };
-
 
 // CANCEL ORDER
 exports.cancelOrder = async (req, res) => {
@@ -225,9 +222,9 @@ exports.cancelOrder = async (req, res) => {
 
     // 🔔 Notification
     await Notification.create({
-      user_id: Number(cancelledOrder.user_id),
-      message: `Your order ${order_id} has been cancelled.`,
-    });
+  user_id: Number(cancelledOrder.user_id),
+  message: `Your order ${cancelledOrder.order_id} has been cancelled.`,
+});
 
     res
       .status(200)
@@ -244,37 +241,49 @@ exports.getAnalytics = async (req, res) => {
     const orders = await Order.find().sort({ created_at: 1 });
 
     const totalOrders = orders.length;
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.total_price || 0), 0);
+    const totalRevenue = orders.reduce(
+      (sum, order) => sum + (order.total_price || 0),
+      0
+    );
     const averageOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
     const conversionRate = 100; // Replace with actual logic if available
 
     // Total Customers (unique users who placed orders)
-    const totalCustomers = new Set(orders.map(order => order.user_id)).size;
+    const totalCustomers = new Set(orders.map((order) => order.user_id)).size;
 
     // Get today's and this month's date boundaries
     const now = new Date();
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfToday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    );
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const ordersToday = orders.filter(order => new Date(order.created_at) >= startOfToday).length;
-    const ordersThisMonth = orders.filter(order => new Date(order.created_at) >= startOfMonth).length;
+    const ordersToday = orders.filter(
+      (order) => new Date(order.created_at) >= startOfToday
+    ).length;
+    const ordersThisMonth = orders.filter(
+      (order) => new Date(order.created_at) >= startOfMonth
+    ).length;
 
     // Order Status Counts
     const statusCounts = {};
-    orders.forEach(order => {
+    orders.forEach((order) => {
       statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
     });
 
     // Payment Method Counts
     const paymentMethodCounts = {};
-    orders.forEach(order => {
-      paymentMethodCounts[order.payment_method] = (paymentMethodCounts[order.payment_method] || 0) + 1;
+    orders.forEach((order) => {
+      paymentMethodCounts[order.payment_method] =
+        (paymentMethodCounts[order.payment_method] || 0) + 1;
     });
 
     // Top Selling Products
     const productSales = {};
-    orders.forEach(order => {
-      order.items.forEach(item => {
+    orders.forEach((order) => {
+      order.items.forEach((item) => {
         if (!productSales[item.product_id]) {
           productSales[item.product_id] = 0;
         }
@@ -289,7 +298,7 @@ exports.getAnalytics = async (req, res) => {
 
     // Top Customers
     const customerStats = {};
-    orders.forEach(order => {
+    orders.forEach((order) => {
       const userId = order.user_id;
       if (!customerStats[userId]) {
         customerStats[userId] = { orders: 0, total: 0 };
@@ -299,14 +308,18 @@ exports.getAnalytics = async (req, res) => {
     });
 
     const customerIds = Object.keys(customerStats);
-    const customers = await User.find({ user_id: { $in: customerIds.map(Number) } });
+    const customers = await User.find({
+      user_id: { $in: customerIds.map(Number) },
+    });
 
     const topCustomers = Object.entries(customerStats)
       .map(([user_id, data]) => {
-        const customer = customers.find(c => c.user_id === Number(user_id));
+        const customer = customers.find((c) => c.user_id === Number(user_id));
         return {
           user_id,
-          name: customer ? customer.firstName + " " + customer.lastName : "Unknown",
+          name: customer
+            ? customer.firstName + " " + customer.lastName
+            : "Unknown",
           ...data,
         };
       })
@@ -324,7 +337,7 @@ exports.getAnalytics = async (req, res) => {
       statusCounts,
       paymentMethodCounts,
       topSellingProducts,
-      topCustomers
+      topCustomers,
     });
   } catch (error) {
     console.error("❌ getAnalytics Error:", error);
@@ -348,7 +361,7 @@ exports.getUserOrderSummary = async (req, res) => {
       cancelled: 0,
     };
 
-    orders.forEach(order => {
+    orders.forEach((order) => {
       const status = order.status.toLowerCase();
       if (summary.hasOwnProperty(status)) {
         summary[status]++;

@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import "./resources/ContactUsForm.css";
 import Swal from "sweetalert2";
 import axios from "axios";
-import { FaFacebook, FaInstagram } from "react-icons/fa";
+import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
 import { FaLocationDot, FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import { PiPhoneCallFill } from "react-icons/pi";
-import Nav from '../components/navigation';
+import Nav from "../components/navigation";
+import { Link } from "react-router-dom";
 
 export default function ContactUsForm() {
   const [input, setInputs] = useState({
@@ -64,13 +65,11 @@ export default function ContactUsForm() {
 
   return (
     <div>
-      <Nav/>
+      <Nav />
       <div className="contact-container py-36">
         {/* Contact Header */}
         <h1 className="title">Contact Us</h1>
-        <p className="subtitle">
-          KHB is ready to provide the right solution according to your needs.
-        </p>
+        <p className="subtitle">yo yoooooooooooooooooooo</p>
 
         {/* Main Section (Two Columns) */}
         <div className="contact-wrapper">
@@ -82,7 +81,7 @@ export default function ContactUsForm() {
               <FaLocationDot className="icon-location" />
               <div>
                 <h3>Head Office</h3>
-                <p>47, Byrde Place, Colombo 06, Sri Lanka</p>
+                <p>mahargama</p>
               </div>
             </div>
 
@@ -90,7 +89,7 @@ export default function ContactUsForm() {
               <MdEmail className="icon-email" />
               <div>
                 <h3>Email Us</h3>
-                <p>khb@khbassociates.com</p>
+                <p>@.com</p>
               </div>
             </div>
 
@@ -98,8 +97,7 @@ export default function ContactUsForm() {
               <PiPhoneCallFill className="icon-call" />
               <div>
                 <h3>Call Us</h3>
-                <p>+94 11 2556855</p>
-                <p>Fax: +94 11 2556576</p>
+                <p>+94 70 142 2030</p>
               </div>
             </div>
 
@@ -116,6 +114,10 @@ export default function ContactUsForm() {
               <a href="https://www.instagram.com/iamsaj.__/">
                 <FaInstagram className="icon-socialin" />
                 Instagram
+              </a>
+              <a href="https://www.instagram.com/iamsaj.__/">
+                <FaTiktok className="icon-socialtt" />
+                Tik Tok
               </a>
             </div>
           </div>
@@ -166,15 +168,20 @@ export default function ContactUsForm() {
               </div>
 
               <div className="input-box">
-                <label className="label">Your Message</label>
+                <label className="label">Your Message (15-100 characters)</label>
                 <textarea
                   name="message"
                   className="field textarea"
-                  placeholder="Enter your message"
+                  placeholder="Enter your message (15-100 characters)"
                   value={input.message}
                   onChange={handleChange}
+                  minLength={15}
+                  maxLength={100}
                   required
                 ></textarea>
+                <small className="char-count">
+                  {input.message.length}/100 characters
+                </small>
               </div>
               <button type="submit" className="btn">
                 Send Message
@@ -183,6 +190,62 @@ export default function ContactUsForm() {
           </div>
         </div>
       </div>
+       {/* Footer */}
+      <footer className="py-6 bg-custom-gradient text-white text-center space-y-4">
+        <p>
+          &copy; {new Date().getFullYear()} DROPship. All rights reserved.
+          <br />
+          Developed by Sajana Wickramarathna
+        </p>
+
+        <div className="flex justify-center gap-6 text-white text-lg">
+          <a
+            href="https://www.facebook.com/profile.php?id=100073905762464"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-blue-800 transition-colors flex items-center gap-2"
+          >
+            <FaFacebook className="text-2xl" /> Facebook
+          </a>
+
+          <a
+            href="https://www.instagram.com/iamsaj.__/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-pink-400 transition-colors flex items-center gap-2"
+          >
+            <FaInstagram className="text-2xl" /> Instagram
+          </a>
+
+          <a
+            href="https://www.instagram.com/iamsaj.__/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-black transition-colors flex items-center gap-2"
+          >
+            <FaXTwitter className="text-2xl" /> X
+          </a>
+
+          <a
+            href="https://www.instagram.com/iamsaj.__/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-black transition-colors flex items-center gap-2"
+          >
+            <FaTiktok  className="text-2xl" /> Tik tok
+          </a>
+        </div>
+
+        <p>
+          <Link to="/privacypolicy" className="text-blue-200 hover:underline">
+            Privacy Policy
+          </Link>{" "}
+          |{" "}
+          <Link to="/termsofservice" className="text-blue-200 hover:underline">
+            Terms of Service
+          </Link>
+        </p>
+      </footer>
     </div>
   );
 }

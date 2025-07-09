@@ -76,6 +76,10 @@
   .social-links .icon-socialin {
     @apply text-3xl ml-3 mr-2 text-orange-500;
   }
+
+  .social-links .icon-socialtt {
+    @apply text-3xl ml-3 mr-2 text-black;
+  }
   
   /*contact form*/
   .container {
@@ -102,6 +106,22 @@
   .field.textarea {
     @apply h-32 resize-none;
   }
+  .char-count {
+  display: block;
+  text-align: right;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #666;
+}
+
+/* For the validation message */
+textarea:invalid {
+  border-color: #ff6b6b;
+}
+
+textarea:valid {
+  border-color: #51cf66;
+}
   
   .btn {
     @apply w-full p-3 text-lg bg-gradient-to-r from-purple-500 to-purple-700 text-white rounded transition-opacity duration-300 hover:opacity-80;

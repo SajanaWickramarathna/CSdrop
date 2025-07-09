@@ -4,6 +4,7 @@ import Logo from "../assets/logo 4.png";
 import ProfileIcon from "@mui/icons-material/AccountCircleRounded";
 import LogoutIcon from "@mui/icons-material/Logout";
 import CartIcon from "@mui/icons-material/ShoppingCart";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import axios from "axios";
 import { useCart } from "../context/CartContext";
 
@@ -13,6 +14,7 @@ function Nav() {
   const location = useLocation(); // To get the current route
   const [userData, setUserData] = useState(null);
   const [cartLength, setCartLength] = useState();
+  const [notificationCount, setNotificationCount] = useState(0);
   const { cartCount } = useCart();
 
   useEffect(() => {
@@ -33,6 +35,12 @@ function Nav() {
         );
         const length = cartResponse?.data?.items?.length || 0;
         setCartLength(length);
+
+        // Fetch notifications count
+        const notificationsResponse = await axios.get(
+          `http://localhost:3001/api/notifications/user/${userResponse.data.user_id}`
+        );
+        setNotificationCount(notificationsResponse.data.length || 0);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -191,6 +199,19 @@ function Nav() {
                 </li>
                 <li>
                   <Link
+                    to="/notifications"
+                    className="block py-2 lg:py-0 hover:text-purple-700 relative"
+                  >
+                    <NotificationsIcon />
+                    {notificationCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {notificationCount}
+                      </span>
+                    )}
+                  </Link>
+                </li>
+                <li>
+                  <Link
                     to="/cart"
                     className="block py-2 lg:py-0 hover:text-purple-700 relative"
                   >
@@ -202,11 +223,11 @@ function Nav() {
                     )}
                   </Link>
                 </li>
-
                 <li>
                   <Link
                     to="/logout"
                     className="block py-2 px-10 lg:py-0 hover:text-red-700"
+                    onClick={handleLogout}
                   >
                     <LogoutIcon />
                   </Link>
