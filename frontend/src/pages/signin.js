@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Vector from '../assets/login image.png';
-import Logo from '../assets/logo 4.png';
 import { useNavigate } from 'react-router-dom';
 import Nav from "../components/navigation";
 import Swal from "sweetalert2";
-
-
+import { FiMail, FiLock, FiLogIn } from 'react-icons/fi';
+import { RingLoader } from 'react-spinners';
 
 export default function SignIn() {
   const [formData, setFormData] = useState({
@@ -14,7 +12,6 @@ export default function SignIn() {
     password: '',
   });
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -22,18 +19,16 @@ export default function SignIn() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   }
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
 
     try {
-      const formDataToSend = {
+      const response = await axios.post('http://localhost:3001/api/users/signin', {
         email: formData.email,
         password: formData.password,
-      }
-
-      const response = await axios.post('http://localhost:3001/api/users/signin', formDataToSend, {
+      }, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -42,112 +37,140 @@ export default function SignIn() {
       localStorage.setItem('token', response.data.token);
       Swal.fire({
         title: "Success!",
-        text: "You Successfully Logged in to Your Account!",
+        text: "You have successfully logged in!",
         icon: "success",
+        timer: 1500,
+        showConfirmButton: false
       });
-      setLoading(false);
 
-      switch(response.data.role){
-        case 'admin':
-          navigate('/admin-dashboard');
-          break;
-        case 'customer':
-          navigate('/customer-dashboard');
-          break;
-        case 'inventory_manager':
-          navigate('/inventory-dashboard');
-          break;
-        case 'customer_supporter':
-          navigate('/support-dashboard');
-          break;
-        case 'deliver':
-          navigate('/deliver-dashboard');
-          break;
-        default:
-          navigate('/');
-      }
+      // Dashboard redirection based on role
+      const dashboardPaths = {
+        'admin': '/admin-dashboard',
+        'customer': '/customer-dashboard',
+        'inventory_manager': '/inventory-dashboard',
+        'customer_supporter': '/support-dashboard',
+        'deliver': '/deliver-dashboard'
+      };
+
+      navigate(dashboardPaths[response.data.role] || '/');
       
-    }catch (err) {
-      setError(err.response?.data?.message || "An error occurred");
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "Login failed. Please try again.";
+      setError(errorMessage);
       Swal.fire({
         title: "Error!",
-        text: err.response?.data?.message || "An error occurred!",
+        text: errorMessage,
         icon: "error",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
-      <Nav/>
-      <div className="flex flex-row bg-gray-100 px-32 py-32" >
-        <div className="flex flex-row bg-white min-h-full w-full border-2 rounded-3xl shadow-lg">
-          
-          {/* Left Hero Section */}
-          <div className="p-6 w-1/2 flex flex-col items-center justify-center bg-purple-800 h-full border-2 rounded-l-3xl">
-            <h1 className="text-5xl mt-4 text-white font-bold leading-tight text-center">
-              Simplify management with a <span className="text-purple-950 decoration-black">user</span> dashboard
-            </h1>
-            <p className="text-white mt-1 text-sm text-center">
-            Weaving success begins with seamless management. Empower your textile business with a user-friendly dashboard."
-            </p>
-            <img src={Vector} alt="Dashboard visualization" className="w-full h-64 mt-1 object-contain" />
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Nav />
+      <div className="flex-grow flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+          {/* Auth Header */}
+          <div className="bg-gradient-to-r from-purple-600 to-purple-800 p-6 text-center">
+            <h1 className="text-2xl font-bold text-white">Welcome Back</h1>
+            <p className="text-purple-100 mt-1">Sign in to access your account</p>
           </div>
 
-          {/* Right Hero Section */}
-          <div className="p-10 flex-1 flex flex-col items-center w-full">
-            <img src={Logo} alt="Company Logo" className="w-32 mb-4" />
+          {/* Auth Form */}
+          <div className="p-6 sm:p-8">
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
 
-            <h1 className="font-bold text-3xl">Welcome Back</h1>
-            <p className="text-gray-500 text-sm ">Please login to your account</p>
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Email Field */}
+              <div className="space-y-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiMail className="text-gray-400" />
+                  </div>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="your@email.com"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+              </div>
 
-            {error && <p className="text-red-500 text-sm mt-2 font-bold">{error}</p>}
-            {success && <p className="text-green-500 text-sm mt-2 font-bold">{success}</p>}
+              {/* Password Field */}
+              <div className="space-y-1">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FiLock className="text-gray-400" />
+                  </div>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="••••••••"
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <a 
+                    href="/forgotpassword" 
+                    className="text-xs text-purple-600 hover:text-purple-800 hover:underline"
+                  >
+                    Forgot password?
+                  </a>
+                </div>
+              </div>
 
-            <form onSubmit={handleSubmit} className="flex flex-col w-full mt-6 space-y-4">
-              {/* Email Input */}
-              <input
-                type="email"
-                placeholder="Email"
-                name='email'
-                className="p-3 rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-
-              {/* Password Input */}
-              <input
-                type="password"
-                placeholder="Password"
-                name='password'
-                className="p-3 rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-              
-              {/* Forgot Password */}
-              <p className="text-gray-400 text-sm text-right">
-                <a href="/forgotpassword" className="hover:text-purple-600 transition">Forgot password?</a>
-              </p>
-
-              {/* Login Button */}
+              {/* Submit Button */}
               <button
                 type="submit"
-                className="bg-purple-600 text-white p-3 rounded font-bold hover:bg-purple-950 transition-all duration-300"
+                disabled={loading}
+                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200"
               >
-                Login
+                {loading ? (
+                  <>
+                    <RingLoader color="#ffffff" size={20} className="mr-2" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    <FiLogIn className="mr-2" />
+                    Sign In
+                  </>
+                )}
               </button>
             </form>
 
-            {/* Signup Link */}
-            <p className="text-xs text-gray-400 mt-4">
-              Don't have an account?{' '}
-              <a href="/signup" className="text-purple-700 font-bold hover:underline">
-                Signup
-              </a>
-            </p>
+            {/* Sign Up Link */}
+            <div className="mt-6 text-center text-sm">
+              <p className="text-gray-600">
+                Don't have an account?{' '}
+                <a 
+                  href="/signup" 
+                  className="font-medium text-purple-600 hover:text-purple-500 hover:underline"
+                >
+                  Sign up
+                </a>
+              </p>
+            </div>
           </div>
         </div>
       </div>

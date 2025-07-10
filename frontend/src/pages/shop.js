@@ -1,4 +1,3 @@
-// Your imports remain unchanged
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -6,8 +5,20 @@ import Nav from "../components/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useCart } from "../context/CartContext";
-import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
+import {
+  FaFacebook,
+  FaInstagram,
+  FaTiktok,
+  FaFilter,
+  FaTimes,
+  FaSearch,
+  FaShoppingCart,
+  FaEye,
+  FaChevronRight, 
+} from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+
 
 export default function Shop() {
   const [products, setProducts] = useState([]);
@@ -20,12 +31,15 @@ export default function Shop() {
   const [maxPrice, setMaxPrice] = useState(1000000);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [filterOpen, setFilterOpen] = useState(true); // toggle for filter panel
+  const [filterOpen, setFilterOpen] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const { fetchCartCount } = useCart();
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
+    setLoading(true);
     axios
       .get("http://localhost:3001/api/categories")
       .then((response) => setCategories(response.data))
@@ -43,6 +57,7 @@ export default function Shop() {
   }, []);
 
   const fetchAllProducts = async () => {
+    setLoading(true);
     try {
       const response = await axios.get("http://localhost:3001/api/products");
       setProducts(response.data);
@@ -50,10 +65,13 @@ export default function Shop() {
     } catch (error) {
       setProducts([]);
       setFilteredProducts([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchProductsByCategory = async (category_id) => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `http://localhost:3001/api/products/category/${category_id}`
@@ -63,6 +81,8 @@ export default function Shop() {
     } catch (error) {
       setProducts([]);
       setFilteredProducts([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -79,6 +99,7 @@ export default function Shop() {
 
   useEffect(() => {
     let filtered = products;
+
     if (selectedBrands.length > 0) {
       filtered = filtered.filter((product) =>
         selectedBrands.includes(
@@ -86,16 +107,23 @@ export default function Shop() {
         )
       );
     }
+
     filtered = filtered.filter((product) => product.product_price <= maxPrice);
+
     if (searchQuery) {
       filtered = filtered.filter((product) =>
         product.product_name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
+
     setFilteredProducts(filtered);
   }, [selectedBrands, maxPrice, searchQuery, products]);
 
   const handleAddToCart = (product_id) => {
+    if (!token) {
+      toast.warn("Please login to add products to the cart.");
+      return;
+    }
     axios
       .post(
         "http://localhost:3001/api/cart/addtocart",
@@ -159,27 +187,196 @@ export default function Shop() {
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <Nav />
+    <div className="bg-gray-50 min-h-screen">
+      <Nav className="fixed top-0 left-0 right-0 h-16 z-50 shadow bg-white" />
       <ToastContainer position="top-center" autoClose={3000} />
 
+      {/* Mobile Search and Filter Bar */}
+      <div className="lg:hidden fixed top-16 left-0 right-0 h-16 bg-white shadow-sm z-30 px-4 py-3 flex items-center gap-2">
+
+        <div className="relative flex-1">
+          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="search"
+            placeholder="Search products..."
+            aria-label="Search products"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          />
+        </div>
+        <button
+          onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
+          className="p-2 rounded-lg bg-blue-500 text-white"
+          aria-label="Toggle filters"
+        >
+          <FaFilter />
+        </button>
+      </div>
+
+      {/* Desktop Search bar */}
+      <div className="hidden lg:block fixed top-16 left-60 right-0 h-16 z-30 bg-white shadow px-8 py-3">
+
+
+        <div className="relative max-w-2xl mx-auto">
+          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <input
+            type="search"
+            placeholder="Search products..."
+            aria-label="Search products"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+          />
+        </div>
+      </div>
+
+      {/* Mobile Filter Panel */}
+      {mobileFiltersOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-white overflow-y-auto pt-20 pb-16 px-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gray-800">Filters</h2>
+            <button
+              onClick={() => setMobileFiltersOpen(false)}
+              className="p-2 text-gray-500 hover:text-gray-700"
+              aria-label="Close filters"
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            {/* Categories */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-gray-700">
+                Categories
+              </h3>
+              <div className="space-y-2">
+                <button
+                  onClick={handleShowAllProducts}
+                  className={`w-full text-left px-4 py-2 rounded-lg ${
+                    !selectedCategory
+                      ? "bg-blue-100 text-blue-700 font-medium"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  All Products
+                </button>
+                {categories.map((category) => (
+                  <button
+                    key={category.category_id}
+                    onClick={() =>
+                      handleCategoryClick(String(category.category_id))
+                    }
+                    className={`w-full text-left px-4 py-2 rounded-lg ${
+                      selectedCategory === String(category.category_id)
+                        ? "bg-blue-100 text-blue-700 font-medium"
+                        : "hover:bg-gray-100"
+                    }`}
+                  >
+                    {category.category_name}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Filter */}
+            <div>
+              <h3 className="text-lg font-semibold mb-3 text-gray-700">
+                Price Range
+              </h3>
+              <div className="px-2">
+                <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                  <span>0 LKR</span>
+                  <span>{maxPrice} LKR</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={1000000}
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+              </div>
+            </div>
+
+            {/* Brand Filter */}
+            {brands.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-gray-700">
+                  Brands
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {brands.map((brand) => (
+                    <label
+                      key={brand.brand_id}
+                      className="flex items-center space-x-2"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedBrands.includes(
+                          String(brand.brand_id)
+                        )}
+                        onChange={() =>
+                          setSelectedBrands((prev) =>
+                            prev.includes(String(brand.brand_id))
+                              ? prev.filter(
+                                  (id) => id !== String(brand.brand_id)
+                                )
+                              : [...prev, String(brand.brand_id)]
+                          )
+                        }
+                        className="rounded text-blue-600 focus:ring-blue-500"
+                      />
+                      <span>{brand.brand_name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex space-x-3 pt-4">
+              <button
+                onClick={handleClearBrandAndPriceFilters}
+                className="flex-1 py-2 bg-gray-200 text-gray-700 rounded-lg font-medium"
+              >
+                Reset
+              </button>
+              <button
+                onClick={() => setMobileFiltersOpen(false)}
+                className="flex-1 py-2 bg-blue-600 text-white rounded-lg font-medium"
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Category Panel */}
-      <aside className="w-60 h-screen fixed top-20 left-0 z-40 bg-white shadow-lg px-2 pt-4 flex flex-col gap-2">
-        <h2 className="text-lg font-bold tracking-widest text-blue-700 px-2">
+      <aside className="hidden lg:block w-60 h-screen fixed top-20 left-0 z-30 bg-white shadow-lg px-4 pt-4 flex flex-col gap-3">
+        <h2 className="text-lg font-bold tracking-widest text-blue-700 px-2 select-none">
           CATEGORIES
         </h2>
+
         <button
           onClick={handleShowAllProducts}
-          className="mb-3 mx-2 px-3 py-2 rounded-lg bg-blue-500 hover:bg-blue-700 text-white font-semibold transition-colors duration-200"
+          className={`mb-3 mx-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+            !selectedCategory
+              ? "bg-blue-600 hover:bg-blue-700 text-white"
+              : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+          } font-semibold`}
         >
           Show All Products
         </button>
-        <nav className="flex-1 overflow-y-auto">
+
+        <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-gray-100">
           <ul className="space-y-1">
             {categories.map((category) => (
               <li
                 key={category.category_id}
-                className={`flex items-center px-3 py-2 rounded-lg cursor-pointer transition-colors
+                className={`flex items-center px-3 py-2 rounded-lg cursor-pointer transition-colors select-none
                 ${
                   selectedCategory === String(category.category_id)
                     ? "bg-blue-100 text-blue-700 font-bold"
@@ -188,6 +385,14 @@ export default function Shop() {
                 onClick={() =>
                   handleCategoryClick(String(category.category_id))
                 }
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleCategoryClick(String(category.category_id));
+                  }
+                }}
+                role="button"
+                aria-pressed={selectedCategory === String(category.category_id)}
               >
                 <span className="ml-2">{category.category_name}</span>
               </li>
@@ -197,105 +402,134 @@ export default function Shop() {
       </aside>
 
       {/* Main & Filter Panel */}
-      <div className="flex pt-20 pl-60">
+      <div className="flex pt-[128px] lg:pt-[128px] lg:pl-60 min-h-screen">
+
         {showFilterPanel && (
-          <div className="w-80 p-4">
+          <div
+            className={`hidden lg:block w-80 p-4 transition-all duration-300 ease-in-out ${
+              filterOpen ? "max-h-[600px]" : "max-h-12 overflow-hidden"
+            }`}
+          >
             <div className="bg-white rounded-xl shadow-lg overflow-hidden">
               <div
-                className="bg-blue-500 text-white px-4 py-3 flex justify-between items-center cursor-pointer"
+                className="bg-blue-600 text-white px-4 py-3 flex justify-between items-center cursor-pointer select-none"
                 onClick={() => setFilterOpen(!filterOpen)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") setFilterOpen(!filterOpen);
+                }}
+                aria-expanded={filterOpen}
+                aria-controls="filter-panel"
               >
                 <h2 className="font-semibold text-lg">Filters</h2>
-                <button className="text-sm">
-                  {filterOpen ? "Hide" : "Show"}
-                </button>
+                <div className="flex items-center">
+                  {filterOpen ? (
+                    <FiChevronUp className="text-xl" />
+                  ) : (
+                    <FiChevronDown className="text-xl" />
+                  )}
+                </div>
               </div>
 
-              {filterOpen && (
-                <div className="p-4 space-y-6">
-                  {/* Price Filter */}
-                  <div>
-                    <div className="flex items-center text-blue-700 mb-2 text-sm">
-                      <span>0 LKR</span>
-                      <span className="ml-auto">{maxPrice} LKR</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={1000000}
-                      value={maxPrice}
-                      onChange={(e) => setMaxPrice(Number(e.target.value))}
-                      className="w-full accent-blue-700"
-                    />
-                  </div>
-
-                  {/* Brand Filter */}
-                  <div>
-                    <h3 className="text-blue-700 font-semibold mb-2">BRANDS</h3>
-                    {brands.length > 0 ? (
-                      <div className="flex flex-col gap-2 text-sm">
-                        {brands.map((brand) => (
-                          <label
-                            key={brand.brand_id}
-                            className="flex items-center gap-2"
-                          >
-                            <input
-                              type="checkbox"
-                              className="accent-blue-700"
-                              checked={selectedBrands.includes(
-                                String(brand.brand_id)
-                              )}
-                              onChange={() =>
-                                setSelectedBrands((prev) =>
-                                  prev.includes(String(brand.brand_id))
-                                    ? prev.filter(
-                                        (id) => id !== String(brand.brand_id)
-                                      )
-                                    : [...prev, String(brand.brand_id)]
-                                )
-                              }
-                            />
-                            {brand.brand_name}
-                          </label>
-                        ))}
+              <div id="filter-panel" className="p-4 space-y-6">
+                {filterOpen && (
+                  <>
+                    <div>
+                      <h3 className="text-gray-700 font-semibold mb-3">
+                        Price Range
+                      </h3>
+                      <div className="flex items-center text-blue-700 mb-2 text-sm select-none">
+                        <span>0 LKR</span>
+                        <span className="ml-auto">{maxPrice} LKR</span>
                       </div>
-                    ) : (
-                      <p className="text-gray-500">
-                        No brands for this category
-                      </p>
-                    )}
-                  </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={1000000}
+                        value={maxPrice}
+                        onChange={(e) => setMaxPrice(Number(e.target.value))}
+                        className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                        aria-label="Filter by maximum price"
+                      />
+                    </div>
 
-                  <button
-                    onClick={handleClearBrandAndPriceFilters}
-                    className="w-full bg-red-500 hover:bg-red-700 text-white py-2 rounded-lg font-semibold transition"
-                  >
-                    Clear Filters
-                  </button>
-                </div>
-              )}
+                    <div>
+                      <h3 className="text-gray-700 font-semibold mb-3">
+                        Brands
+                      </h3>
+                      {brands.length > 0 ? (
+                        <div className="flex flex-col gap-2 text-sm max-h-52 overflow-auto">
+                          {brands.map((brand) => (
+                            <label
+                              key={brand.brand_id}
+                              className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded"
+                            >
+                              <input
+                                type="checkbox"
+                                className="rounded text-blue-600 focus:ring-blue-500"
+                                checked={selectedBrands.includes(
+                                  String(brand.brand_id)
+                                )}
+                                onChange={() =>
+                                  setSelectedBrands((prev) =>
+                                    prev.includes(String(brand.brand_id))
+                                      ? prev.filter(
+                                          (id) => id !== String(brand.brand_id)
+                                        )
+                                      : [...prev, String(brand.brand_id)]
+                                  )
+                                }
+                              />
+                              {brand.brand_name}
+                            </label>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-500 select-none">
+                          No brands for this category
+                        </p>
+                      )}
+                    </div>
+
+                    <button
+                      onClick={handleClearBrandAndPriceFilters}
+                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-medium transition focus:outline-none focus:ring-2 focus:ring-gray-300"
+                      aria-label="Clear brand and price filters"
+                    >
+                      Clear Filters
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}
 
         {/* Product Grid */}
-        <div className="flex-1 p-8">
-          <div className="flex flex-wrap gap-2 mb-6">
+        <main className="flex-1 p-4 lg:p-8">
+          {/* Active Filters */}
+          <div
+            className="flex flex-wrap gap-2 mb-6"
+            aria-live="polite"
+            aria-atomic="true"
+          >
             {selectedCategory && (
-              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium flex items-center gap-1">
+              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium flex items-center gap-1 select-none">
                 {getCategoryName(selectedCategory)}
                 <button
                   onClick={handleShowAllProducts}
-                  className="ml-2 text-blue-600 hover:text-red-700"
+                  className="ml-1 text-blue-600 hover:text-red-700 focus:outline-none rounded-full p-1"
+                  aria-label="Remove category filter"
                 >
-                  &times;
+                  <FaTimes size={12} />
                 </button>
               </span>
             )}
             {selectedBrands.map((id) => (
               <span
                 key={id}
-                className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center gap-1"
+                className="bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium flex items-center gap-1 select-none"
               >
                 {getBrandName(id)}
                 <button
@@ -304,130 +538,201 @@ export default function Shop() {
                       prev.filter((bid) => bid !== id)
                     )
                   }
-                  className="ml-2 text-green-600 hover:text-red-700"
+                  className="ml-1 text-green-600 hover:text-red-700 focus:outline-none rounded-full p-1"
                 >
-                  &times;
+                  <FaTimes size={12} />
                 </button>
               </span>
             ))}
             {maxPrice < 1000000 && (
-              <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-medium flex items-center gap-1">
-                Up to LKR {maxPrice}
+              <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-medium flex items-center gap-1 select-none">
+                Up to LKR {maxPrice.toLocaleString()}
                 <button
                   onClick={() => setMaxPrice(1000000)}
-                  className="ml-2 text-yellow-600 hover:text-red-700"
+                  className="ml-1 text-yellow-600 hover:text-red-700 focus:outline-none rounded-full p-1"
                 >
-                  &times;
+                  <FaTimes size={12} />
                 </button>
               </span>
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
-                <div
+          {/* Product Count */}
+          <div className="mb-6 text-gray-600">
+            {filteredProducts.length}{" "}
+            {filteredProducts.length === 1 ? "product" : "products"} found
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center h-48">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : filteredProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredProducts.map((product) => (
+                <article
                   key={product.product_id}
-                  className="bg-white p-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                  className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group"
                 >
-                  <div className="relative group overflow-hidden">
+                  <div className="relative overflow-hidden rounded-lg aspect-square">
                     <img
                       src={getProductImageSrc(product.product_image)}
                       alt={product.product_name}
-                      className="w-full h-56 object-cover rounded-lg transition-transform duration-500 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src =
                           "https://via.placeholder.com/300x200?text=No+Image";
                       }}
                     />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
                   </div>
-                  <h3 className="text-2xl font-semibold text-gray-900 mt-6">
-                    {product.product_name}
-                  </h3>
-                  <p className="text-lg text-gray-700 mt-2 font-medium">
-                    LKR {product.product_price}
-                  </p>
-                  <div className="mt-4 space-y-4">
-                    <button
-                      className="w-full py-3 text-white rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800 transition duration-300"
-                      onClick={() => handleAddToCart(product.product_id)}
-                    >
-                      Add to Cart
-                    </button>
-                    <Link
-                      to={`/product/${product.product_id}`}
-                      className="w-full mt-2 py-3 text-gray-900 bg-transparent border-2 border-blue-500 hover:bg-blue-500 hover:text-white rounded-lg transition duration-300 flex items-center justify-center"
-                    >
-                      View Product
-                    </Link>
+                  <div className="mt-4">
+                    <h3 className="text-lg font-semibold text-gray-900 line-clamp-1">
+                      {product.product_name}
+                    </h3>
+                    <p className="text-lg text-gray-800 font-bold mt-1">
+                      LKR {product.product_price.toLocaleString()}
+                    </p>
+                    <div className="mt-4 space-y-2">
+                      <button
+                        onClick={() => handleAddToCart(product.product_id)}
+                        className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg transition ${
+                          token
+                            ? "bg-blue-600 hover:bg-blue-700 text-white"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                        }`}
+                        title={!token ? "Please login to add to cart" : ""}
+                      >
+                        <FaShoppingCart />
+                        Add to Cart
+                      </button>
+                      <Link
+                        to={`/product/${product.product_id}`}
+                        className="w-full flex items-center justify-center gap-2 py-2 text-gray-700 bg-transparent border border-gray-300 hover:bg-gray-100 rounded-lg transition"
+                      >
+                        <FaEye />
+                        View Details
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-center col-span-full">
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <div className="mx-auto w-24 h-24 text-gray-400 mb-4">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">
                 No products found
+              </h3>
+              <p className="text-gray-500">
+                Try adjusting your search or filter criteria
               </p>
-            )}
-          </div>
-        </div>
+              <button
+                onClick={handleShowAllProducts}
+                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Show All Products
+              </button>
+            </div>
+          )}
+        </main>
       </div>
 
-       {/* Footer */}
-            <footer className="py-6 bg-custom-gradient text-white text-center space-y-4 pt-8 pb-6 relative z-50">
-              <p>
-                &copy; {new Date().getFullYear()} DROPship. All rights reserved.
-                <br />
-                Developed by Sajana Wickramarathna
-              </p>
-      
-              <div className="flex justify-center gap-6 text-white text-lg">
-                <a
-                  href="https://www.facebook.com/profile.php?id=100073905762464"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-blue-800 transition-colors flex items-center gap-2"
-                >
-                  <FaFacebook className="text-2xl" /> Facebook
-                </a>
-      
-                <a
-                  href="https://www.instagram.com/iamsaj.__/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-pink-400 transition-colors flex items-center gap-2"
-                >
-                  <FaInstagram className="text-2xl" /> Instagram
-                </a>
-      
-                <a
-                  href="https://www.instagram.com/iamsaj.__/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-black transition-colors flex items-center gap-2"
-                >
-                  <FaXTwitter className="text-2xl" /> X
-                </a>
-      
-                <a
-                  href="https://www.instagram.com/iamsaj.__/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-black transition-colors flex items-center gap-2"
-                >
-                  <FaTiktok  className="text-2xl" /> Tik tok
-                </a>
+      {/* Footer */}
+      <footer className="bg-gray-900 text-gray-300 py-12 space-y-4 pt-8 pb-6 relative z-50">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                  <div>
+                    <h3 className="text-white text-lg font-semibold mb-4">DROPship</h3>
+                    <p className="mb-4">
+                      Premium products delivered straight to your doorstep.
+                    </p>
+                    <div className="flex space-x-4">
+                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                        <FaFacebook className="text-xl" />
+                      </a>
+                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                        <FaInstagram className="text-xl" />
+                      </a>
+                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                        <FaXTwitter className="text-xl" />
+                      </a>
+                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                        <FaTiktok className="text-xl" />
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-white text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul className="space-y-2">
+                      <li><Link to="/shop" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Shop</Link></li>
+                      <li><Link to="/about" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> About Us</Link></li>
+                      <li><Link to="/contactform" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Contact</Link></li>
+                      <li><Link to="/faq" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> FAQ</Link></li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-white text-lg font-semibold mb-4">Customer Service</h3>
+                    <ul className="space-y-2">
+                      <li><Link to="/shipping" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Shipping Policy</Link></li>
+                      <li><Link to="/returns" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Return Policy</Link></li>
+                      <li><Link to="/privacypolicy" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Privacy Policy</Link></li>
+                      <li><Link to="/termsofservice" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Terms of Service</Link></li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-white text-lg font-semibold mb-4">Contact Info</h3>
+                    <address className="not-italic space-y-2">
+                      <p className="flex items-start">
+                        <svg className="w-5 h-5 mr-2 text-blue-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        123 Main Street, Colombo
+                      </p>
+                      <p className="flex items-center">
+                        <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                        </svg>
+                        +94 76 123 4567
+                      </p>
+                      <p className="flex items-center">
+                        <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        info@dropship.com
+                      </p>
+                    </address>
+                  </div>
+                </div>
+                
+                <div className="border-t border-gray-800 pt-8 text-center">
+                  <p>
+                    &copy; {new Date().getFullYear()} DROPship. All rights reserved.
+                    <br className="sm:hidden" />
+                    <span className="hidden sm:inline"> • </span>
+                    Developed by Sajana Wickramarathna
+                  </p>
+                </div>
               </div>
-      
-              <p>
-                <Link to="/privacypolicy" className="text-blue-200 hover:underline">
-                  Privacy Policy
-                </Link>{" "}
-                |{" "}
-                <Link to="/termsofservice" className="text-blue-200 hover:underline">
-                  Terms of Service
-                </Link>
-              </p>
             </footer>
     </div>
   );

@@ -20,6 +20,7 @@ import ResetPassword from "./components/resetPassword";
 import ViewProduct from "./pages/viewproduct";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/termsofservice";
+import Aboutus from "./pages/aboutus";
 import Notifications from "./pages/notification";
 
 function App() {
@@ -29,6 +30,8 @@ function App() {
         <Route path="/" element={<Home />} />
 
         <Route path="/shop" element={<Shop />} />
+
+        <Route path="/about" element={<Aboutus />} />
 
         <Route path="/privacypolicy" element={<PrivacyPolicy />} />
 

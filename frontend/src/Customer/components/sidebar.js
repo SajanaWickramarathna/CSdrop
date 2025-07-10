@@ -18,7 +18,7 @@ export default function Sidebar() {
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [isLoading, setIsLoading] = useState(true);
   const [notificationCount, setNotificationCount] = useState(0);
-  const { cartCount } = useCart();
+  const { cartCount, fetchCartCount } = useCart(); // grab fetchCartCount
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -65,9 +65,13 @@ export default function Sidebar() {
     };
 
     fetchNotifications();
+
+    // *** HERE: fetch cart count as well ***
+    fetchCartCount();
+
     const interval = setInterval(fetchNotifications, 10000);
     return () => clearInterval(interval);
-  }, [userData]);
+  }, [userData, fetchCartCount]); // Added fetchCartCount to deps
 
   const handleNavigation = (path) => {
     navigate(path, { state: { data: userData } });
@@ -168,6 +172,8 @@ export default function Sidebar() {
         <button
           className="w-full flex items-center justify-center py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-md hover:shadow-lg"
           onClick={() => {
+            localStorage.removeItem("token");
+            setToken(null);
             navigate("/logout");
           }}
         >

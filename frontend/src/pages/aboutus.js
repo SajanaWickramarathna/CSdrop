@@ -1,121 +1,79 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import Nav from "../components/navigation";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import { FaFacebook, FaInstagram, FaTiktok, FaChevronRight } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
+import { FaXTwitter } from "react-icons/fa6"; 
 
-export default function PrivacyPolicy() {
-  // Policy sections data for better maintainability
-  const policySections = [
-    {
-      title: "1. Information We Collect",
-      content: "We may collect personal data such as your name, email address, contact number, shipping address, and payment information when you register, place orders, or contact us."
-    },
-    {
-      title: "2. How We Use Your Information",
-      content: "Your information is used to process orders, improve our services, personalize your shopping experience, and communicate with you about updates or promotions."
-    },
-    {
-      title: "3. Data Security",
-      content: "We implement industry-standard security measures including encryption and secure protocols to protect your personal data from unauthorized access, disclosure, alteration, or destruction."
-    },
-    {
-      title: "4. Sharing Information",
-      content: "We do not sell or rent your personal data. We may share it only with trusted third-party service providers for essential functions like order fulfillment, payment processing, or when required by law."
-    },
-    {
-      title: "5. Cookies and Tracking",
-      content: "We use cookies and similar technologies to enhance site functionality, analyze usage patterns, and personalize your experience. You can manage cookie preferences through your browser settings."
-    },
-    {
-      title: "6. Your Rights",
-      content: "You have rights to access, correct, or delete your personal information. You may also object to processing or request data portability. Contact our Data Protection Officer at privacy@dropship.com for such requests."
-    },
-    {
-      title: "7. Policy Updates",
-      content: "We may update this policy periodically to reflect changes in our practices or legal requirements. Significant changes will be notified through our website or email when appropriate."
-    },
-    {
-      title: "8. Contact Us",
-      content: "For privacy-related inquiries or concerns, please contact our privacy team at privacy@dropship.com or through our contact form."
-    }
-  ];
-
-  const socialLinks = [
-    {
-      name: "Facebook",
-      icon: <FaFacebook className="text-2xl" />,
-      url: "https://www.facebook.com/profile.php?id=100073905762464",
-      color: "hover:text-blue-600"
-    },
-    {
-      name: "Instagram",
-      icon: <FaInstagram className="text-2xl" />,
-      url: "https://www.instagram.com/iamsaj.__/",
-      color: "hover:text-pink-500"
-    },
-    {
-      name: "Twitter",
-      icon: <FaXTwitter className="text-2xl" />,
-      url: "https://twitter.com/iamsaj__",
-      color: "hover:text-black"
-    },
-    {
-      name: "TikTok",
-      icon: <FaTiktok className="text-2xl" />,
-      url: "https://www.tiktok.com/@iamsaj__",
-      color: "hover:text-black"
-    }
-  ];
-
+export default function About() {
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-50 to-gray-100 text-gray-800 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-r from-blue-50 to-gray-100">
       <Nav />
 
-      <main className="flex-grow">
-        <section className="py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-            {/* Header with decorative element */}
-            <div className="bg-blue-700 px-8 py-6">
-              <h1 className="text-3xl md:text-4xl font-bold text-white text-center">
-                Privacy Policy
-              </h1>
-            </div>
+      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-extrabold text-gray-900 mb-4">
+            About DROPship
+          </h1>
+          <p className="text-lg text-gray-700 max-w-3xl mx-auto">
+            Learn more about our mission, values, and what drives us to provide
+            premium products delivered straight to your doorstep.
+          </p>
+        </div>
 
-            <div className="p-8 space-y-8">
-              <p className="text-lg leading-relaxed">
-                DROPship is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information when you use our services. By accessing or using our platform, you agree to the terms outlined below.
-              </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="rounded-xl overflow-hidden shadow-lg"
+          >
+            <img
+              src="/images/about.jpg"
+              alt="About DROPship"
+              className="w-full h-auto object-cover"
+              loading="lazy"
+            />
+          </motion.div>
 
-              {/* Policy sections */}
-              <div className="space-y-8">
-                {policySections.map((section, index) => (
-                  <div key={index} className="space-y-2">
-                    <h2 className="text-xl font-semibold text-blue-700">
-                      {section.title}
-                    </h2>
-                    <p className="text-gray-700 leading-relaxed">
-                      {section.content}
-                    </p>
-                  </div>
-                ))}
-              </div>
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="space-y-6 text-gray-700 text-lg"
+          >
+            <p>
+              Founded in 2023, DROPship started with a simple mission: to connect
+              customers with premium products from trusted brands worldwide,
+              delivered right to their doorstep with exceptional service.
+            </p>
+            <p>
+              Our dedicated team carefully curates every product and brand to
+              ensure quality and customer satisfaction. We believe shopping
+              should be effortless, enjoyable, and reliable.
+            </p>
+            <p>
+              Over the years, we have grown into a trusted e-commerce platform,
+              serving thousands of happy customers nationwide. We are committed
+              to innovation, transparency, and sustainability as we continue to
+              expand.
+            </p>
+            <p>
+              Thank you for being part of our journey. We look forward to
+              serving you with the very best.
+            </p>
 
-              {/* Effective date */}
-              <div className="pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-500 italic">
-                  Effective Date: {new Date().toLocaleDateString('en-US', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
+            <Link
+              to="/contactform"
+              className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              Contact Us
+            </Link>
+          </motion.div>
+        </div>
+      </section>
       <footer className="bg-gray-900 text-gray-300 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
