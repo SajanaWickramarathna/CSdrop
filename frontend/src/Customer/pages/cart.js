@@ -2,6 +2,27 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { useCart } from "../../context/CartContext";
+import { 
+  CircularProgress,
+  Alert,
+  Button,
+  Card,
+  CardContent,
+  CardMedia,
+  Typography,
+  IconButton,
+  Box,
+  Divider,
+  Snackbar
+} from '@mui/material';
+import {
+  Add as AddIcon,
+  Remove as RemoveIcon,
+  Delete as DeleteIcon,
+  ShoppingCart as ShoppingCartIcon,
+  ArrowBack as ArrowBackIcon,
+  ClearAll as ClearAllIcon
+} from '@mui/icons-material';
 
 export default function Cart() {
   const [cart, setCart] = useState(null);
@@ -12,9 +33,21 @@ export default function Cart() {
   const [user_id, setUserId] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);  
   const [products, setProducts] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const { fetchCartCount } = useCart();
 
-  // Helper for correct image path
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
   const getProductImageSrc = (imgPath) => {
     if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
     if (imgPath.startsWith("http")) return imgPath;
@@ -36,12 +69,15 @@ export default function Cart() {
       } catch (error) {
         console.error("Error fetching user data:", error);
         if (error.response?.status === 401) {
-          alert("Session expired. Please log in again.");
-          localStorage.removeItem("token");
-          setToken(null);
-          window.location.href = "/logout";
+          showSnackbar("Session expired. Please log in again.", "error");
+          setTimeout(() => {
+            localStorage.removeItem("token");
+            setToken(null);
+            window.location.href = "/logout";
+          }, 2000);
         } else {
-          setError("API Error: " + (error.response?.status || "Unknown"));
+          setError("Failed to load user data");
+          showSnackbar("Failed to load user data", "error");
         }
       } finally {
         setIsLoading(false);
@@ -74,7 +110,6 @@ export default function Cart() {
         const validProducts = productsWithDetails.filter(p => p !== null);
         const validProductIds = validProducts.map(p => p.product_id);
 
-        // Filter out invalid items from cart
         const updatedCartItems = cartData.items.filter(item =>
           validProductIds.includes(item.product_id)
         );
@@ -84,7 +119,8 @@ export default function Cart() {
         setUserId(userData.user_id);
       } catch (err) {
         console.error('Error fetching cart or products:', err);
-        setError('Error fetching cart');
+        setError('Failed to load cart');
+        showSnackbar("Failed to load cart", "error");
       }
     };
 
@@ -107,158 +143,248 @@ export default function Cart() {
       total_price: total
     })
       .then(response => setCart(response.data))
-      .catch(err => console.error('Error updating total price:', err));
+      .catch(err => {
+        console.error('Error updating total price:', err);
+        showSnackbar("Error updating cart total", "error");
+      });
   }, [cart, products, userData]);
 
   // Cart actions
-  const handleRemoveFromCart = (product_id) => {
-    axios.delete('http://localhost:3001/api/cart/removefromcart', {
-      data: { user_id, product_id }
-    })
-      .then(response => {
-        setCart(response.data);
-        fetchCartCount();
-      })
-      .catch(() => {
-        setError('Error removing from cart');
+  const handleRemoveFromCart = async (product_id) => {
+    try {
+      const response = await axios.delete('http://localhost:3001/api/cart/removefromcart', {
+        data: { user_id, product_id }
       });
+      setCart(response.data);
+      fetchCartCount();
+      showSnackbar("Item removed from cart");
+    } catch (err) {
+      console.error('Error removing from cart:', err);
+      showSnackbar("Error removing item", "error");
+    }
   };
 
-  const handleClearCart = () => {
-    axios.delete(`http://localhost:3001/api/cart/clearcart/${userData.user_id}`)
-      .then(() => {
-        setCart(null);
-        fetchCartCount();
-        setTimeout(() => {
-          window.location.href = '/shop';
-        }, 1000);
-      })
-      .catch(() => {
-        setError('Error clearing cart');
-      });
+  const handleClearCart = async () => {
+    try {
+      await axios.delete(`http://localhost:3001/api/cart/clearcart/${userData.user_id}`);
+      setCart(null);
+      fetchCartCount();
+      showSnackbar("Cart cleared successfully");
+      setTimeout(() => {
+        window.location.href = '/shop';
+      }, 1000);
+    } catch (err) {
+      console.error('Error clearing cart:', err);
+      showSnackbar("Error clearing cart", "error");
+    }
   };
 
-  const handleUpdateQuantity = (user_id, product_id, quantity) => {
+  const handleUpdateQuantity = async (user_id, product_id, quantity) => {
     if (quantity < 1) return;
-    axios.put('http://localhost:3001/api/cart/updatecartitem', {
-      user_id, product_id, quantity
-    })
-      .then(response => {
-        setCart(response.data);
-        fetchCartCount();
-      })
-      .catch(() => {
-        setError('Error updating cart item');
+    try {
+      const response = await axios.put('http://localhost:3001/api/cart/updatecartitem', {
+        user_id, product_id, quantity
       });
+      setCart(response.data);
+      fetchCartCount();
+    } catch (err) {
+      console.error('Error updating cart item:', err);
+      showSnackbar("Error updating quantity", "error");
+    }
   };
 
   // Render logic
   if (!token) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-gray-100">
-        <p className="text-center text-gray-500 text-lg font-semibold mb-6">
+      <Box 
+        display="flex" 
+        flexDirection="column" 
+        alignItems="center" 
+        justifyContent="center" 
+        minHeight="80vh"
+        p={4}
+      >
+        <ShoppingCartIcon color="disabled" sx={{ fontSize: 80, mb: 2 }} />
+        <Typography variant="h5" color="textSecondary" gutterBottom>
           Please log in to view your cart
-        </p>
-        <Link 
-          to="/signin" 
-          className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg text-lg shadow-md hover:shadow-xl transition-all duration-200"
+        </Typography>
+        <Button
+          component={Link}
+          to="/signin"
+          variant="contained"
+          color="primary"
+          size="large"
+          sx={{ mt: 3 }}
         >
           Log in
-        </Link>
-      </div>
+        </Button>
+      </Box>
     );
   }
 
-  if (isLoading) return <div className="text-center text-gray-600">Loading user data...</div>;
-  if (error) return <p className="text-center text-red-500">{error}</p>;
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+        <Alert severity="error" sx={{ maxWidth: 500 }}>
+          {error}
+        </Alert>
+      </Box>
+    );
+  }
+
   if (!cart || cart.items.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen px-4 py-12 bg-gray-100">
-        <p className="text-center text-gray-500 text-lg font-semibold mb-6">
+      <Box 
+        display="flex" 
+        flexDirection="column" 
+        alignItems="center" 
+        justifyContent="center" 
+        minHeight="80vh"
+        p={4}
+      >
+        <ShoppingCartIcon color="disabled" sx={{ fontSize: 80, mb: 2 }} />
+        <Typography variant="h5" color="textSecondary" gutterBottom>
           Your cart is empty
-        </p>
-        <Link 
-          to="/shop" 
-          className="px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg text-lg shadow-md hover:shadow-xl transition-all duration-200"
+        </Typography>
+        <Button
+          component={Link}
+          to="/shop"
+          variant="contained"
+          color="primary"
+          size="large"
+          sx={{ mt: 3 }}
+          startIcon={<ArrowBackIcon />}
         >
           Back to shop
-        </Link>
-      </div>
+        </Button>
+      </Box>
     );
   }
 
   return (
-    <div className="p-12 bg-gray-50 min-h-screen flex flex-col space-y-4">
-      <h2 className="text-3xl font-semibold text-gray-900 mb-6">Your Cart</h2>
-      <div className="space-y-6">
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: 'background.default', minHeight: '100vh' }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
+        Your Shopping Cart
+      </Typography>
+      
+      <Box sx={{ mb: 4 }}>
         {cart.items.map(item => {
           const product = products.find(p => p.product_id === item.product_id);
           if (!product) return null;
 
           return (
-            <div 
-              key={item.product_id} 
-              className="flex items-center bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <img
-                src={getProductImageSrc(product.product_image)}
+            <Card key={item.product_id} sx={{ mb: 3, display: 'flex' }}>
+              <CardMedia
+                component="img"
+                sx={{ width: 150, height: 150, objectFit: 'cover' }}
+                image={getProductImageSrc(product.product_image)}
                 alt={product.product_name}
-                className="w-24 h-24 object-cover rounded-lg shadow-md"
                 onError={e => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/300x200?text=No+Image"; }}
               />
-              <div className="ml-6 flex-1">
-                <h3 className="text-xl font-semibold text-gray-900">{product.product_name}</h3>
-                <p className="text-lg text-gray-600">LKR {product.product_price}</p>
-                <div className="flex items-center mt-4 space-x-4">
-                  <button
-                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow-md hover:bg-gray-400 transition-all duration-200"
-                    onClick={() => handleUpdateQuantity(user_id, item.product_id, item.quantity - 1)}
-                    disabled={item.quantity === 1}
-                  >
-                    -
-                  </button>
-                  <span className="text-lg">{item.quantity}</span>
-                  <button
-                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow-md hover:bg-gray-400 transition-all duration-200"
-                    onClick={() => handleUpdateQuantity(user_id, item.product_id, item.quantity + 1)}
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-              <button
-                className="ml-6 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-200"
-                onClick={() => handleRemoveFromCart(item.product_id)}
-              >
-                Remove
-              </button>
-            </div>
+              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                <CardContent>
+                  <Typography variant="h6" component="div">
+                    {product.product_name}
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    LKR {product.product_price.toFixed(2)}
+                  </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                    <IconButton
+                      onClick={() => handleUpdateQuantity(user_id, item.product_id, item.quantity - 1)}
+                      disabled={item.quantity === 1}
+                    >
+                      <RemoveIcon />
+                    </IconButton>
+                    <Typography variant="body1" sx={{ mx: 2 }}>
+                      {item.quantity}
+                    </Typography>
+                    <IconButton
+                      onClick={() => handleUpdateQuantity(user_id, item.product_id, item.quantity + 1)}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </Box>
+                </CardContent>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
+                <IconButton
+                  onClick={() => handleRemoveFromCart(item.product_id)}
+                  color="error"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              </Box>
+            </Card>
           );
         })}
-      </div>
-      <div className="mt-auto flex justify-between items-center">
-        <h3 className="text-2xl font-semibold text-gray-900">Total: LKR {totalPrice}</h3>
-        <button
-          className="px-6 py-3 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-all duration-200"
+      </Box>
+
+      <Divider sx={{ my: 3 }} />
+
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+        <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+          Total: LKR {totalPrice.toFixed(2)}
+        </Typography>
+        <Button
           onClick={handleClearCart}
+          variant="outlined"
+          color="error"
+          startIcon={<ClearAllIcon />}
+          size="large"
         >
           Clear Cart
-        </button>
-      </div>
-      <div className="mt-8 space-y-4">
-        <Link 
-          to="/checkout" 
-          className="block px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg text-lg text-center shadow-md hover:shadow-xl transition-all duration-200"
+        </Button>
+      </Box>
+
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Button
+          component={Link}
+          to="/checkout"
+          variant="contained"
+          color="primary"
+          size="large"
+          fullWidth
+          sx={{ py: 2 }}
         >
           Proceed to Checkout
-        </Link>
-        <Link 
-          to="/shop" 
-          className="block px-6 py-3 bg-gray-500 text-white rounded-lg text-lg text-center shadow-md hover:shadow-xl transition-all duration-200"
+        </Button>
+        <Button
+          component={Link}
+          to="/shop"
+          variant="outlined"
+          color="primary"
+          size="large"
+          fullWidth
+          sx={{ py: 2 }}
+          startIcon={<ArrowBackIcon />}
         >
-          Back to Shop
-        </Link>
-      </div>
-    </div>
+          Continue Shopping
+        </Button>
+      </Box>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }

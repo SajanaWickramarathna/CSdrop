@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import Nav from '../components/navigation'; // Import your Nav component
+import Nav from '../components/navigation';
+import { 
+  CircularProgress,
+  Alert,
+  IconButton,
+  Badge
+} from '@mui/material';
+import {
+  Delete as DeleteIcon,
+  ClearAll as ClearAllIcon,
+  Notifications as NotificationsIcon,
+  CheckCircle as CheckCircleIcon
+} from '@mui/icons-material';
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
@@ -28,7 +40,7 @@ export default function Notifications() {
           setToken(null);
           window.location.href = "/logout";
         } else {
-          setError("API Error: " + (error.response?.status || "Unknown"));
+          setError("Failed to load notifications");
         }
       } finally {
         setIsLoading(false);
@@ -47,7 +59,8 @@ export default function Notifications() {
         const response = await axios.get(`http://localhost:3001/api/notifications/user/${userData.user_id}`);
         setNotifications(response.data);
       } catch (err) {
-        console.error('Error fetching notifications:', err);      
+        console.error('Error fetching notifications:', err);
+        setError('Failed to load notifications');
       }
     };
 
@@ -55,79 +68,128 @@ export default function Notifications() {
   }, [userData]);
 
   // Clear all notifications
-  const handleClearNotifications = () => {
-    axios.delete(`http://localhost:3001/api/notifications/user/${userData.user_id}`)
-      .then(() => {
-        setNotifications([]);
-      })
-      .catch(() => {
-        setError('Error clearing notifications');
-      });
+  const handleClearNotifications = async () => {
+    try {
+      await axios.delete(`http://localhost:3001/api/notifications/user/${userData.user_id}`);
+      setNotifications([]);
+    } catch (err) {
+      console.error('Error clearing notifications:', err);
+      setError('Error clearing notifications');
+    }
   };
 
   // Delete single notification
-  const handleDeleteNotification = (id) => {
-    axios.delete(`http://localhost:3001/api/notifications/${id}`)
-      .then(() => {
-        setNotifications((prev) => prev.filter((notification) => notification._id !== id));
-      })
-      .catch(() => {
-        setError('Error deleting notification');
-      });
+  const handleDeleteNotification = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3001/api/notifications/${id}`);
+      setNotifications(prev => prev.filter(notification => notification._id !== id));
+    } catch (err) {
+      console.error('Error deleting notification:', err);
+      setError('Error deleting notification');
+    }
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
-      {/* Add the Nav component at the top */}
+    <div className="bg-gray-50 min-h-screen">
       <Nav />
       
-      <div className="pt-24 px-4 pb-10"> {/* Added padding to account for fixed navbar */}
-        {/* Render logic */}
+      <div className="pt-24 px-4 pb-10">
         {!token ? (
-          <div className="flex flex-col items-center">
-            <p className="text-center text-gray-500 text-lg font-semibold mt-4">
-              Please log in to view your notifications
-            </p>
-            <Link to="/signin" className="mt-6 px-8 py-3 bg-custom-gradient text-white rounded-lg text-center">
-              Log in
-            </Link>
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md text-center">
+              <NotificationsIcon className="text-gray-400 text-5xl mb-4 mx-auto" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Notifications Unavailable
+              </h2>
+              <p className="text-gray-600 mb-6">
+                Please log in to view your notifications
+              </p>
+              <Link 
+                to="/signin" 
+                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Log in
+              </Link>
+            </div>
           </div>
         ) : isLoading ? (
-          <div>Loading notifications...</div>
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <CircularProgress size={60} />
+          </div>
         ) : error ? (
-          <p>{error}</p>
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <Alert severity="error" className="max-w-md">
+              {error}
+            </Alert>
+          </div>
         ) : !notifications || notifications.length === 0 ? (
-          <div className="flex flex-col items-center">
-            <p className="text-center text-gray-500 text-lg font-semibold mt-4">
-              You have no notifications
-            </p>
+          <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md text-center">
+              <NotificationsIcon className="text-gray-300 text-5xl mb-4 mx-auto" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                No Notifications
+              </h2>
+              <p className="text-gray-600">
+                You don't have any notifications yet
+              </p>
+            </div>
           </div>
         ) : (
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Notifications</h2>
-            <div className="flex flex-col space-y-6">
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+                <Badge 
+                  badgeContent={notifications.filter(n => !n.read).length} 
+                  color="error" 
+                  className="mr-3"
+                >
+                  <NotificationsIcon fontSize="large" />
+                </Badge>
+                Notifications
+              </h1>
+              
+              <button
+                onClick={handleClearNotifications}
+                className="flex items-center px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+              >
+                <ClearAllIcon className="mr-2" />
+                Clear All
+              </button>
+            </div>
+
+            <div className="space-y-4">
               {notifications.map(notification => (
-                <div key={notification._id} className="flex items-center bg-white p-4 rounded-xl shadow-md">
+                <div 
+                  key={notification._id} 
+                  className={`flex items-start p-5 rounded-xl shadow-sm border-l-4 ${
+                    notification.read 
+                      ? 'bg-white border-gray-200' 
+                      : 'bg-blue-50 border-blue-500'
+                  }`}
+                >
                   <div className="flex-1">
-                    <p className="text-lg text-gray-900">{notification.message}</p>
-                    <p className="text-sm text-gray-500">{new Date(notification.created_at).toLocaleString()}</p>
+                    <div className="flex justify-between items-start">
+                      <p className={`text-lg ${
+                        notification.read ? 'text-gray-700' : 'text-gray-900 font-medium'
+                      }`}>
+                        {notification.message}
+                      </p>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleDeleteNotification(notification._id)}
+                        className="text-gray-400 hover:text-red-500"
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </div>
+                    <div className="flex items-center mt-2 text-sm text-gray-500">
+                      <span>
+                        {new Date(notification.created_at).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
-                  <button
-                    className="ml-4 px-4 py-2 bg-red-500 text-white rounded-lg"
-                    onClick={() => handleDeleteNotification(notification._id)}
-                  >
-                    Delete
-                  </button>
                 </div>
               ))}
-            </div>
-            <div className="mt-8 flex justify-between items-center">
-              <button
-                className="px-6 py-3 bg-red-500 text-white rounded-lg"
-                onClick={handleClearNotifications}
-              >
-                Clear All Notifications
-              </button>
             </div>
           </div>
         )}

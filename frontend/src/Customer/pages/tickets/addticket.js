@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./resources/addticket.css";
 
 function AddTicket() {
   const location = useLocation();
@@ -72,7 +71,7 @@ function AddTicket() {
     e.preventDefault();
     axios
       .post("http://localhost:3001/api/tickets", input)
-      .then((response) => {
+      .then(() => {
         navigate("/customer-dashboard");
       })
       .catch((error) => {
@@ -80,56 +79,54 @@ function AddTicket() {
       });
   };
 
-  if (isLoading) return <div>Loading user data...</div>;
+  if (isLoading) return <div className="text-center py-10 text-lg">Loading user data...</div>;
 
   return (
-    <div>
-      <div className="containerT">
-        <h2 className="titleT">Add New Ticket</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="input-boxT">
-            <label className="labelT">Full Name</label>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
+      <div className="bg-white w-full max-w-xl p-8 rounded-2xl shadow-xl">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">Add New Ticket</h2>
+        <form onSubmit={handleSubmit} className="space-y-5">
+
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Full Name</label>
             <input
               type="text"
-              className="fieldT"
-              placeholder="Enter your name"
               name="name"
               value={input.name}
-              readOnly // Make the field read-only
+              readOnly
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 text-gray-700"
             />
           </div>
 
-          <div className="input-boxT">
-            <label className="labelT">Email Address</label>
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Email Address</label>
             <input
               type="email"
               name="gmail"
-              className="fieldT"
-              placeholder="Enter your email"
               value={input.gmail}
-              readOnly // Make the field read-only
+              readOnly
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 text-gray-700"
             />
           </div>
 
-          <div className="input-boxT">
-            <label className="labelT">Phone Number</label>
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Phone Number</label>
             <input
               type="tel"
-              className="fieldT"
-              placeholder="Enter your Phone Number"
               name="phoneNumber"
               value={input.phoneNumber}
-              readOnly // Make the field read-only
+              readOnly
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-gray-100 text-gray-700"
             />
           </div>
 
-          <div className="input-boxT">
-            <label className="labelT">Categories</label>
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Categories</label>
             <select
               name="Categories"
-              className="fieldT"
               value={input.Categories}
               onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-700"
             >
               <option value="Logistics & Shipping">📦 Logistics & Shipping</option>
               <option value="Technical Support">🛠️ Technical Support</option>
@@ -145,33 +142,38 @@ function AddTicket() {
             </select>
           </div>
 
-          <div className="input-boxT">
-            <label className="labelT">Your Message</label>
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Your Message</label>
             <textarea
               name="message"
-              className="field textareaT"
-              placeholder="Enter your message"
               value={input.message}
               onChange={handleChange}
               required
+              rows="4"
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl resize-none"
+              placeholder="Enter your message"
             ></textarea>
           </div>
 
-          <div className="input-boxT">
-            <label className="labelT">Priority</label>
+          <div>
+            <label className="block mb-1 font-medium text-gray-700">Priority</label>
             <select
               name="priority"
-              className="fieldT"
               value={input.priority}
               onChange={handleChange}
+              className="w-full px-4 py-3 border border-gray-300 rounded-xl bg-white text-gray-700"
             >
               <option value="Low">🟢 Low</option>
               <option value="Medium">🟡 Medium</option>
               <option value="High">🔴 High</option>
             </select>
           </div>
-          <button type="submit" className="btnT">
-            Add Ticket
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition duration-200"
+          >
+            Submit Ticket
           </button>
         </form>
       </div>

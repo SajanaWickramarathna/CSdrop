@@ -15,10 +15,23 @@ import {
   DialogContentText,
   DialogTitle,
   Button,
+  CircularProgress,
+  Alert,
+  Snackbar,
+  Chip,
+  Typography,
+  Box
 } from "@mui/material";
-import { Delete, Visibility } from "@mui/icons-material";
+import { 
+  Delete as DeleteIcon,
+  Visibility as VisibilityIcon,
+  ShoppingBag as ShoppingBagIcon,
+  Cancel as CancelIcon,
+  CheckCircle as CheckCircleIcon
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { format } from 'date-fns';
 
 export default function UserOrders() {
   const [orders, setOrders] = useState([]);
@@ -28,7 +41,20 @@ export default function UserOrders() {
   const [errorMessage, setErrorMessage] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const navigate = useNavigate();
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
 
   const fetchUserData = async () => {
     try {
@@ -39,10 +65,14 @@ export default function UserOrders() {
     } catch (error) {
       console.error("Error fetching user data:", error);
       if (error.response?.status === 401) {
-        alert("Session expired. Please log in again.");
-        localStorage.removeItem("token");
-        setToken(null);
-        window.location.href = "/logout";
+        showSnackbar("Session expired. Please log in again.", "error");
+        setTimeout(() => {
+          localStorage.removeItem("token");
+          setToken(null);
+          window.location.href = "/logout";
+        }, 2000);
+      } else {
+        showSnackbar("Failed to load user data", "error");
       }
     } finally {
       setIsLoading(false);
@@ -64,6 +94,7 @@ export default function UserOrders() {
         setOrders(response.data);
       } catch (error) {
         console.error("Error fetching user orders:", error);
+        showSnackbar("Failed to load orders", "error");
       }
     }
   };
@@ -74,17 +105,17 @@ export default function UserOrders() {
 
   const handleOpenDialog = (orderId, status) => {
     if (status === "cancelled") {
-      setErrorMessage("This order is already canceled.");
+      showSnackbar("This order is already canceled.", "info");
       return;
     }
 
     if (status === "shipped") {
-      setErrorMessage("You cannot cancel an order that has been shipped.");
+      showSnackbar("You cannot cancel an order that has been shipped.", "warning");
       return;
     }
 
     if (status === "delivered") {
-      setErrorMessage("You cannot cancel an order that has been delivered.");
+      showSnackbar("You cannot cancel an order that has been delivered.", "warning");
       return;
     }
 
@@ -103,125 +134,241 @@ export default function UserOrders() {
     try {
       await axios.put(`http://localhost:3001/api/orders/cancel/${selectedOrder}`);
       fetchUserOrders();
-      setErrorMessage("");
+      showSnackbar("Order cancelled successfully");
     } catch (error) {
       console.error("Error cancelling order:", error);
-      setErrorMessage("Failed to cancel the order. Please try again.");
+      showSnackbar("Failed to cancel the order", "error");
     } finally {
       setOpenDialog(false);
     }
   };
 
-  const getStatusColor = (status) => {
-    if (status === "delivered") return "text-green-600";
-    if (status === "cancelled") return "text-red-500";
-    return "text-gray-700";
+  const getStatusChip = (status) => {
+    let color;
+    let icon;
+    
+    switch(status) {
+      case "delivered":
+        color = "success";
+        icon = <CheckCircleIcon fontSize="small" />;
+        break;
+      case "cancelled":
+        color = "error";
+        icon = <CancelIcon fontSize="small" />;
+        break;
+      case "shipped":
+        color = "info";
+        break;
+      default:
+        color = "warning";
+    }
+
+    return (
+      <Chip
+        label={status}
+        color={color}
+        icon={icon}
+        size="small"
+        variant="outlined"
+        sx={{ textTransform: 'capitalize' }}
+      />
+    );
   };
 
-  return (
-    <div className="p-4">
-      {errorMessage && (
-        <div className="mb-4 text-center text-red-500 px-4 py-3 rounded relative">
-          {errorMessage}
-        </div>
-      )}
+  if (isLoading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <CircularProgress size={60} />
+      </Box>
+    );
+  }
 
-      <TableContainer component={Paper} className="!rounded-2xl shadow-md">
-        <Table>
-          <TableHead className="bg-gray-200">
-            <TableRow>
-              {[
-                "Order ID",
-                "Total Price",
-                "Status",
-                "Payment Method",
-                "Order Date",
-                "Actions",
-              ].map((header) => (
-                <TableCell
-                  key={header}
-                  className="!font-bold !text-[14px] !uppercase !text-gray-800 !text-center"
-                >
-                  {header}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {orders.length > 0 ? (
-              orders.map((order) => (
-                <TableRow key={order.order_id} className="bg-white">
-                  <TableCell className="!text-center">{order.order_id}</TableCell>
-                  <TableCell className="!text-center">
-                    LKR {order.total_price}
+  if (!token) {
+    return (
+      <Box 
+        display="flex" 
+        flexDirection="column" 
+        alignItems="center" 
+        justifyContent="center" 
+        minHeight="400px"
+        p={4}
+        textAlign="center"
+      >
+        <ShoppingBagIcon color="disabled" sx={{ fontSize: 80, mb: 2 }} />
+        <Typography variant="h5" color="textSecondary" gutterBottom>
+          Please log in to view your orders
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/signin")}
+          startIcon={<CheckCircleIcon />}
+          sx={{ mt: 2 }}
+        >
+          Log in
+        </Button>
+      </Box>
+    );
+  }
+
+  return (
+    <Box sx={{ p: { xs: 2, md: 4 }, maxWidth: '100%', overflowX: 'auto' }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
+        My Orders
+      </Typography>
+
+      <Paper elevation={3} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+        <TableContainer>
+          <Table>
+            <TableHead sx={{ bgcolor: 'background.default' }}>
+              <TableRow>
+                {[
+                  "Order ID",
+                  "Total",
+                  "Status",
+                  "Payment",
+                  "Date",
+                  "Actions"
+                ].map((header) => (
+                  <TableCell
+                    key={header}
+                    sx={{ 
+                      fontWeight: 'bold', 
+                      textTransform: 'uppercase',
+                      color: 'text.secondary',
+                      textAlign: 'center'
+                    }}
+                  >
+                    {header}
                   </TableCell>
-                  <TableCell className={`!text-center ${getStatusColor(order.status)}`}>
-                    {order.status}
-                  </TableCell>
-                  <TableCell className="!text-center">
-                    {order.payment_method}
-                  </TableCell>
-                  <TableCell className="!text-center">
-                    {new Date(order.created_at).toLocaleString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </TableCell>
-                  <TableCell className="!text-center">
-                    <div className="flex justify-center gap-2 flex-wrap">
-                      <Tooltip title="View Order">
-                        <IconButton
-                          color="primary"
-                          onClick={() =>
-                            navigate(`/customer-dashboard/vieworder/${order.order_id}`)
-                          }
-                        >
-                          <Visibility />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Cancel Order">
-                        <IconButton
-                          color="error"
-                          onClick={() => handleOpenDialog(order.order_id, order.status)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>
-                    </div>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {orders.length > 0 ? (
+                orders.map((order) => (
+                  <TableRow 
+                    key={order.order_id} 
+                    hover
+                    sx={{ 
+                      '&:last-child td': { borderBottom: 0 },
+                      '&:hover': { bgcolor: 'action.hover' }
+                    }}
+                  >
+                    <TableCell sx={{ textAlign: 'center' }}>
+                      <Typography variant="body2" fontWeight="medium">
+                        #{order.order_id}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}>
+                      <Typography variant="body2">
+                        LKR {order.total_price.toFixed(2)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}>
+                      {getStatusChip(order.status)}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}>
+                      <Typography variant="body2" textTransform="capitalize">
+                        {order.payment_method}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}>
+                      <Typography variant="body2">
+                        {format(new Date(order.created_at), 'dd/MM/yyyy HH:mm')}
+                      </Typography>
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}>
+                      <Box display="flex" justifyContent="center" gap={1}>
+                        <Tooltip title="View Details">
+                          <IconButton
+                            color="primary"
+                            size="small"
+                            onClick={() =>
+                              navigate(`/customer-dashboard/vieworder/${order.order_id}`)
+                            }
+                          >
+                            <VisibilityIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Cancel Order">
+                          <IconButton
+                            color="error"
+                            size="small"
+                            onClick={() => handleOpenDialog(order.order_id, order.status)}
+                            disabled={['cancelled', 'shipped', 'delivered'].includes(order.status)}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} sx={{ textAlign: 'center', py: 4 }}>
+                    <Box display="flex" flexDirection="column" alignItems="center">
+                      <ShoppingBagIcon color="disabled" sx={{ fontSize: 60, mb: 2 }} />
+                      <Typography variant="h6" color="textSecondary">
+                        No orders found
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => navigate('/shop')}
+                        sx={{ mt: 2 }}
+                        startIcon={<ShoppingBagIcon />}
+                      >
+                        Start Shopping
+                      </Button>
+                    </Box>
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="!text-center">
-                  No orders found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
 
       {/* Confirmation Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
         <DialogTitle>Cancel Order</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to cancel this order? This action cannot be undone.
+            Are you sure you want to cancel order #{selectedOrder}? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="primary">
-            No
+            No, Keep It
           </Button>
-          <Button onClick={handleCancelOrder} color="error">
-            Yes
+          <Button 
+            onClick={handleCancelOrder} 
+            color="error"
+            variant="contained"
+            startIcon={<CancelIcon />}
+          >
+            Yes, Cancel
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+
+      {/* Snackbar for notifications */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }
