@@ -14,6 +14,7 @@ const supporterRoutes = require("./Routes/customerSupporterRoutes");
 const contactrouter = require('./Routes/contactroute');
 const ticketRouter = require('./Routes/ticketroute');
 const chatRouter = require('./Routes/chatRoute');
+const reviewRoutes = require('./Routes/reviewRoutes');
 
 
 router.use("/brands", brandRoutes); 
@@ -29,6 +30,7 @@ router.use("/supporters", supporterRoutes);
 router.use("/contact", contactrouter);
 router.use("/tickets", ticketRouter);
 router.use("/chats", chatRouter);
+router.use("/reviews", reviewRoutes);
 
 
 

@@ -22,6 +22,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/termsofservice";
 import Aboutus from "./pages/aboutus";
 import Notifications from "./pages/notification";
+import ReviewSection from "./pages/review";
 
 function App() {
   return (
@@ -32,6 +33,8 @@ function App() {
         <Route path="/shop" element={<Shop />} />
 
         <Route path="/about" element={<Aboutus />} />
+
+        <Route path="/reviews" element={<ReviewSection />} />
 
         <Route path="/privacypolicy" element={<PrivacyPolicy />} />
 

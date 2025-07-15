@@ -34,11 +34,7 @@ export default function AdminDashboard() {
 
         <div className="flex-1 flex flex-col">
 
-          {/* Navigation Bar */}
-                  <div className="h-14 m-4 shadow-lg">
-                   <Header/>
-                  </div>
-
+          
 
           <div className="flex-1 p-4 overflow-y-auto">
             <Routes>
