@@ -2,7 +2,12 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import Nav from "../components/navigation";
-import { FaFacebook, FaInstagram, FaTiktok, FaChevronRight } from "react-icons/fa";
+import {
+  FaFacebook,
+  FaInstagram,
+  FaTiktok,
+  FaChevronRight,
+} from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
@@ -22,10 +27,12 @@ export default function Home() {
       try {
         const [productsRes, brandsRes] = await Promise.all([
           axios.get(`${API_BASE_URL}/products`),
-          axios.get(`${API_BASE_URL}/brands`)
+          axios.get(`${API_BASE_URL}/brands`),
         ]);
-        
-        setProducts(productsRes.data.sort(() => 0.5 - Math.random()).slice(0, 8));
+
+        setProducts(
+          productsRes.data.sort(() => 0.5 - Math.random()).slice(0, 8)
+        );
         setBrands(brandsRes.data.sort(() => 0.5 - Math.random()).slice(0, 5));
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -60,16 +67,18 @@ export default function Home() {
 
   const getImageSrc = (imgPath, type = "product") => {
     if (!imgPath) {
-      return type === "product" 
-        ? "https://via.placeholder.com/300x200?text=No+Image" 
+      return type === "product"
+        ? "https://via.placeholder.com/300x200?text=No+Image"
         : "https://via.placeholder.com/150?text=No+Image";
     }
-    
+
     if (imgPath.startsWith("http")) return imgPath;
     if (imgPath.startsWith("/") || imgPath.startsWith("uploads")) {
-      return `${API_BASE_URL.replace('/api', '')}${imgPath.startsWith('/') ? '' : '/'}${imgPath}`;
+      return `${API_BASE_URL.replace("/api", "")}${
+        imgPath.startsWith("/") ? "" : "/"
+      }${imgPath}`;
     }
-    return `${API_BASE_URL.replace('/api', '')}/uploads/${imgPath}`;
+    return `${API_BASE_URL.replace("/api", "")}/uploads/${imgPath}`;
   };
 
   if (isLoading) {
@@ -87,11 +96,11 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative flex items-center justify-center h-screen bg-cover bg-center text-white">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ 
+          style={{
             backgroundImage: "url(/images/hero.jpg)",
-            filter: "brightness(0.7)"
+            filter: "brightness(0.7)",
           }}
         ></div>
         <motion.div
@@ -138,7 +147,7 @@ export default function Home() {
             Discover our handpicked selection of premium products
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {products.map((product) => (
             <motion.div
@@ -151,7 +160,7 @@ export default function Home() {
               <Link to={`/product/${product.product_id}`}>
                 <div className="relative h-60 overflow-hidden group">
                   <img
-                    src={getImageSrc(product.product_image)}
+                    src={getImageSrc(product.images?.[0])}
                     alt={product.product_name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     loading="lazy"
@@ -159,7 +168,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors duration-300"></div>
                 </div>
               </Link>
-              
+
               <div className="p-5">
                 <h3 className="text-lg font-semibold text-gray-900 mb-1 truncate">
                   {product.product_name}
@@ -167,7 +176,7 @@ export default function Home() {
                 <p className="text-xl font-bold text-green-600 mb-4">
                   Rs.{product.product_price.toLocaleString()}
                 </p>
-                
+
                 <div className="flex flex-col gap-2">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -177,8 +186,8 @@ export default function Home() {
                   >
                     Add to Cart
                   </motion.button>
-                  
-                  <Link 
+
+                  <Link
                     to={`/product/${product.product_id}`}
                     className="w-full py-2.5 text-center text-gray-900 bg-transparent border border-gray-300 hover:border-blue-500 rounded-lg transition-colors"
                   >
@@ -189,10 +198,10 @@ export default function Home() {
             </motion.div>
           ))}
         </div>
-        
+
         <div className="text-center mt-12">
-          <Link 
-            to="/shop" 
+          <Link
+            to="/shop"
             className="inline-block px-8 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
           >
             View All Products
@@ -209,9 +218,9 @@ export default function Home() {
             </h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto"></div>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, x: -50 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
@@ -225,7 +234,7 @@ export default function Home() {
                 loading="lazy"
               />
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -234,20 +243,26 @@ export default function Home() {
               className="space-y-6"
             >
               <p className="text-lg text-gray-700">
-                At DROPship, we're passionate about connecting you with the highest quality products from around the world. 
-                Our carefully curated selection ensures you get only the best items delivered straight to your doorstep.
+                At DROPship, we're passionate about connecting you with the
+                highest quality products from around the world. Our carefully
+                curated selection ensures you get only the best items delivered
+                straight to your doorstep.
               </p>
               <p className="text-lg text-gray-700">
-                Founded in 2023, we've grown from a small startup to a trusted e-commerce platform serving thousands of 
-                satisfied customers nationwide. Our mission is to make premium shopping accessible to everyone.
+                Founded in 2023, we've grown from a small startup to a trusted
+                e-commerce platform serving thousands of satisfied customers
+                nationwide. Our mission is to make premium shopping accessible
+                to everyone.
               </p>
               <p className="text-lg text-gray-700">
-                What sets us apart is our commitment to quality, customer service, and fast, reliable shipping. 
-                We personally vet every product and brand in our inventory to ensure they meet our high standards.
+                What sets us apart is our commitment to quality, customer
+                service, and fast, reliable shipping. We personally vet every
+                product and brand in our inventory to ensure they meet our high
+                standards.
               </p>
               <div className="pt-4">
-                <Link 
-                  to="/about" 
+                <Link
+                  to="/about"
                   className="inline-block px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   Our Story
@@ -269,7 +284,7 @@ export default function Home() {
               We partner with the most reputable brands in the industry
             </p>
           </div>
-          
+
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-8">
             {brands.map((brand) => (
               <motion.div
@@ -301,17 +316,18 @@ export default function Home() {
             Ready to Experience Premium Shopping?
           </h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Join thousands of satisfied customers who trust DROPship for quality products and exceptional service.
+            Join thousands of satisfied customers who trust DROPship for quality
+            products and exceptional service.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link 
-              to="/shop" 
+            <Link
+              to="/shop"
               className="px-8 py-3 bg-white text-blue-600 rounded-lg hover:bg-gray-100 transition-colors font-medium shadow-lg"
             >
               Shop Now
             </Link>
-            <Link 
-              to="/contactform" 
+            <Link
+              to="/contactform"
               className="px-8 py-3 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white hover:text-blue-600 transition-colors font-medium"
             >
               Contact Us
@@ -322,85 +338,199 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-300 py-12">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                  <div>
-                    <h3 className="text-white text-lg font-semibold mb-4">DROPship</h3>
-                    <p className="mb-4">
-                      Premium products delivered straight to your doorstep.
-                    </p>
-                    <div className="flex space-x-4">
-                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                        <FaFacebook className="text-xl" />
-                      </a>
-                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                        <FaInstagram className="text-xl" />
-                      </a>
-                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                        <FaXTwitter className="text-xl" />
-                      </a>
-                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                        <FaTiktok className="text-xl" />
-                      </a>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-white text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul className="space-y-2">
-                      <li><Link to="/shop" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Shop</Link></li>
-                      <li><Link to="/about" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> About Us</Link></li>
-                      <li><Link to="/contactform" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Contact</Link></li>
-                      <li><Link to="/faq" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> FAQ</Link></li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-white text-lg font-semibold mb-4">Customer Service</h3>
-                    <ul className="space-y-2">
-                      <li><Link to="/shipping" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Shipping Policy</Link></li>
-                      <li><Link to="/returns" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Return Policy</Link></li>
-                      <li><Link to="/privacypolicy" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Privacy Policy</Link></li>
-                      <li><Link to="/termsofservice" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Terms of Service</Link></li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-white text-lg font-semibold mb-4">Contact Info</h3>
-                    <address className="not-italic space-y-2">
-                      <p className="flex items-start">
-                        <svg className="w-5 h-5 mr-2 text-blue-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        123 Main Street, Colombo
-                      </p>
-                      <p className="flex items-center">
-                        <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                        +94 76 123 4567
-                      </p>
-                      <p className="flex items-center">
-                        <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                        info@dropship.com
-                      </p>
-                    </address>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-800 pt-8 text-center">
-                  <p>
-                    &copy; {new Date().getFullYear()} DROPship. All rights reserved.
-                    <br className="sm:hidden" />
-                    <span className="hidden sm:inline"> • </span>
-                    Developed by Sajana Wickramarathna
-                  </p>
-                </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="text-white text-lg font-semibold mb-4">
+                DROPship
+              </h3>
+              <p className="mb-4">
+                Premium products delivered straight to your doorstep.
+              </p>
+              <div className="flex space-x-4">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <FaFacebook className="text-xl" />
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <FaInstagram className="text-xl" />
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <FaXTwitter className="text-xl" />
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <FaTiktok className="text-xl" />
+                </a>
               </div>
-            </footer>
+            </div>
+
+            <div>
+              <h3 className="text-white text-lg font-semibold mb-4">
+                Quick Links
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    to="/shop"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Shop
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/about"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/contactform"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Contact
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/faq"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> FAQ
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-white text-lg font-semibold mb-4">
+                Customer Service
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    to="/shipping"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Shipping Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/returns"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Return Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/privacypolicy"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/termsofservice"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-white text-lg font-semibold mb-4">
+                Contact Info
+              </h3>
+              <address className="not-italic space-y-2">
+                <p className="flex items-start">
+                  <svg
+                    className="w-5 h-5 mr-2 text-blue-400 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  123 Main Street, Colombo
+                </p>
+                <p className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                    />
+                  </svg>
+                  +94 76 123 4567
+                </p>
+                <p className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  info@dropship.com
+                </p>
+              </address>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 pt-8 text-center">
+            <p>
+              &copy; {new Date().getFullYear()} DROPship. All rights reserved.
+              <br className="sm:hidden" />
+              <span className="hidden sm:inline"> • </span>
+              Developed by Sajana Wickramarathna
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
 import { useCart } from "../../context/CartContext";
-import { 
+import {
   CircularProgress,
   Alert,
   Button,
@@ -13,25 +13,25 @@ import {
   IconButton,
   Box,
   Divider,
-  Snackbar
-} from '@mui/material';
+  Snackbar,
+} from "@mui/material";
 import {
   Add as AddIcon,
   Remove as RemoveIcon,
   Delete as DeleteIcon,
   ShoppingCart as ShoppingCartIcon,
   ArrowBack as ArrowBackIcon,
-  ClearAll as ClearAllIcon
-} from '@mui/icons-material';
+  ClearAll as ClearAllIcon,
+} from "@mui/icons-material";
 
 export default function Cart() {
   const [cart, setCart] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token")); 
+  const [token, setToken] = useState(localStorage.getItem("token"));
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);  
+  const [error, setError] = useState(null);
   const [user_id, setUserId] = useState(null);
-  const [totalPrice, setTotalPrice] = useState(0);  
+  const [totalPrice, setTotalPrice] = useState(0);
   const [products, setProducts] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -51,8 +51,10 @@ export default function Cart() {
   const getProductImageSrc = (imgPath) => {
     if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
     if (imgPath.startsWith("http")) return imgPath;
-    if (imgPath.startsWith("/uploads")) return `http://localhost:3001${imgPath}`;
-    if (imgPath.startsWith("uploads")) return `http://localhost:3001/${imgPath}`;
+    if (imgPath.startsWith("/uploads"))
+      return `http://localhost:3001${imgPath}`;
+    if (imgPath.startsWith("uploads"))
+      return `http://localhost:3001/${imgPath}`;
     return `http://localhost:3001/uploads/${imgPath}`;
   };
 
@@ -93,24 +95,30 @@ export default function Cart() {
 
     const fetchCartAndProducts = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/api/cart/getcart/${userData.user_id}`);
+        const response = await axios.get(
+          `http://localhost:3001/api/cart/getcart/${userData.user_id}`
+        );
         const cartData = response.data;
 
         const productPromises = cartData.items.map(async (item) => {
           try {
-            const res = await axios.get(`http://localhost:3001/api/products/product/${item.product_id}`);
+            const res = await axios.get(
+              `http://localhost:3001/api/products/product/${item.product_id}`
+            );
             return res.data;
           } catch (err) {
-            console.warn(`Product with ID ${item.product_id} not found or deleted.`);
+            console.warn(
+              `Product with ID ${item.product_id} not found or deleted.`
+            );
             return null;
           }
         });
 
         const productsWithDetails = await Promise.all(productPromises);
-        const validProducts = productsWithDetails.filter(p => p !== null);
-        const validProductIds = validProducts.map(p => p.product_id);
+        const validProducts = productsWithDetails.filter((p) => p !== null);
+        const validProductIds = validProducts.map((p) => p.product_id);
 
-        const updatedCartItems = cartData.items.filter(item =>
+        const updatedCartItems = cartData.items.filter((item) =>
           validProductIds.includes(item.product_id)
         );
 
@@ -118,8 +126,8 @@ export default function Cart() {
         setProducts(validProducts);
         setUserId(userData.user_id);
       } catch (err) {
-        console.error('Error fetching cart or products:', err);
-        setError('Failed to load cart');
+        console.error("Error fetching cart or products:", err);
+        setError("Failed to load cart");
         showSnackbar("Failed to load cart", "error");
       }
     };
@@ -132,19 +140,20 @@ export default function Cart() {
     if (!cart || !userData) return;
 
     const total = cart.items.reduce((acc, item) => {
-      const product = products.find(p => p.product_id === item.product_id);
+      const product = products.find((p) => p.product_id === item.product_id);
       return acc + (product?.product_price || 0) * item.quantity;
     }, 0);
 
     setTotalPrice(total);
 
-    axios.put('http://localhost:3001/api/cart/updatetotalprice', {
-      user_id: userData.user_id,
-      total_price: total
-    })
-      .then(response => setCart(response.data))
-      .catch(err => {
-        console.error('Error updating total price:', err);
+    axios
+      .put("http://localhost:3001/api/cart/updatetotalprice", {
+        user_id: userData.user_id,
+        total_price: total,
+      })
+      .then((response) => setCart(response.data))
+      .catch((err) => {
+        console.error("Error updating total price:", err);
         showSnackbar("Error updating cart total", "error");
       });
   }, [cart, products, userData]);
@@ -152,29 +161,34 @@ export default function Cart() {
   // Cart actions
   const handleRemoveFromCart = async (product_id) => {
     try {
-      const response = await axios.delete('http://localhost:3001/api/cart/removefromcart', {
-        data: { user_id, product_id }
-      });
+      const response = await axios.delete(
+        "http://localhost:3001/api/cart/removefromcart",
+        {
+          data: { user_id, product_id },
+        }
+      );
       setCart(response.data);
       fetchCartCount();
       showSnackbar("Item removed from cart");
     } catch (err) {
-      console.error('Error removing from cart:', err);
+      console.error("Error removing from cart:", err);
       showSnackbar("Error removing item", "error");
     }
   };
 
   const handleClearCart = async () => {
     try {
-      await axios.delete(`http://localhost:3001/api/cart/clearcart/${userData.user_id}`);
+      await axios.delete(
+        `http://localhost:3001/api/cart/clearcart/${userData.user_id}`
+      );
       setCart(null);
       fetchCartCount();
       showSnackbar("Cart cleared successfully");
       setTimeout(() => {
-        window.location.href = '/shop';
+        window.location.href = "/shop";
       }, 1000);
     } catch (err) {
-      console.error('Error clearing cart:', err);
+      console.error("Error clearing cart:", err);
       showSnackbar("Error clearing cart", "error");
     }
   };
@@ -182,13 +196,18 @@ export default function Cart() {
   const handleUpdateQuantity = async (user_id, product_id, quantity) => {
     if (quantity < 1) return;
     try {
-      const response = await axios.put('http://localhost:3001/api/cart/updatecartitem', {
-        user_id, product_id, quantity
-      });
+      const response = await axios.put(
+        "http://localhost:3001/api/cart/updatecartitem",
+        {
+          user_id,
+          product_id,
+          quantity,
+        }
+      );
       setCart(response.data);
       fetchCartCount();
     } catch (err) {
-      console.error('Error updating cart item:', err);
+      console.error("Error updating cart item:", err);
       showSnackbar("Error updating quantity", "error");
     }
   };
@@ -196,11 +215,11 @@ export default function Cart() {
   // Render logic
   if (!token) {
     return (
-      <Box 
-        display="flex" 
-        flexDirection="column" 
-        alignItems="center" 
-        justifyContent="center" 
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
         minHeight="80vh"
         p={4}
       >
@@ -224,7 +243,12 @@ export default function Cart() {
 
   if (isLoading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="80vh"
+      >
         <CircularProgress size={60} />
       </Box>
     );
@@ -232,7 +256,12 @@ export default function Cart() {
 
   if (error) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="80vh"
+      >
         <Alert severity="error" sx={{ maxWidth: 500 }}>
           {error}
         </Alert>
@@ -242,11 +271,11 @@ export default function Cart() {
 
   if (!cart || cart.items.length === 0) {
     return (
-      <Box 
-        display="flex" 
-        flexDirection="column" 
-        alignItems="center" 
-        justifyContent="center" 
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
         minHeight="80vh"
         p={4}
       >
@@ -270,26 +299,51 @@ export default function Cart() {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: 'background.default', minHeight: '100vh' }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: 4 }}>
+    <Box
+      sx={{
+        p: { xs: 2, md: 4 },
+        bgcolor: "background.default",
+        minHeight: "100vh",
+      }}
+    >
+      <Typography
+        variant="h4"
+        component="h1"
+        gutterBottom
+        sx={{ fontWeight: "bold", mb: 4 }}
+      >
         Your Shopping Cart
       </Typography>
-      
+
       <Box sx={{ mb: 4 }}>
-        {cart.items.map(item => {
-          const product = products.find(p => p.product_id === item.product_id);
+        {cart.items.map((item) => {
+          const product = products.find(
+            (p) => p.product_id === item.product_id
+          );
           if (!product) return null;
 
           return (
-            <Card key={item.product_id} sx={{ mb: 3, display: 'flex' }}>
+            <Card key={item.product_id} sx={{ mb: 3, display: "flex" }}>
               <CardMedia
                 component="img"
-                sx={{ width: 150, height: 150, objectFit: 'cover' }}
-                image={getProductImageSrc(product.product_image)}
+                src={getProductImageSrc(product.images?.[0])}
                 alt={product.product_name}
-                onError={e => { e.target.onerror = null; e.target.src = "https://via.placeholder.com/300x200?text=No+Image"; }}
+                sx={{
+                  width: 120,
+                  height: 120,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                  mr: 3,
+                }}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src =
+                    "https://via.placeholder.com/300x200?text=No+Image";
+                }}
               />
-              <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+              <Box
+                sx={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
+              >
                 <CardContent>
                   <Typography variant="h6" component="div">
                     {product.product_name}
@@ -297,9 +351,15 @@ export default function Cart() {
                   <Typography variant="body1" color="text.secondary">
                     LKR {product.product_price.toFixed(2)}
                   </Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
                     <IconButton
-                      onClick={() => handleUpdateQuantity(user_id, item.product_id, item.quantity - 1)}
+                      onClick={() =>
+                        handleUpdateQuantity(
+                          user_id,
+                          item.product_id,
+                          item.quantity - 1
+                        )
+                      }
                       disabled={item.quantity === 1}
                     >
                       <RemoveIcon />
@@ -308,14 +368,20 @@ export default function Cart() {
                       {item.quantity}
                     </Typography>
                     <IconButton
-                      onClick={() => handleUpdateQuantity(user_id, item.product_id, item.quantity + 1)}
+                      onClick={() =>
+                        handleUpdateQuantity(
+                          user_id,
+                          item.product_id,
+                          item.quantity + 1
+                        )
+                      }
                     >
                       <AddIcon />
                     </IconButton>
                   </Box>
                 </CardContent>
               </Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', p: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", p: 2 }}>
                 <IconButton
                   onClick={() => handleRemoveFromCart(item.product_id)}
                   color="error"
@@ -330,8 +396,15 @@ export default function Cart() {
 
       <Divider sx={{ my: 3 }} />
 
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 4,
+        }}
+      >
+        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
           Total: LKR {totalPrice.toFixed(2)}
         </Typography>
         <Button
@@ -345,7 +418,7 @@ export default function Cart() {
         </Button>
       </Box>
 
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Button
           component={Link}
           to="/checkout"
@@ -375,12 +448,12 @@ export default function Cart() {
         open={snackbarOpen}
         autoHideDuration={4000}
         onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert 
-          onClose={handleSnackbarClose} 
+        <Alert
+          onClose={handleSnackbarClose}
           severity={snackbarSeverity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbarMessage}
         </Alert>

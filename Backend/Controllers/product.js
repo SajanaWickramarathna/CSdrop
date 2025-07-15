@@ -4,18 +4,38 @@ const Category = require('../Models/category');
 
 exports.addProduct = async (req, res) => {
   try {
-    const { product_name, product_description, product_price, product_status, category_id, brand_id } = req.body;
+    const {
+      product_name,
+      product_description,
+      product_price,
+      product_status,
+      category_id,
+      brand_id,
+    } = req.body;
+
     if (!category_id || !brand_id)
-      return res.status(400).json({ error: 'category_id and brand_id are required' });
+      return res.status(400).json({ error: "category_id and brand_id are required" });
 
-    const brand = await Brand.findOne({ brand_id: Number(brand_id), category_id: Number(category_id) });
-    if (!brand) return res.status(400).json({ error: 'Brand does not belong to the given category' });
+    const brand = await Brand.findOne({
+      brand_id: Number(brand_id),
+      category_id: Number(category_id),
+    });
+    if (!brand)
+      return res
+        .status(400)
+        .json({ error: "Brand does not belong to the given category" });
 
-    let product_image = "";
-    if (req.file && req.file.filename) {
-      product_image = req.file.filename; // or req.file.path if that's how you store
-    } else {
-      return res.status(400).json({ error: 'Product image is required' });
+    // ✅ Handle multiple uploaded images
+    let imageFilenames = [];
+    for (let i = 1; i <= 4; i++) {
+      const file = req.files?.[`product_image_${i}`];
+      if (file && file[0]) {
+        imageFilenames.push(file[0].filename);
+      }
+    }
+
+    if (imageFilenames.length === 0) {
+      return res.status(400).json({ error: "At least one product image is required" });
     }
 
     const product = new Product({
@@ -23,16 +43,18 @@ exports.addProduct = async (req, res) => {
       product_description,
       product_price,
       product_status,
-      product_image,
       category_id: Number(category_id),
-      brand_id: Number(brand_id)
+      brand_id: Number(brand_id),
+      images: imageFilenames,
     });
+
     await product.save();
     res.json(product);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // NEW: Get products by category
 exports.getProductsByCategory = async (req, res) => {

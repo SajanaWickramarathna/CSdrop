@@ -180,11 +180,10 @@ const ProductViewPage = () => {
     (product_status.toLowerCase() === "active" || product_status === 1);
 
   // For demo purposes - in a real app, you might have multiple images
-  const productImages = [
-    product_image,
-    "https://via.placeholder.com/600x400?text=Alternate+View+1",
-    "https://via.placeholder.com/600x400?text=Alternate+View+2",
-  ];
+  const productImages =
+    product?.images && product.images.length > 0
+      ? product.images.map((img) => getProductImageSrc(img))
+      : ["https://via.placeholder.com/600x400?text=No+Image"];
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -268,7 +267,7 @@ const ProductViewPage = () => {
                   </div>
                 )}
                 <img
-                  src={getProductImageSrc(productImages[selectedImage])}
+                  src={productImages[selectedImage]}
                   alt={product_name}
                   className={`w-full h-full object-contain transition-opacity duration-300 ${
                     imageLoading ? "opacity-0" : "opacity-100"
@@ -294,7 +293,7 @@ const ProductViewPage = () => {
                     }`}
                   >
                     <img
-                      src={getProductImageSrc(img)}
+                      src={img}
                       alt={`Thumbnail ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -394,7 +393,6 @@ const ProductViewPage = () => {
                       +
                     </button>
                   </div>
-                  
                 </div>
               </div>
 
@@ -422,8 +420,6 @@ const ProductViewPage = () => {
                   Buy Now
                 </button>
               </div>
-
-              
             </div>
           </div>
         </div>

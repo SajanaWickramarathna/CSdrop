@@ -13,15 +13,27 @@ const productSchema = new Schema({
   product_id: { type: Number, unique: true },
   product_name: { type: String, required: true },
   product_description: { type: String, required: true },
-  product_status: { type: String, enum: ['active', 'inactive', 'draft'], default: "active" }, // Added 'inactive'
+  product_status: { type: String, enum: ['active', 'inactive', 'draft'], default: "active" },
   product_price: { type: Number, required: true },
-  product_image: { type: String, required: true },
-  category_id: { type: Number, required: true }, // required
-  brand_id: { type: Number, required: true }, // required
+
+  // ✅ REPLACED: from single image to array of images
+  images: {
+    type: [String],
+    required: true, // if at least 1 image is mandatory
+    validate: [arrayLimit, '{PATH} exceeds the limit of 4']
+  },
+
+  category_id: { type: Number, required: true },
+  brand_id: { type: Number, required: true },
   created_at: { type: Date, default: Date.now },
 });
 
-// Pre-save middleware to auto-increment `product_id`
+// ✅ Custom validator to limit max 4 images
+function arrayLimit(val) {
+  return val.length <= 4;
+}
+
+// ✅ Pre-save middleware to auto-increment `product_id`
 productSchema.pre('save', async function (next) {
   if (!this.isNew) return next();
   try {

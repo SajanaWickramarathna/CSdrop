@@ -14,11 +14,10 @@ import {
   FaSearch,
   FaShoppingCart,
   FaEye,
-  FaChevronRight, 
+  FaChevronRight,
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
-
 
 export default function Shop() {
   const [products, setProducts] = useState([]);
@@ -176,14 +175,19 @@ export default function Shop() {
     return brand ? brand.brand_name : "";
   };
 
-  const getProductImageSrc = (imgPath) => {
-    if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
-    if (imgPath.startsWith("http")) return imgPath;
-    if (imgPath.startsWith("/uploads"))
-      return `http://localhost:3001${imgPath}`;
-    if (imgPath.startsWith("uploads"))
-      return `http://localhost:3001/${imgPath}`;
-    return `http://localhost:3001/uploads/${imgPath}`;
+  const getProductImageSrc = (imgArray) => {
+    if (!imgArray || imgArray.length === 0)
+      return "https://via.placeholder.com/300x200?text=No+Image";
+
+    const firstImg = imgArray[0];
+    if (!firstImg) return "https://via.placeholder.com/300x200?text=No+Image";
+
+    if (firstImg.startsWith("http")) return firstImg;
+    if (firstImg.startsWith("/uploads"))
+      return `http://localhost:3001${firstImg}`;
+    if (firstImg.startsWith("uploads"))
+      return `http://localhost:3001/${firstImg}`;
+    return `http://localhost:3001/uploads/${firstImg}`;
   };
 
   return (
@@ -193,7 +197,6 @@ export default function Shop() {
 
       {/* Mobile Search and Filter Bar */}
       <div className="lg:hidden fixed top-16 left-0 right-0 h-16 bg-white shadow-sm z-30 px-4 py-3 flex items-center gap-2">
-
         <div className="relative flex-1">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -216,8 +219,6 @@ export default function Shop() {
 
       {/* Desktop Search bar */}
       <div className="hidden lg:block fixed top-16 left-60 right-0 h-16 z-30 bg-white shadow px-8 py-3">
-
-
         <div className="relative max-w-2xl mx-auto">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -403,7 +404,6 @@ export default function Shop() {
 
       {/* Main & Filter Panel */}
       <div className="flex pt-[128px] lg:pt-[128px] lg:pl-60 min-h-screen">
-
         {showFilterPanel && (
           <div
             className={`hidden lg:block w-80 p-4 transition-all duration-300 ease-in-out ${
@@ -576,7 +576,7 @@ export default function Shop() {
                 >
                   <div className="relative overflow-hidden rounded-lg aspect-square">
                     <img
-                      src={getProductImageSrc(product.product_image)}
+                      src={getProductImageSrc(product.images)}
                       alt={product.product_name}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                       onError={(e) => {
@@ -655,85 +655,199 @@ export default function Shop() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-300 py-12 space-y-4 pt-8 pb-6 relative z-50">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-                  <div>
-                    <h3 className="text-white text-lg font-semibold mb-4">DROPship</h3>
-                    <p className="mb-4">
-                      Premium products delivered straight to your doorstep.
-                    </p>
-                    <div className="flex space-x-4">
-                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                        <FaFacebook className="text-xl" />
-                      </a>
-                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                        <FaInstagram className="text-xl" />
-                      </a>
-                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                        <FaXTwitter className="text-xl" />
-                      </a>
-                      <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                        <FaTiktok className="text-xl" />
-                      </a>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-white text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul className="space-y-2">
-                      <li><Link to="/shop" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Shop</Link></li>
-                      <li><Link to="/about" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> About Us</Link></li>
-                      <li><Link to="/contactform" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Contact</Link></li>
-                      <li><Link to="/faq" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> FAQ</Link></li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-white text-lg font-semibold mb-4">Customer Service</h3>
-                    <ul className="space-y-2">
-                      <li><Link to="/shipping" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Shipping Policy</Link></li>
-                      <li><Link to="/returns" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Return Policy</Link></li>
-                      <li><Link to="/privacypolicy" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Privacy Policy</Link></li>
-                      <li><Link to="/termsofservice" className="hover:text-white transition-colors flex items-center"><FaChevronRight className="text-xs mr-2" /> Terms of Service</Link></li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-white text-lg font-semibold mb-4">Contact Info</h3>
-                    <address className="not-italic space-y-2">
-                      <p className="flex items-start">
-                        <svg className="w-5 h-5 mr-2 text-blue-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        123 Main Street, Colombo
-                      </p>
-                      <p className="flex items-center">
-                        <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                        </svg>
-                        +94 76 123 4567
-                      </p>
-                      <p className="flex items-center">
-                        <svg className="w-5 h-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                        </svg>
-                        info@dropship.com
-                      </p>
-                    </address>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-800 pt-8 text-center">
-                  <p>
-                    &copy; {new Date().getFullYear()} DROPship. All rights reserved.
-                    <br className="sm:hidden" />
-                    <span className="hidden sm:inline"> • </span>
-                    Developed by Sajana Wickramarathna
-                  </p>
-                </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <h3 className="text-white text-lg font-semibold mb-4">
+                DROPship
+              </h3>
+              <p className="mb-4">
+                Premium products delivered straight to your doorstep.
+              </p>
+              <div className="flex space-x-4">
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <FaFacebook className="text-xl" />
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <FaInstagram className="text-xl" />
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <FaXTwitter className="text-xl" />
+                </a>
+                <a
+                  href="#"
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <FaTiktok className="text-xl" />
+                </a>
               </div>
-            </footer>
+            </div>
+
+            <div>
+              <h3 className="text-white text-lg font-semibold mb-4">
+                Quick Links
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    to="/shop"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Shop
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/about"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/contactform"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Contact
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/faq"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> FAQ
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-white text-lg font-semibold mb-4">
+                Customer Service
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    to="/shipping"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Shipping Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/returns"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Return Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/privacypolicy"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/termsofservice"
+                    className="hover:text-white transition-colors flex items-center"
+                  >
+                    <FaChevronRight className="text-xs mr-2" /> Terms of Service
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-white text-lg font-semibold mb-4">
+                Contact Info
+              </h3>
+              <address className="not-italic space-y-2">
+                <p className="flex items-start">
+                  <svg
+                    className="w-5 h-5 mr-2 text-blue-400 mt-0.5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  123 Main Street, Colombo
+                </p>
+                <p className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                    />
+                  </svg>
+                  +94 76 123 4567
+                </p>
+                <p className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-2 text-blue-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
+                  </svg>
+                  info@dropship.com
+                </p>
+              </address>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 pt-8 text-center">
+            <p>
+              &copy; {new Date().getFullYear()} DROPship. All rights reserved.
+              <br className="sm:hidden" />
+              <span className="hidden sm:inline"> • </span>
+              Developed by Sajana Wickramarathna
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
