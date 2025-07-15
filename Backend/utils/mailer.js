@@ -12,9 +12,9 @@ const transporter = nodemailer.createTransport({
 exports.sendVerificationEmail = async (email, token) => {
     const verificationLink = `${process.env.FRONTEND_URL}/verify/${token}`;
     const mailOptions = {
-        from:  `"KHB Associates" <${process.env.EMAIL_USER}>`,
+        from:  `"CS Drop" <${process.env.EMAIL_USER}>`,
         to: email,
-        subject: 'Verify your KHB account',
+        subject: 'Verify your CS Drop account',
         html: `<h3>Click the link below to verify your email:</h3>
            <a href=${verificationLink}>${verificationLink}</a>`,
     }
@@ -23,10 +23,10 @@ exports.sendVerificationEmail = async (email, token) => {
 
 exports.sendAccountCredentitals = async (firstName,lastName,email,address,phone,password) => {
     const mailOptions = {
-        from:  `"KHB Associates" <${process.env.EMAIL_USER}>`,
+        from:  `"CS Drop" <${process.env.EMAIL_USER}>`,
         to: email,
-        subject: "Your KHB Account Informations",
-        html:`<h1>Welcome to KHB Associations</h1><br><h3>Account Informations</h3>
+        subject: "Your CS Drop Informations",
+        html:`<h1>Welcome to CS Drop</h1><br><h3>Account Informations</h3>
             <br><p><b>Name: </b> ${firstName} ${lastName}</p>
             <p><b>Email: </b> ${email}</p>
             <p><b>Address: </b> ${address}</p>
@@ -42,9 +42,9 @@ exports.sendAccountCredentitals = async (firstName,lastName,email,address,phone,
 exports.sendResetPassword = async (email, token) => {
     const resetLink = `${process.env.FRONTEND_URL}/reset/${token}`;
     const mailOptions = {
-        from:  `"KHB Associates" <${process.env.EMAIL_USER}>`,
+        from:  `"CS Drop" <${process.env.EMAIL_USER}>`,
         to: email,
-        subject: 'Reset password of your KHB account',
+        subject: 'Reset password of your CS Drop account',
         html: `<h3>Click the link below to reset your passwrod:</h3>
            <a href=${resetLink}>${resetLink}</a>`,
     }

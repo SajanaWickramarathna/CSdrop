@@ -382,11 +382,10 @@ export default function Sidebar() {
         </button>
       </div>
 
-        <footer className="py-3 text-sm text-center">
-            <div>
-                2025 <Copyright aria-label="Copyright" /> All Rights Reserved.
-            </div>
-            <div>S JAY Web Solutions (Pvt) Ltd.</div>
+        <footer className="mt-6 text-xs text-blue-400 text-center">
+          <p className="mb-1">&copy; {new Date().getFullYear()} DROPship</p>
+          <p>All rights reserved</p>
+          <p className="mt-2 text-blue-300">Developed by Sajana Wickramarathna</p>
         </footer>
     </div>
   );

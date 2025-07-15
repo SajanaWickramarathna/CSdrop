@@ -76,12 +76,12 @@ const productDetailsHTML = newOrder.items
     // Customer email
     sendEmail(
   email,
-  "🛒 Order Confirmation - KHB Associates",
+  "🛒 Order Confirmation - CS Drop",
   `Hi ${user?.firstName || "Customer"},\nThanks for ordering!\nOrder ID: ${
     newOrder.order_id
   }\nTotal: LKR${newOrder.total_price}\n\n${productDetailsText}`,
   `<h3>Hi ${user?.firstName || "Customer"},</h3>
-   <p>Thanks for your order with <strong>KHB Associates</strong>.</p>
+   <p>Thanks for your order with <strong>CS Drop</strong>.</p>
    <p><strong>Order ID:</strong> ${newOrder.order_id}</p>
    <p><strong>Total:</strong> LKR${newOrder.total_price}</p>
    <ul>${productDetailsHTML}</ul>`
@@ -90,7 +90,7 @@ const productDetailsHTML = newOrder.items
     // Admin email
     sendEmail(
   "sajanaanupama123@gmail.com",
-  "📦 New Order Received - KHB Associates",
+  "📦 New Order Received - CS Drop",
   `New order from ${user?.firstName || "N/A"} (${user?.email})\nOrder ID: ${
     newOrder.order_id
   }\nTotal: LKR${newOrder.total_price}\n${productDetailsText}`,
@@ -168,7 +168,7 @@ exports.updateOrderStatus = async (req, res) => {
     // 📧 Send Email Notification
     sendEmail(
   user.email,
-  "📦 Order Status Update - KHB Associates",
+  "📦 Order Status Update - CS Drop",
   `Hi ${user.firstName || "Customer"},\nYour order (ID: ${updatedOrder.order_id}) status has been updated to "${status}".`,
   `<h3>Hi ${user.firstName || "Customer"},</h3>
    <p>Your order (ID: <strong>${updatedOrder.order_id}</strong>) status has been updated to "<strong>${status}</strong>".</p>`

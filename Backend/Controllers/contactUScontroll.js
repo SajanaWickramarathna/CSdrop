@@ -92,7 +92,7 @@ const replyUser = async (req, res, next) => {
       from: "KHB Associates pvt ltd <sajanaanupama123@gmail.com>",
       to: gmail,
       subject: "Reply to Your Contact Form Submission",
-      text: `Dear ${name},\n\nThanks for reaching out.\n\nYour message: "${message}"\n\nReply: "${reply}"\n\nBest regards,\nKHB Associates (pvt) ltd`,
+      text: `Dear ${name},\n\nThanks for reaching out.\n\nYour message: "${message}"\n\nReply: "${reply}"\n\nBest regards,\ncs drop team`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
