@@ -345,11 +345,12 @@ const Checkout = () => {
     return (
       <div key={item.product_id} className="flex items-center border-b border-gray-100 pb-4">
         <img
-          src={getProductImageSrc(product.product_image)}
-          alt={product.product_name}
-          className="w-20 h-20 object-cover rounded-lg shadow-sm"
-          onError={e => { e.target.onerror = null; e.target.src = PLACEHOLDER_IMAGE; }}
-        />
+  src={getProductImageSrc(product.images?.[0])}
+  alt={product.product_name}
+  className="w-20 h-20 object-cover rounded-lg shadow-sm"
+  onError={e => { e.target.onerror = null; e.target.src = PLACEHOLDER_IMAGE; }}
+/>
+
         <div className="ml-4 flex-1">
           <h3 className="font-medium text-gray-900">{product.product_name}</h3>
           <div className="flex justify-between mt-1">

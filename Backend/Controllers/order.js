@@ -63,49 +63,59 @@ exports.createOrder = async (req, res) => {
     });
 
     await newOrder.save();
-await Cart.findOneAndDelete({ user_id: Number(user_id) });
+    await Cart.findOneAndDelete({ user_id: Number(user_id) });
 
     const productDetailsText = newOrder.items
-  .map((p) => `Product ID: ${p.product_id}, Qty: ${p.quantity}`)
-  .join("\n");
+      .map((p) => `Product ID: ${p.product_id}, Qty: ${p.quantity}`)
+      .join("\n");
 
-const productDetailsHTML = newOrder.items
-  .map((p) => `<li>Product ID: ${p.product_id}, Qty: ${p.quantity}</li>`)
-  .join("");
+    const productDetailsHTML = newOrder.items
+      .map((p) => `<li>Product ID: ${p.product_id}, Qty: ${p.quantity}</li>`)
+      .join("");
 
     // Customer email
     sendEmail(
-  email,
-  "🛒 Order Confirmation - CS Drop",
-  `Hi ${user?.firstName || "Customer"},\nThanks for ordering!\nOrder ID: ${
-    newOrder.order_id
-  }\nTotal: LKR${newOrder.total_price}\n\n${productDetailsText}`,
-  `<h3>Hi ${user?.firstName || "Customer"},</h3>
+      email,
+      "🛒 Order Confirmation - CS Drop",
+      `Hi ${user?.firstName || "Customer"},\nThanks for ordering!\nOrder ID: ${
+        newOrder.order_id
+      }\nTotal: LKR${newOrder.total_price}\n\n${productDetailsText}`,
+      `<h3>Hi ${user?.firstName || "Customer"},</h3>
    <p>Thanks for your order with <strong>CS Drop</strong>.</p>
    <p><strong>Order ID:</strong> ${newOrder.order_id}</p>
    <p><strong>Total:</strong> LKR${newOrder.total_price}</p>
    <ul>${productDetailsHTML}</ul>`
-);
+    );
 
     // Admin email
     sendEmail(
-  "sajanaanupama123@gmail.com",
-  "📦 New Order Received - CS Drop",
-  `New order from ${user?.firstName || "N/A"} (${user?.email})\nOrder ID: ${
-    newOrder.order_id
-  }\nTotal: LKR${newOrder.total_price}\n${productDetailsText}`,
-  `<h3>New Order Received</h3>
-   <p><strong>Customer:</strong> ${user?.firstName || "N/A"} (${user?.email})</p>
+      "sajanaanupama123@gmail.com",
+      "📦 New Order Received - CS Drop",
+      `New order from ${user?.firstName || "N/A"} (${user?.email})\nOrder ID: ${
+        newOrder.order_id
+      }\nTotal: LKR${newOrder.total_price}\n${productDetailsText}`,
+      `<h3>New Order Received</h3>
+   <p><strong>Customer:</strong> ${user?.firstName || "N/A"} (${
+        user?.email
+      })</p>
    <p><strong>Order ID:</strong> ${newOrder.order_id}</p>
    <p><strong>Total:</strong> LKR${newOrder.total_price}</p>
    <ul>${productDetailsHTML}</ul>`
-);
+    );
 
     // 🔔 Notification for User
     await Notification.create({
-  user_id: Number(user_id),
-  message: `Your order has been placed successfully! Order ID: ${newOrder.order_id}`,
-});
+      user_id: Number(user_id),
+      message: `Your order has been placed successfully! Order ID: ${newOrder.order_id}`,
+    });
+
+    // Notify admins
+    const admins = await User.find({ role: 'admin' });
+    const adminNotifications = admins.map(admin => ({
+      user_id: admin.user_id,
+      message: `New order placed by ${user?.firstName || "Customer"}. Order ID: ${newOrder.order_id}`,
+    }));
+    await Notification.insertMany(adminNotifications);
 
     return res
       .status(201)
@@ -161,18 +171,22 @@ exports.updateOrderStatus = async (req, res) => {
 
     // 🔔 Notification
     await Notification.create({
-  user_id: Number(updatedOrder.user_id),
-  message: `Order ${updatedOrder.order_id} status updated to ${status}`,
-});
+      user_id: Number(updatedOrder.user_id),
+      message: `Order ${updatedOrder.order_id} status updated to ${status}`,
+    });
 
     // 📧 Send Email Notification
     sendEmail(
-  user.email,
-  "📦 Order Status Update - CS Drop",
-  `Hi ${user.firstName || "Customer"},\nYour order (ID: ${updatedOrder.order_id}) status has been updated to "${status}".`,
-  `<h3>Hi ${user.firstName || "Customer"},</h3>
-   <p>Your order (ID: <strong>${updatedOrder.order_id}</strong>) status has been updated to "<strong>${status}</strong>".</p>`
-);
+      user.email,
+      "📦 Order Status Update - CS Drop",
+      `Hi ${user.firstName || "Customer"},\nYour order (ID: ${
+        updatedOrder.order_id
+      }) status has been updated to "${status}".`,
+      `<h3>Hi ${user.firstName || "Customer"},</h3>
+   <p>Your order (ID: <strong>${
+     updatedOrder.order_id
+   }</strong>) status has been updated to "<strong>${status}</strong>".</p>`
+    );
 
     res
       .status(200)
@@ -222,9 +236,9 @@ exports.cancelOrder = async (req, res) => {
 
     // 🔔 Notification
     await Notification.create({
-  user_id: Number(cancelledOrder.user_id),
-  message: `Your order ${cancelledOrder.order_id} has been cancelled.`,
-});
+      user_id: Number(cancelledOrder.user_id),
+      message: `Your order ${cancelledOrder.order_id} has been cancelled.`,
+    });
 
     res
       .status(200)

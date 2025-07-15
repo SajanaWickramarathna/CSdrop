@@ -1,5 +1,6 @@
 const Ticket = require("../Models/ticketModel");
 const Notification = require("../Models/notification");
+const User = require("../Models/user");
 
 // Get all tickets
 const getAllTickets = async (req, res, next) => {
@@ -77,6 +78,14 @@ const addTicket = async (req, res, next) => {
       user_id: Number(user_id),
       message: `Your ticket has been created successfully. Ticket ID: ${ticket.ticket_id}`,
     });
+
+     // Notify admins
+    const admins = await User.find({ role: 'admin' });
+    const adminNotifications = admins.map(admin => ({
+      user_id: admin.user_id,
+      message: `New support ticket created by ${name}. Ticket ID: ${ticket.ticket_id}`,
+    }));
+    await Notification.insertMany(adminNotifications);
 
   } catch (err) {
     console.log(err);
