@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, Link } from "react-router-dom";
 import Logo from "../assets/adminlogo.png";
 import { Logout, Copyright, ExpandMore, ExpandLess  } from "@mui/icons-material";
 import DashboardIcon from "@mui/icons-material/DashboardCustomizeOutlined";
@@ -9,6 +9,8 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCartOutlined";
 import SettingsIcon from "@mui/icons-material/SettingsOutlined";
 import PromotionIcon from "@mui/icons-material/DiscountOutlined";
 import axios from "axios";
+import HomeIcon from "@mui/icons-material/HomeOutlined";
+import StoreIcon from "@mui/icons-material/StorefrontOutlined";
 
 
 
@@ -88,6 +90,26 @@ export default function Sidebar() {
       <hr className="mb-5"/>
       <nav className="flex-1">
         <ul>
+          {/* Home Link */}
+          <li className="py-2 px-4 text-md">
+            <Link
+              to="/"
+              className="block py-[5px] px-4 rounded-md hover:bg-gray-100 transition-all flex items-center"
+            >
+              <HomeIcon className="mr-2" />
+              Home
+            </Link>
+          </li>
+          {/* Shop Link */}
+          <li className="py-2 px-4 text-md">
+            <Link
+              to="/shop"
+              className="block py-[5px] px-4 rounded-md hover:bg-gray-100 transition-all flex items-center"
+            >
+              <StoreIcon className="mr-2" />
+              Shop
+            </Link>
+          </li>
           {/* Dashboard Link*/  }
           <li className="py-2 px-4 text-md">
             <NavLink

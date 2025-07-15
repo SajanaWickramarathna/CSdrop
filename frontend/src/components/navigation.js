@@ -169,7 +169,13 @@ function Nav() {
                 </Link>
                 <div className="flex items-center space-x-4">
                   <Link
-                    to="/customer-dashboard"
+                    to={
+                      userData?.role === "admin"
+                        ? "/admin-dashboard"
+                        : userData?.role === "customer_supporter"
+                        ? "/support-dashboard"
+                        : "/customer-dashboard"
+                    }
                     className="flex items-center space-x-1 text-gray-700 hover:text-purple-700 transition-colors duration-200"
                   >
                     <ProfileIcon />
@@ -177,6 +183,7 @@ function Nav() {
                       {userData?.firstName || "Account"}
                     </span>
                   </Link>
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center space-x-1 text-gray-700 hover:text-red-600 transition-colors duration-200"
@@ -290,13 +297,20 @@ function Nav() {
           ) : (
             <>
               <Link
-                to="/customer-dashboard"
+                to={
+                  userData?.role === "admin"
+                    ? "/admin-dashboard"
+                    : userData?.role === "customer_supporter"
+                    ? "/support-dashboard"
+                    : "/customer-dashboard"
+                }
                 onClick={closeMenu}
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-purple-700 hover:bg-purple-50 flex items-center"
               >
                 <ProfileIcon className="mr-2" />
                 My Account
               </Link>
+
               <button
                 onClick={() => {
                   handleLogout();
