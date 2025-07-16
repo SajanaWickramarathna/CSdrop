@@ -410,15 +410,32 @@ const ProductViewPage = () => {
                   Add to Cart
                 </button>
                 <button
-                  disabled={!isAvailable}
-                  className={`py-3 px-6 border rounded-md font-medium ${
-                    isAvailable
-                      ? "border-blue-600 text-blue-600 hover:bg-blue-50"
-                      : "border-gray-300 text-gray-400 cursor-not-allowed"
-                  } transition-colors`}
-                >
-                  Buy Now
-                </button>
+  onClick={() => {
+    if (!isAvailable) return;
+    axios
+      .post(
+        "http://localhost:3001/api/cart/addtocart",
+        { product_id, quantity },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then(() => {
+        fetchCartCount();
+        window.location.href = "/checkout"; // 🔁 Redirect to checkout
+      })
+      .catch(() => {
+        toast.error("Error adding to cart");
+      });
+  }}
+  disabled={!isAvailable}
+  className={`py-3 px-6 border rounded-md font-medium ${
+    isAvailable
+      ? "border-blue-600 text-blue-600 hover:bg-blue-50"
+      : "border-gray-300 text-gray-400 cursor-not-allowed"
+  } transition-colors`}
+>
+  Buy Now
+</button>
+
               </div>
             </div>
           </div>

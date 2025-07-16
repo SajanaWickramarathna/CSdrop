@@ -142,15 +142,27 @@ exports.getUserOrders = async (req, res) => {
 };
 
 // GET ALL ORDERS
+// GET ALL ORDERS
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ created_at: -1 });
-    res.status(200).json(orders);
+    const users = await User.find();
+
+    const ordersWithUser = orders.map((order) => {
+      const user = users.find((u) => u.user_id === order.user_id);
+      return {
+        ...order._doc,
+        user_name: user ? `${user.firstName} ${user.lastName}` : "Unknown",
+      };
+    });
+
+    res.status(200).json(ordersWithUser);
   } catch (error) {
     console.error("❌ getAllOrders Error:", error);
     res.status(500).json({ message: "Internal Server Error", error });
   }
 };
+
 
 // UPDATE ORDER STATUS Admin
 exports.updateOrderStatus = async (req, res) => {

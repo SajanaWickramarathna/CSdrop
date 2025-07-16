@@ -1,5 +1,23 @@
 import React, { useState } from "react";
 import axios from "axios";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  CircularProgress,
+  Snackbar,
+  Alert,
+  Paper,
+} from "@mui/material";
+import { AddAPhoto as AddAPhotoIcon, Save as SaveIcon } from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
+import { alpha } from "@mui/material/styles";
+import { useNavigate } from "react-router-dom";
 
 const AddCategory = () => {
   const [formData, setFormData] = useState({
@@ -8,14 +26,24 @@ const AddCategory = () => {
     category_status: "active",
   });
 
-  const [catIcon, setCatIcon] = useState();
+  const [catIcon, setCatIcon] = useState(null);
   const [preview, setPreview] = useState(null);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const theme = useTheme();
+  const navigate = useNavigate();
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setErrorMessage("");
   };
 
   const handleImageChange = (e) => {
@@ -24,12 +52,15 @@ const AddCategory = () => {
       setCatIcon(file);
       setPreview(URL.createObjectURL(file));
     } else {
-      setErrorMessage("Please select a valid image file.");
+      setCatIcon(null);
+      setPreview(null);
+      showSnackbar("Please select a valid image file (e.g., JPG, PNG).", "error");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     // Normalize name for duplicate check
     const nameToCheck = formData.category_name.trim().toLowerCase();
@@ -38,14 +69,17 @@ const AddCategory = () => {
       // Get all categories and check normalized
       const checkRes = await axios.get("http://localhost:3001/api/categories");
       const duplicate = checkRes.data.find(
-        cat => cat.category_name && cat.category_name.trim().toLowerCase() === nameToCheck
+        (cat) => cat.category_name && cat.category_name.trim().toLowerCase() === nameToCheck
       );
       if (duplicate) {
-        setErrorMessage("Category name already exists.");
+        showSnackbar("Category name already exists.", "error");
+        setLoading(false);
         return;
       }
     } catch (err) {
-      setErrorMessage("Failed to check existing categories.");
+      console.error("Failed to check existing categories:", err);
+      showSnackbar("Failed to check existing categories.", "error");
+      setLoading(false);
       return;
     }
 
@@ -57,7 +91,8 @@ const AddCategory = () => {
     if (catIcon) {
       formDataToSend.append("category_image", catIcon);
     } else {
-      setErrorMessage("Category image is required.");
+      showSnackbar("Category image is required.", "error");
+      setLoading(false);
       return;
     }
 
@@ -70,8 +105,7 @@ const AddCategory = () => {
         }
       );
       if (response.status === 200) {
-        alert("Category Added Successfully");
-        setSuccessMessage("Process complete. Redirecting....");
+        showSnackbar("Category Added Successfully!", "success");
         setFormData({
           category_name: "",
           category_description: "",
@@ -81,93 +115,183 @@ const AddCategory = () => {
         setPreview(null);
 
         setTimeout(() => {
-          window.location.href = "/admin-dashboard/category";
+          navigate("/admin-dashboard/category");
         }, 1500);
       }
-    } catch {
-      setErrorMessage("Failed to add category.");
+    } catch (error) {
+      console.error("Failed to add category:", error);
+      showSnackbar(
+        error.response?.data?.message || "Failed to add category. Please try again.",
+        "error"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Add New Category</h2>
-      {successMessage && <p className="mb-4 text-green-500 font-medium">{successMessage}</p>}
-      {errorMessage && <p className="mb-4 text-red-500 font-medium">{errorMessage}</p>}
+    <Paper
+      elevation={0}
+      sx={{
+        p: 4,
+        borderRadius: 4,
+        border: `1px solid ${theme.palette.divider}`,
+        boxShadow: theme.shadows[3],
+        backgroundColor: theme.palette.background.paper,
+        position: 'relative', // For loading overlay
+      }}
+    >
+      {loading && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            zIndex: 10,
+            borderRadius: 4,
+          }}
+        >
+          <CircularProgress />
+          <Typography variant="h6" sx={{ ml: 2, color: theme.palette.text.secondary }}>
+            Adding Category...
+          </Typography>
+        </Box>
+      )}
+
+      <Typography variant="h5" gutterBottom sx={{ mb: 3, fontWeight: 700, color: theme.palette.text.primary }}>
+        Add New Category
+      </Typography>
 
       <form onSubmit={handleSubmit}>
         {/* Category Name */}
-        <div className="mb-4">
-          <label htmlFor="category-name" className="block text-gray-700 font-medium mb-2">
-            Category Name
-          </label>
-          <input
-            type="text"
-            name="category_name"
-            value={formData.category_name}
-            onChange={handleChange}
-            required
-            placeholder="Enter a Category Name"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none"
-          />
-        </div>
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Category Name"
+          name="category_name"
+          value={formData.category_name}
+          onChange={handleChange}
+          required
+          sx={{ borderRadius: 2 }}
+        />
+
         {/* Category Description */}
-        <div className="mb-4">
-          <label htmlFor="category-description" className="block text-gray-700 font-medium mb-2">
-            Category Description
-          </label>
-          <textarea
-            rows={4}
-            name="category_description"
-            value={formData.category_description}
-            onChange={handleChange}
-            required
-            placeholder="Enter a brief description"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none"
-          />
-        </div>
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Category Description"
+          name="category_description"
+          value={formData.category_description}
+          onChange={handleChange}
+          multiline
+          rows={4}
+          required
+          sx={{ borderRadius: 2 }}
+        />
+
         {/* Category Image */}
-        <div className="mb-4">
-          <label htmlFor="category-image" className="block text-gray-700 font-medium mb-2">
-            Category Image
-          </label>
+        <Box sx={{ my: 2, border: `1px dashed ${theme.palette.divider}`, p: 2, borderRadius: 2, textAlign: 'center' }}>
           <input
-            type="file"
-            id="category_image"
             accept="image/*"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            style={{ display: 'none' }}
+            id="category-image-upload"
+            type="file"
             onChange={handleImageChange}
-            required
+            required // Made image required as per original logic
           />
-          {preview && (
-            <img src={preview} alt="Category Preview" className="mt-2 w-32 h-32 object-cover rounded-md" />
-          )}
-        </div>
-        {/* Category Status */}
-        <div className="mb-4">
-          <label htmlFor="category-status" className="block text-gray-700 font-medium mb-2">
-            Status
+          <label htmlFor="category-image-upload">
+            <Button
+              variant="outlined"
+              component="span"
+              startIcon={<AddAPhotoIcon />}
+              sx={{ mb: 1, borderRadius: 2 }}
+            >
+              Upload Category Image
+            </Button>
           </label>
-          <select
+          {preview && (
+            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+              <img
+                src={preview}
+                alt="Category Preview"
+                style={{
+                  maxWidth: '150px',
+                  maxHeight: '150px',
+                  objectFit: 'cover',
+                  borderRadius: theme.shape.borderRadius,
+                  border: `1px solid ${theme.palette.divider}`,
+                }}
+              />
+            </Box>
+          )}
+          {!preview && (
+            <Typography variant="body2" color="textSecondary">
+              No image selected. Click to upload.
+            </Typography>
+          )}
+        </Box>
+
+        {/* Category Status */}
+        <FormControl fullWidth margin="normal" required>
+          <InputLabel id="category-status-label">Status</InputLabel>
+          <Select
+            labelId="category-status-label"
             id="category-status"
             name="category_status"
             value={formData.category_status}
+            label="Status"
             onChange={handleChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+            sx={{ borderRadius: 2 }}
           >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-        <button
+            <MenuItem value="active">Active</MenuItem>
+            <MenuItem value="inactive">Inactive</MenuItem>
+          </Select>
+        </FormControl>
+
+        <Button
           type="submit"
-          className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+          variant="contained"
+          startIcon={<SaveIcon />}
+          sx={{
+            mt: 3,
+            py: 1.5,
+            px: 4,
+            borderRadius: 2,
+            fontWeight: 600,
+            background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.secondary.main} 90%)`,
+            boxShadow: `0 3px 5px 2px ${alpha(theme.palette.primary.main, 0.3)}`,
+            '&:hover': {
+              background: `linear-gradient(45deg, ${alpha(theme.palette.primary.main, 0.8)} 30%, ${alpha(theme.palette.secondary.main, 0.8)} 90%)`,
+              boxShadow: `0 4px 6px 3px ${alpha(theme.palette.primary.main, 0.4)}`,
+            },
+          }}
+          disabled={loading}
         >
-          Add Category
-        </button>
+          {loading ? "Adding Category..." : "Add Category"}
+        </Button>
       </form>
-    </div>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Paper>
   );
 };
 

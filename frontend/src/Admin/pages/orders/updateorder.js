@@ -1,20 +1,129 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  FormLabel,
+  Button,
+  CircularProgress,
+  Alert,
+  Avatar,
+  Card,
+  CardContent,
+  CardMedia,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Chip
+} from "@mui/material";
+import {
+  ArrowBack,
+  CheckCircle,
+  LocalShipping,
+  Payment,
+  HourglassEmpty,
+  Cancel,
+  ZoomIn,
+  Save
+} from "@mui/icons-material";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+    background: {
+      default: '#f5f5f5',
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          textTransform: 'none',
+          fontWeight: 500,
+          padding: '8px 16px',
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            transform: 'translateY(-1px)'
+          }
+        }
+      }
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+          }
+        }
+      }
+    }
+  }
+});
+
+const statusConfig = {
+  pending: {
+    icon: <HourglassEmpty color="warning" />,
+    color: 'warning',
+    label: 'Pending'
+  },
+  processing: {
+    icon: <HourglassEmpty color="info" />,
+    color: 'info',
+    label: 'Processing'
+  },
+  shipped: {
+    icon: <LocalShipping color="primary" />,
+    color: 'primary',
+    label: 'Shipped'
+  },
+  delivered: {
+    icon: <CheckCircle color="success" />,
+    color: 'success',
+    label: 'Delivered'
+  },
+  cancelled: {
+    icon: <Cancel color="error" />,
+    color: 'error',
+    label: 'Cancelled'
+  }
+};
 
 export default function UpdateOrder() {
   const [orderData, setOrderData] = useState({
-    order_id: '',
-    user_id: '',
-    total_price: '',
-    status: 'pending',
+    order_id: "",
+    user_id: "",
+    total_price: "",
+    status: "pending",
     items: [],
-    payment_slip: '',
+    payment_slip: "",
+    payment_method: ""
   });
 
   const [products, setProducts] = useState([]);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,49 +132,59 @@ export default function UpdateOrder() {
   useEffect(() => {
     if (orderDataFromLocation) {
       setOrderData({
-        order_id: orderDataFromLocation.order_id || '',
-        user_id: orderDataFromLocation.user_id || '',
-        total_price: orderDataFromLocation.total_price || '',
-        status: orderDataFromLocation.status || 'pending',
+        order_id: orderDataFromLocation.order_id || "",
+        user_id: orderDataFromLocation.user_id || "",
+        total_price: orderDataFromLocation.total_price || "",
+        status: orderDataFromLocation.status || "pending",
         items: orderDataFromLocation.items || [],
-        payment_slip: orderDataFromLocation.payment_slip || '',
+        payment_slip: orderDataFromLocation.payment_slip || "",
+        payment_method: orderDataFromLocation.payment_method || ""
       });
     } else {
-      navigate('/orders');
+      navigate("/admin-dashboard/orders");
     }
   }, [orderDataFromLocation, navigate]);
 
   useEffect(() => {
-    if (orderData.items.length > 0) {
-      const productPromises = orderData.items.map(async (item) => {
+    const fetchProductDetails = async () => {
+      if (orderData.items.length > 0) {
+        setLoading(true);
         try {
-          const productRes = await axios.get(
-            `http://localhost:3001/api/products/product?id=${item.product_id}`
-          );
-          const product = productRes.data;
-          return {
-            ...item,
-            product_name: product.product_name,
-            product_price: product.product_price,
-            product_image: product.product_image,
-          };
-        } catch (err) {
-          console.error(`Error fetching product ${item.product_id}`, err);
-          return {
-            ...item,
-            product_name: 'Unknown',
-            product_price: 0,
-          };
-        }
-      });
+          const productPromises = orderData.items.map(async (item) => {
+            try {
+              const productRes = await axios.get(
+                `http://localhost:3001/api/products/product/${item.product_id}`
+              );
+              const product = productRes.data;
+              return {
+                ...item,
+                product_name: product.product_name,
+                product_price: product.product_price,
+                product_images: product.images || [],
+              };
+            } catch (err) {
+              console.error(`Error fetching product ${item.product_id}`, err);
+              return {
+                ...item,
+                product_name: "Unknown Product",
+                product_price: 0,
+                product_images: []
+              };
+            }
+          });
 
-      Promise.all(productPromises)
-        .then((productsWithDetails) => setProducts(productsWithDetails))
-        .catch((err) => {
-          console.error('Error fetching product details:', err);
-          setErrorMessage('Failed to fetch product details.');
-        });
-    }
+          const productsWithDetails = await Promise.all(productPromises);
+          setProducts(productsWithDetails);
+        } catch (err) {
+          console.error("Error fetching product details:", err);
+          setErrorMessage("Failed to fetch product details.");
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProductDetails();
   }, [orderData.items]);
 
   const handleInputChange = (e) => {
@@ -78,11 +197,13 @@ export default function UpdateOrder() {
 
   const handleUpdateOrder = async (e) => {
     e.preventDefault();
-    setSuccessMessage('');
-    setErrorMessage('');
+    setSuccessMessage("");
+    setErrorMessage("");
+    setLoading(true);
 
     if (!orderData.status) {
-      setErrorMessage('Please select a status.');
+      setErrorMessage("Please select a status.");
+      setLoading(false);
       return;
     }
 
@@ -93,123 +214,273 @@ export default function UpdateOrder() {
       );
 
       if (response.status === 200) {
-        setSuccessMessage('Order status updated successfully!');
+        setSuccessMessage("Order status updated successfully!");
         setTimeout(() => {
-          navigate('/admin-dashboard/orders/orders');
+          navigate("/admin-dashboard/orders");
         }, 2000);
       }
     } catch (err) {
-      console.error('Axios Error:', err);
-      setErrorMessage(err.response?.data?.message || 'Failed to update order status');
+      console.error("Error updating order:", err);
+      setErrorMessage(
+        err.response?.data?.message || "Failed to update order status"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
+  const handleImageClick = (imageUrl) => {
+    setSelectedImage(imageUrl);
+    setImageDialogOpen(true);
+  };
+
+  const handleCloseImageDialog = () => {
+    setImageDialogOpen(false);
+    setSelectedImage("");
+  };
+
   if (!orderDataFromLocation) {
-    return <div className="text-center text-gray-500">Redirecting...</div>;
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (
-    <div className="container bg-white rounded-2xl p-6 mt-6 min-h-[75vh]">
-      <form
-        className="w-full mx-auto bg-white p-8 rounded-lg shadow-md"
-        onSubmit={handleUpdateOrder}
-      >
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Update Order Status</h2>
+    <ThemeProvider theme={theme}>
+      <Box sx={{ p: 3, backgroundColor: 'background.default', minHeight: '100vh' }}>
+        <Paper elevation={0} sx={{ p: 3, borderRadius: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+            <IconButton onClick={() => navigate(-1)} sx={{ mr: 2 }}>
+              <ArrowBack />
+            </IconButton>
+            <Typography variant="h4" component="h1" fontWeight="bold">
+              Update Order #{orderData.order_id}
+            </Typography>
+          </Box>
 
-        {successMessage && <p className="mb-4 text-green-500 font-medium">{successMessage}</p>}
-        {errorMessage && <p className="mb-4 text-red-500 font-medium">{errorMessage}</p>}
+          {successMessage && (
+            <Alert severity="success" sx={{ mb: 3 }}>
+              {successMessage}
+            </Alert>
+          )}
+          {errorMessage && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {errorMessage}
+            </Alert>
+          )}
 
-        {/* Order Details */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <h4 className="text-gray-700 font-medium">Order ID</h4>
-            <p className="text-gray-900 font-semibold">{orderData.order_id}</p>
-          </div>
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <h4 className="text-gray-700 font-medium">User ID</h4>
-            <p className="text-gray-900 font-semibold">{orderData.user_id}</p>
-          </div>
-          <div className="p-4 bg-gray-100 rounded-lg">
-            <h4 className="text-gray-700 font-medium">Total Price</h4>
-            <p className="text-gray-900 font-semibold">${orderData.total_price}</p>
-          </div>
-        </div>
+          <form onSubmit={handleUpdateOrder}>
+            {/* Order Summary */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} md={4}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
+                  <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                    Order ID
+                  </Typography>
+                  <Typography variant="h6" fontWeight="medium">
+                    #{orderData.order_id}
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
+                  <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                    Customer ID
+                  </Typography>
+                  <Typography variant="h6" fontWeight="medium">
+                    {orderData.user_id}
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Paper elevation={0} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
+                  <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+                    Total Amount
+                  </Typography>
+                  <Typography variant="h6" fontWeight="medium">
+                    LKR {parseFloat(orderData.total_price).toFixed(2)}
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
 
-        {/* Order Status */}
-        <div className="mb-6">
-          <label className="block text-gray-700 font-medium mb-2">Order Status</label>
-          <div className="flex flex-wrap gap-4">
-            {['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
-              <label key={status} className="flex items-center space-x-2">
-                <input
-                  type="radio"
+            {/* Order Status */}
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
+              <FormControl component="fieldset">
+                <FormLabel component="legend" sx={{ mb: 2, fontWeight: 'medium' }}>
+                  Update Order Status
+                </FormLabel>
+                <RadioGroup
+                  row
                   name="status"
-                  value={status}
-                  checked={orderData.status === status}
+                  value={orderData.status}
                   onChange={handleInputChange}
-                  className="form-radio"
-                />
-                <span className="text-gray-700">{status.charAt(0).toUpperCase() + status.slice(1)}</span>
-              </label>
-            ))}
-          </div>
-        </div>
+                  sx={{ gap: 2 }}
+                >
+                  {Object.entries(statusConfig).map(([status, config]) => (
+                    <Paper key={status} elevation={0} sx={{ borderRadius: 2 }}>
+                      <FormControlLabel
+                        value={status}
+                        control={<Radio color={config.color} />}
+                        label={
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            {config.icon}
+                            <Typography>{config.label}</Typography>
+                          </Box>
+                        }
+                        sx={{
+                          px: 3,
+                          py: 1.5,
+                          borderRadius: 2,
+                          border: orderData.status === status ? `2px solid ${theme.palette[config.color].main}` : '1px solid rgba(0, 0, 0, 0.12)',
+                          '&:hover': {
+                            backgroundColor: 'action.hover'
+                          }
+                        }}
+                      />
+                    </Paper>
+                  ))}
+                </RadioGroup>
+              </FormControl>
+            </Paper>
 
-        {/* Order Items with Pictures */}
-        <div className="mb-6">
-          <label className="block text-gray-700 font-medium mb-2">Order Items</label>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Order Items */}
+            <div className="mb-8 border border-gray-200 rounded-lg p-6 bg-gray-50">
+          <h3 className="text-xl font-semibold text-gray-700 mb-4">Ordered Items</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((item) => (
-              <div key={item.product_id} className="p-4 bg-gray-100 rounded-lg shadow">
+              <div key={item.product_id} className="p-4 bg-white rounded-lg shadow-md border border-gray-100 flex flex-col items-center text-center">
                 <img
-                  src={`http://localhost:3001${item.product_image}`}
+                  src={
+                    item.product_images?.[0]
+                      ? item.product_images[0].startsWith("http")
+                        ? item.product_images[0]
+                        : `http://localhost:3001/uploads/${item.product_images[0]}`
+                      : "https://via.placeholder.com/300x200?text=No+Image+Available" // More descriptive placeholder
+                  }
                   alt={item.product_name}
-                  className="w-full h-40 object-cover rounded-lg mb-4"
+                  className="w-full h-40 object-cover rounded-md mb-4 shadow-sm animate-fade-in"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "https://via.placeholder.com/300x200?text=Image+Load+Error"; // Specific error placeholder
+                  }}
                 />
-                <h4 className="text-gray-800 font-medium">{item.product_name}</h4>
-                <p className="text-gray-600">Price: LKR {item.product_price}</p>
-                <p className="text-gray-600">Quantity: {item.quantity}</p>
+                <h4 className="text-gray-800 font-semibold text-lg truncate w-full">{item.product_name}</h4>
+                <p className="text-gray-600 text-sm">Price: LKR {parseFloat(item.product_price).toFixed(2)}</p>
+                <p className="text-gray-600 text-sm">Quantity: {item.quantity}</p>
+                <p className="text-gray-700 text-base font-medium mt-2">Subtotal: LKR {(item.product_price * item.quantity).toFixed(2)}</p>
               </div>
             ))}
+            {products.length === 0 && (
+              <p className="text-gray-500 text-center col-span-full">No items found for this order.</p>
+            )}
           </div>
         </div>
 
-        {/* Payment Details */}
-        {orderData.payment_slip ? (
-          <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Payment Details</label>
-            <div>
-              <p className="text-gray-800">Payment Slip</p>
-              <img
-                src={`http://localhost:3001/uploads/${orderData.payment_slip}`}
-                alt="Payment Slip"
-                className="w-80 border border-gray-300 rounded-lg shadow-sm my-2"
-              />
-              <a
-                href={`http://localhost:3001/uploads/${orderData.payment_slip}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block text-blue-500 underline"
-              >
-                View full image
-              </a>
-            </div>
-          </div>
-        ) : (
-          <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Payment Method</label>
-            <p className="text-gray-800">Cash on Delivery (COD)</p>
-          </div>
-        )}
+            {/* Payment Details */}
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 2, mb: 4 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 'medium' }}>
+                Payment Details
+              </Typography>
+              {orderData.payment_method === 'Payment Slip' && orderData.payment_slip ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Chip
+                    label="Bank Transfer"
+                    color="primary"
+                    variant="outlined"
+                    sx={{ alignSelf: 'flex-start' }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: '100%',
+                      maxWidth: 300,
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => handleImageClick(`http://localhost:3001/uploads/${orderData.payment_slip}`)}
+                  >
+                    <img
+                      src={`http://localhost:3001/uploads/${orderData.payment_slip}`}
+                      alt="Payment Slip"
+                      style={{
+                        width: '100%',
+                        borderRadius: 8,
+                        border: '1px solid #e0e0e0'
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        borderRadius: '50%',
+                        p: 0.5
+                      }}
+                    >
+                      <ZoomIn sx={{ color: 'white' }} fontSize="small" />
+                    </Box>
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    Click to view full payment slip
+                  </Typography>
+                </Box>
+              ) : (
+                <Chip
+                  label="Cash on Delivery (COD)"
+                  color="secondary"
+                  variant="outlined"
+                />
+              )}
+            </Paper>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+            {/* Submit Button */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                size="large"
+                startIcon={<Save />}
+                disabled={loading}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1rem'
+                }}
+              >
+                {loading ? 'Updating...' : 'Update Order Status'}
+              </Button>
+            </Box>
+          </form>
+        </Paper>
+
+        {/* Image Dialog */}
+        <Dialog
+          open={imageDialogOpen}
+          onClose={handleCloseImageDialog}
+          maxWidth="md"
+          fullWidth
         >
-          Update Order Status
-        </button>
-      </form>
-    </div>
+          <DialogTitle>Image Preview</DialogTitle>
+          <DialogContent>
+            <img
+              src={selectedImage}
+              alt="Preview"
+              style={{
+                width: '100%',
+                height: 'auto',
+                borderRadius: 4
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseImageDialog}>Close</Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </ThemeProvider>
   );
 }

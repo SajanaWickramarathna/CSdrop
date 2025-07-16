@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
 export default function ViewOrder() {
   const [orderData, setOrderData] = useState(null);
@@ -12,32 +12,35 @@ export default function ViewOrder() {
   useEffect(() => {
     const fetchOrderDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/api/orders/${orderId}`);
-        if (response.status !== 200) {
+        const response = await axios.get(
+          `http://localhost:3001/api/orders/${orderId}`
+        );
+        if (response.status !== 200)
           throw new Error("Failed to fetch order details");
-        }
 
         const order = response.data;
         setOrderData(order);
 
-        // Fetch product details for each item
         const productDetails = await Promise.all(
           order.items.map(async (item) => {
             try {
-              const productRes = await axios.get(`http://localhost:3001/api/products/product?id=${item.product_id}`);
+              const productRes = await axios.get(
+                `http://localhost:3001/api/products/product/${item.product_id}`
+              );
               const product = productRes.data;
               return {
                 ...item,
                 product_name: product.product_name,
                 product_price: product.product_price,
-                product_image: product.product_image,
+                product_images: product.images || [], // use array instead of single string
               };
             } catch (err) {
               console.error(`Error fetching product ${item.product_id}`, err);
               return {
                 ...item,
-                product_name: "Unknown",
+                product_name: "Unknown Product",
                 product_price: 0,
+                product_images: [],
               };
             }
           })
@@ -49,7 +52,6 @@ export default function ViewOrder() {
           return acc + item.product_price * item.quantity;
         }, 0);
         setTotalPrice(total);
-
       } catch (err) {
         setError("Error fetching order details.");
         console.error(err);
@@ -59,23 +61,81 @@ export default function ViewOrder() {
     fetchOrderDetails();
   }, [orderId]);
 
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
-  }
+  if (error) return <div className="text-center text-red-500">{error}</div>;
+  if (!orderData) return <div>Loading order details...</div>;
 
-  if (!orderData) {
-    return <div>Loading order details...</div>;
-  }
+  const formatDateTime = (isoDate) => {
+    const options = {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    };
+    return new Date(isoDate).toLocaleString("en-GB", options);
+  };
+
+  const getProductImageSrc = (imgPath) => {
+    if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
+    if (imgPath.startsWith("http")) return imgPath;
+    if (imgPath.startsWith("/uploads"))
+      return `http://localhost:3001${imgPath}`;
+    if (imgPath.startsWith("uploads"))
+      return `http://localhost:3001/${imgPath}`;
+    return `http://localhost:3001/uploads/${imgPath}`;
+  };
 
   return (
     <div className="p-10 bg-gray-100 min-h-screen flex flex-col">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Order Details</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        My Order Details
+      </h2>
 
       <div className="bg-white p-6 rounded-xl shadow-md">
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Order ID: {orderData.order_id}</h3>
-        <p className="text-lg text-gray-600 mb-2">User ID: {orderData.user_id}</p>
-        <p className="text-lg text-gray-600 mb-4">Status: {orderData.status}</p>
+        <h4 className="text-lg font-semibold mb-2">Order Items</h4>
+        <div className="flex flex-col space-y-4 mb-6">
+          {products.map((item, index) => (
+            <div
+              key={index}
+              className="flex items-center bg-white p-4 rounded-xl shadow-md"
+            >
+              <img
+                src={getProductImageSrc(item.product_images?.[0])}
+                alt={item.product_name}
+                className="w-20 h-20 object-cover rounded-lg"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src =
+                    "https://via.placeholder.com/300x200?text=No+Image";
+                }}
+              />
 
+              <div className="ml-4 flex-1">
+                <h5 className="text-lg font-semibold text-gray-900">
+                  {item.product_name}
+                </h5>
+                <p className="text-lg text-gray-600">
+                  LKR {item.product_price.toLocaleString()}
+                </p>
+                <p className="text-gray-600">Quantity: {item.quantity}</p>
+                <p className="text-sm text-gray-500">
+                  Subtotal: LKR{" "}
+                  {(item.product_price * item.quantity).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+          Order ID: {orderData.order_id}
+        </h3>
+        <p className="text-lg text-gray-600 mb-1">Status: {orderData.status}</p>
+        <p className="text-lg text-gray-600 mb-4">
+          Ordered On: {formatDateTime(orderData.created_at)}
+        </p>
+
+        {/* Payment Section */}
         {orderData.payment_slip ? (
           <div className="mb-4">
             <h4 className="text-lg font-semibold">Payment Method</h4>
@@ -102,25 +162,9 @@ export default function ViewOrder() {
         )}
 
         <div className="mb-6">
-          <h4 className="text-lg font-semibold">Total Price: LKR {totalPrice}</h4>
-        </div>
-
-        <h4 className="text-lg font-semibold mb-2">Order Items</h4>
-        <div className="flex flex-col space-y-4">
-          {products.map((item) => (
-            <div key={item._id} className="flex items-center bg-white p-4 rounded-xl shadow-md">
-              <img
-                src={`http://localhost:3001${item.product_image}`}
-                alt={item.product_name}
-                className="w-20 h-20 object-cover rounded-lg"
-              />
-              <div className="ml-4 flex-1">
-                <h5 className="text-lg font-semibold text-gray-900">{item.product_name}</h5>
-                <p className="text-lg text-gray-600">LKR {item.product_price}</p>
-                <p className="text-gray-600">Quantity: {item.quantity}</p>
-              </div>
-            </div>
-          ))}
+          <h4 className="text-lg font-semibold">
+            Total Price: LKR {totalPrice.toLocaleString()}
+          </h4>
         </div>
 
         <div className="mt-6 text-center">
@@ -128,7 +172,7 @@ export default function ViewOrder() {
             onClick={() => window.history.back()}
             className="px-6 py-3 bg-gray-500 text-white rounded-lg"
           >
-            Back to Orders
+            Back to My Orders
           </button>
         </div>
       </div>

@@ -12,8 +12,11 @@ export default function ViewOrder() {
   useEffect(() => {
     const fetchOrderDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/api/orders/${orderId}`);
-        if (response.status !== 200) throw new Error("Failed to fetch order details");
+        const response = await axios.get(
+          `http://localhost:3001/api/orders/${orderId}`
+        );
+        if (response.status !== 200)
+          throw new Error("Failed to fetch order details");
 
         const order = response.data;
         setOrderData(order);
@@ -29,7 +32,7 @@ export default function ViewOrder() {
                 ...item,
                 product_name: product.product_name,
                 product_price: product.product_price,
-                product_image: product.product_image,
+                product_images: product.images || [], // use array instead of single string
               };
             } catch (err) {
               console.error(`Error fetching product ${item.product_id}`, err);
@@ -37,7 +40,7 @@ export default function ViewOrder() {
                 ...item,
                 product_name: "Unknown Product",
                 product_price: 0,
-                product_image: null,
+                product_images: [],
               };
             }
           })
@@ -46,7 +49,7 @@ export default function ViewOrder() {
         setProducts(productDetails);
 
         const total = productDetails.reduce((acc, item) => {
-          return acc + (item.product_price * item.quantity);
+          return acc + item.product_price * item.quantity;
         }, 0);
         setTotalPrice(total);
       } catch (err) {
@@ -75,35 +78,49 @@ export default function ViewOrder() {
   const getProductImageSrc = (imgPath) => {
     if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
     if (imgPath.startsWith("http")) return imgPath;
-    if (imgPath.startsWith("/uploads")) return `http://localhost:3001${imgPath}`;
-    if (imgPath.startsWith("uploads")) return `http://localhost:3001/${imgPath}`;
+    if (imgPath.startsWith("/uploads"))
+      return `http://localhost:3001${imgPath}`;
+    if (imgPath.startsWith("uploads"))
+      return `http://localhost:3001/${imgPath}`;
     return `http://localhost:3001/uploads/${imgPath}`;
   };
 
   return (
     <div className="p-10 bg-gray-100 min-h-screen flex flex-col">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">My Order Details</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        My Order Details
+      </h2>
 
       <div className="bg-white p-6 rounded-xl shadow-md">
         <h4 className="text-lg font-semibold mb-2">Order Items</h4>
         <div className="flex flex-col space-y-4 mb-6">
           {products.map((item, index) => (
-            <div key={index} className="flex items-center bg-white p-4 rounded-xl shadow-md">
+            <div
+              key={index}
+              className="flex items-center bg-white p-4 rounded-xl shadow-md"
+            >
               <img
-                src={getProductImageSrc(item.product_image)}
+                src={getProductImageSrc(item.product_images?.[0])}
                 alt={item.product_name}
                 className="w-20 h-20 object-cover rounded-lg"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = "https://via.placeholder.com/300x200?text=No+Image";
+                  e.target.src =
+                    "https://via.placeholder.com/300x200?text=No+Image";
                 }}
               />
+
               <div className="ml-4 flex-1">
-                <h5 className="text-lg font-semibold text-gray-900">{item.product_name}</h5>
-                <p className="text-lg text-gray-600">LKR {item.product_price.toLocaleString()}</p>
+                <h5 className="text-lg font-semibold text-gray-900">
+                  {item.product_name}
+                </h5>
+                <p className="text-lg text-gray-600">
+                  LKR {item.product_price.toLocaleString()}
+                </p>
                 <p className="text-gray-600">Quantity: {item.quantity}</p>
                 <p className="text-sm text-gray-500">
-                  Subtotal: LKR {(item.product_price * item.quantity).toLocaleString()}
+                  Subtotal: LKR{" "}
+                  {(item.product_price * item.quantity).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -145,7 +162,9 @@ export default function ViewOrder() {
         )}
 
         <div className="mb-6">
-          <h4 className="text-lg font-semibold">Total Price: LKR {totalPrice.toLocaleString()}</h4>
+          <h4 className="text-lg font-semibold">
+            Total Price: LKR {totalPrice.toLocaleString()}
+          </h4>
         </div>
 
         <div className="mt-6 text-center">
