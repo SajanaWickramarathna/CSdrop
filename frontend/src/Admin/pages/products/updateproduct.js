@@ -1,6 +1,7 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline"; // Added XMarkIcon for close button
 
 export default function UpdateProduct() {
   const [formData, setFormData] = useState({
@@ -13,24 +14,22 @@ export default function UpdateProduct() {
   const [brandId, setBrandId] = useState("");
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
-  const [productImage, setProductImage] = useState();
-  const [preview, setPreview] = useState(null);
+  const [productImages, setProductImages] = useState([null, null, null, null]);
+  const [previews, setPreviews] = useState([null, null, null, null]);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(true);
 
   const location = useLocation();
   const navigate = useNavigate();
-  const productDataFromLocation = location.state?.productData;
+  const productData = location.state?.productData;
 
-  // 1. Load all categories
   useEffect(() => {
     axios.get("http://localhost:3001/api/categories")
       .then(res => setCategories(res.data))
       .catch(() => setErrorMessage("Error fetching categories"));
   }, []);
 
-  // 2. Load all brands for current category
   useEffect(() => {
     if (categoryId) {
       axios.get(`http://localhost:3001/api/brands/bycategory/${categoryId}`)
@@ -39,57 +38,68 @@ export default function UpdateProduct() {
     } else {
       setBrands([]);
     }
-    setBrandId(""); // reset brand selection if category changes
+    setBrandId("");
   }, [categoryId]);
 
-  // 3. Load product data on mount
   useEffect(() => {
-    if (productDataFromLocation) {
-      setFormData({
-        product_name: productDataFromLocation.product_name || "",
-        product_description: productDataFromLocation.product_description || "",
-        product_price: productDataFromLocation.product_price || "",
-        product_status: productDataFromLocation.product_status || "",
-      });
-      setCategoryId(productDataFromLocation.category_id?.toString() || "");
-      setBrandId(productDataFromLocation.brand_id?.toString() || "");
-      setPreview(
-        productDataFromLocation.product_image
-          ? (productDataFromLocation.product_image.startsWith("http")
-              ? productDataFromLocation.product_image
-              : `http://localhost:3001/uploads/${productDataFromLocation.product_image}`)
-          : null
-      );
-      setLoading(false);
-    } else {
+    if (!productData) {
       navigate('/admin-dashboard/products');
+      return;
     }
-  }, [productDataFromLocation, navigate]);
+
+    setFormData({
+      product_name: productData.product_name || "",
+      product_description: productData.product_description || "",
+      product_price: productData.product_price || "",
+      product_status: productData.product_status || "",
+    });
+
+    setCategoryId(productData.category_id?.toString() || "");
+    setBrandId(productData.brand_id?.toString() || "");
+
+    const initialPreviews = [null, null, null, null];
+    (productData.images || []).forEach((img, index) => {
+      initialPreviews[index] = img.startsWith("http") ? img : `http://localhost:3001/uploads/${img}`;
+    });
+
+    setPreviews(initialPreviews);
+    setLoading(false);
+  }, [productData, navigate]);
 
   const handleFormChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleImageChange = (e) => {
+  const handleImageChange = (index, e) => {
     const file = e.target.files[0];
     if (file && file.type.startsWith("image/")) {
-      setProductImage(file);
-      setPreview(URL.createObjectURL(file));
+      const newImages = [...productImages];
+      const newPreviews = [...previews];
+      newImages[index] = file;
+      newPreviews[index] = URL.createObjectURL(file);
+      setProductImages(newImages);
+      setPreviews(newPreviews);
     } else {
       setErrorMessage("Please select a valid image file.");
-      setProductImage(null);
     }
+  };
+
+  const removeImage = (index) => {
+    const newPreviews = [...previews];
+    const newImages = [...productImages];
+    newPreviews[index] = null;
+    newImages[index] = null;
+    setPreviews(newPreviews);
+    setProductImages(newImages);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
 
-    if (!categoryId) {
-      setErrorMessage("Please select a category before submitting.");
-      return;
-    }
-    if (!brandId) {
-      setErrorMessage("Please select a brand before submitting.");
+    if (!categoryId || !brandId) {
+      setErrorMessage("Category and Brand must be selected.");
       return;
     }
 
@@ -100,159 +110,201 @@ export default function UpdateProduct() {
     formDataToSend.append("product_status", formData.product_status);
     formDataToSend.append("category_id", categoryId);
     formDataToSend.append("brand_id", brandId);
-    if (productImage) formDataToSend.append("product_image", productImage);
+
+    productImages.forEach((img, index) => {
+      if (img) formDataToSend.append(`product_image_${index + 1}`, img);
+    });
 
     try {
       const response = await axios.put(
-        `http://localhost:3001/api/products/updateproduct/${productDataFromLocation.product_id}`,
+        `http://localhost:3001/api/products/updateproduct/${productData.product_id}`,
         formDataToSend,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
       if (response.status === 200) {
-        setSuccessMessage("Product updated successfully. Redirecting...");
-        setTimeout(() => {
-          navigate("/admin-dashboard/products");
-        }, 1500);
+        setSuccessMessage("Product updated successfully!");
+        setTimeout(() => navigate("/admin-dashboard/products"), 1500);
       }
     } catch (err) {
-      setErrorMessage(
-        err.response?.data?.error || "Failed to update product. Please try again."
-      );
+      setErrorMessage(err.response?.data?.error || "Failed to update product.");
     }
   };
 
   if (loading) return <div className="text-center text-gray-500">Loading...</div>;
-  if (errorMessage) return <div className="text-center text-red-500">{errorMessage}</div>;
 
   return (
-    <div className="container mx-auto py-8">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Update Product</h2>
-      {successMessage && <p className="mb-4 text-green-500 font-medium">{successMessage}</p>}
-      {errorMessage && <p className="mb-4 text-red-500 font-medium">{errorMessage}</p>}
-
-      <form onSubmit={handleSubmit}>
-        {/* Category */}
-        <div className="mb-4">
-          <label htmlFor="product-category" className="block text-gray-700 font-medium mb-2">
-            Category
-          </label>
-          <select
-            value={categoryId}
-            onChange={e => setCategoryId(e.target.value)}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="" disabled>Select Category</option>
-            {categories.map((cat) => (
-              <option key={cat.category_id} value={cat.category_id}>{cat.category_name}</option>
-            ))}
-          </select>
-        </div>
-        {/* Brand (filtered by category) */}
-        <div className="mb-4">
-          <label htmlFor="product-brand" className="block text-gray-700 font-medium mb-2">
-            Brand
-          </label>
-          <select
-            value={brandId}
-            onChange={e => setBrandId(e.target.value)}
-            required
-            disabled={!categoryId}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="" disabled>Select Brand</option>
-            {brands.map((brand) => (
-              <option key={brand.brand_id} value={brand.brand_id}>{brand.brand_name}</option>
-            ))}
-          </select>
-        </div>
-        {/* Product Name */}
-        <div className="mb-4">
-          <label htmlFor="product-name" className="block text-gray-700 font-medium mb-2">
-            Product Name
-          </label>
-          <input
-            type="text"
-            name="product_name"
-            value={formData.product_name}
-            onChange={handleFormChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md"
-          />
-        </div>
-        {/* Product Description */}
-        <div className="mb-4">
-          <label htmlFor="product-description" className="block text-gray-700 font-medium mb-2">
-            Description
-          </label>
-          <textarea
-            name="product_description"
-            value={formData.product_description}
-            onChange={handleFormChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md"
-          />
-        </div>
-        {/* Product Price */}
-        <div className="mb-4">
-          <label htmlFor="product-price" className="block text-gray-700 font-medium mb-2">
-            Price
-          </label>
-          <input
-            type="number"
-            name="product_price"
-            value={formData.product_price}
-            onChange={handleFormChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md"
-          />
-        </div>
-        {/* Product Image */}
-        <div className="mb-4">
-          <label htmlFor="product-image" className="block text-gray-700 font-medium mb-2">
-            Product Image
-          </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md"
-          />
-          {preview && (
-            <img src={preview} alt="Product Preview" className="mt-2 w-32 h-32 object-cover rounded-md" />
-          )}
-        </div>
-        {/* Product Status */}
-        <div className="mb-4">
-          <label htmlFor="product-status" className="block text-gray-700 font-medium mb-2">
-            Status
-          </label>
-          <select
-            name="product_status"
-            value={formData.product_status}
-            onChange={handleFormChange}
-            required
-            className="w-full px-4 py-2 border border-gray-300 rounded-md"
-          >
-            <option value="" disabled>Select Status</option>
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-        >
-          Update Product
-        </button>
+    <div className="max-w-4xl mx-auto rounded-lg shadow-lg overflow-hidden"> {/* Updated: Added rounded-lg, shadow-lg, overflow-hidden */}
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 flex justify-between items-center"> {/* Updated: Gradient background */}
+        <h2 className="text-xl font-semibold">Update Product</h2> {/* Updated: Font size and weight */}
         <button
           type="button"
-          onClick={() => navigate('/admin-dashboard/products')}
-          className="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-700 transition duration-300 mt-4"
+          onClick={() => navigate("/admin-dashboard/products")}
+          className="text-white hover:text-blue-100"
         >
-          Cancel
+          <XMarkIcon className="h-6 w-6" /> {/* Close icon */}
         </button>
-      </form>
+      </div>
+
+      <div className="p-6 bg-white"> {/* Added padding to the content area */}
+        {successMessage && <p className="mb-4 text-green-600">{successMessage}</p>}
+        {errorMessage && <p className="mb-4 text-red-600">{errorMessage}</p>}
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Category & Brand */}
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="category" className="block mb-1 font-medium text-gray-700">Category *</label> {/* Added htmlFor and asterisk */}
+              <select
+                id="category" // Added ID
+                value={categoryId}
+                onChange={e => setCategoryId(e.target.value)}
+                required
+                className="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500" // Updated: Added border-gray-300, rounded-md, focus styles
+              >
+                <option value="">Select Category</option>
+                {categories.map(cat => (
+                  <option key={cat.category_id} value={cat.category_id}>{cat.category_name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="brand" className="block mb-1 font-medium text-gray-700">Brand *</label> {/* Added htmlFor and asterisk */}
+              <select
+                id="brand" // Added ID
+                value={brandId}
+                onChange={e => setBrandId(e.target.value)}
+                required
+                className="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500" // Updated: Added border-gray-300, rounded-md, focus styles
+              >
+                <option value="">Select Brand</option>
+                {brands.map(brand => (
+                  <option key={brand.brand_id} value={brand.brand_id}>{brand.brand_name}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Name, Description, Price, Status */}
+          <div>
+            <label htmlFor="product_name" className="block mb-1 font-medium text-gray-700">Product Name *</label> {/* Added label and asterisk */}
+            <input
+              id="product_name" // Added ID
+              type="text"
+              name="product_name"
+              value={formData.product_name}
+              onChange={handleFormChange}
+              required
+              className="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500" // Updated: Added border-gray-300, rounded-md, focus styles
+              placeholder="e.g., Premium Wireless Headphones" // Added placeholder
+            />
+          </div>
+
+          <div>
+            <label htmlFor="product_description" className="block mb-1 font-medium text-gray-700">Description *</label> {/* Added label and asterisk */}
+            <textarea
+              id="product_description" // Added ID
+              name="product_description"
+              value={formData.product_description}
+              onChange={handleFormChange}
+              required
+              className="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500" // Updated: Added border-gray-300, rounded-md, focus styles
+              placeholder="Describe the product features, specifications, and benefits..." // Added placeholder
+              rows={4}
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="product_price" className="block mb-1 font-medium text-gray-700">Price (LKR) *</label> {/* Added label and asterisk */}
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">LKR</span>
+                <input
+                  id="product_price" // Added ID
+                  type="number"
+                  name="product_price"
+                  value={formData.product_price}
+                  onChange={handleFormChange}
+                  required
+                  className="w-full border border-gray-300 pl-12 pr-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500" // Updated: Added border-gray-300, rounded-md, focus styles, adjusted padding for LKR
+                  placeholder="0.00" // Added placeholder
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="product_status" className="block mb-1 font-medium text-gray-700">Status *</label> {/* Added label and asterisk */}
+              <select
+                id="product_status" // Added ID
+                name="product_status"
+                value={formData.product_status}
+                onChange={handleFormChange}
+                required
+                className="w-full border border-gray-300 px-3 py-2 rounded-md focus:ring-blue-500 focus:border-blue-500" // Updated: Added border-gray-300, rounded-md, focus styles
+              >
+                <option value="">Select Status</option>
+                <option value="active">Active (Visible to customers)</option> {/* Updated text */}
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Multi-Image Upload */}
+          <div>
+            <label className="block font-medium mb-1 text-gray-700">Product Images</label>
+            <p className="text-sm text-gray-500 mb-3">Upload up to 4 images (first image will be used as the main display)</p> {/* Added description */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[0, 1, 2, 3].map(i => (
+                <div key={i} className="flex flex-col items-center">
+                  <label className="w-full cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(i, e)}
+                      className="hidden"
+                    />
+                    <div className="w-full h-28 border-2 border-dashed border-gray-300 flex items-center justify-center rounded-md hover:bg-gray-50 relative overflow-hidden"> {/* Updated: Added relative and overflow-hidden */}
+                      {previews[i] ? (
+                        <>
+                          <img src={previews[i]} alt={`Preview ${i + 1}`} className="object-cover w-full h-full rounded-md" />
+                          <button
+                            type="button"
+                            onClick={(e) => { e.preventDefault(); removeImage(i); }} // Prevent form submission
+                            className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 text-xs leading-none"
+                            style={{ width: '20px', height: '20px' }} // Fixed size for button
+                          >
+                            <XMarkIcon className="h-4 w-4" />
+                          </button>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center"> {/* Centered content */}
+                          <PlusIcon className="w-8 h-8 text-gray-400" />
+                          <span className="text-xs text-gray-500 mt-1">{i === 0 ? "Main Image" : `Image ${i + 1}`}</span> {/* Image labels */}
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-4">
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" // Updated: Added rounded-md, focus styles
+            >
+              Update Product
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/admin-dashboard/products")}
+              className="ml-4 bg-gray-200 text-gray-800 px-6 py-2 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2" // Updated: Changed to gray-200, text-gray-800, rounded-md, focus styles
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
