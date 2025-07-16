@@ -1,12 +1,33 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
-import Swal from 'sweetalert2';
+import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { 
+  Box, 
+  Paper, 
+  Typography, 
+  TextField, 
+  Button, 
+  Avatar,
+  CircularProgress,
+  InputAdornment,
+  IconButton,
+  Grid
+} from '@mui/material';
+import { 
+  Person, 
+  Email, 
+  Phone, 
+  Home, 
+  CloudUpload,
+  CheckCircle,
+  ArrowBack
+} from '@mui/icons-material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-export default function Updateuser() {
+export default function UpdateUser() {
   const location = useLocation();
+  const navigate = useNavigate();
   const userData = location.state?.userData || {};
   const userId = userData.user_id;
 
@@ -20,10 +41,9 @@ export default function Updateuser() {
 
   const [profileImg, setProfileImg] = useState(null);
   const [profileImgPreview, setProfileImgPreview] = useState(
-    userData.profilePic ? `http://localhost:3001${userData.profilePic}` : ""
+    userData.profilePic ? `http://localhost:3001${userData.profilePic}` : null
   );
-  const [successMsg, setSuccessMsg] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
     setUpdateData({ ...updateData, [e.target.name]: e.target.value });
@@ -31,24 +51,20 @@ export default function Updateuser() {
 
   const handleProfileImgChange = (e) => {
     const file = e.target.files[0];
-
     if (file) {
-        if (file.type.startsWith("image/")) {
-            setProfileImg(file);
-            setProfileImgPreview(URL.createObjectURL(file));
-            setErrorMessage("");
-        } else {
-            toast.error("Please select a valid image file.");
-        }
-    } else {
-        // If no new image is selected, retaiZn the current profile picture
-        setProfileImg(null);
-        setProfileImgPreview(userData.profilePic ? `http://localhost:3001${userData.profilePic}` : "");
+      if (file.type.startsWith("image/")) {
+        setProfileImg(file);
+        setProfileImgPreview(URL.createObjectURL(file));
+      } else {
+        toast.error("Please select a valid image file (JPEG, PNG, etc.)");
+      }
     }
-};
+  };
 
   const handleAccountSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
       const formDataToSend = new FormData();
       formDataToSend.append("userId", userId);
@@ -57,61 +73,202 @@ export default function Updateuser() {
       formDataToSend.append("email", updateData.email);
       formDataToSend.append("phone", updateData.phone);
       formDataToSend.append("address", updateData.address);
-      if(profileImg){
+      
+      if (profileImg) {
         formDataToSend.append("profile_image", profileImg);
       }
-      console.log(userId);
+
       await axios.put("http://localhost:3001/api/users/updateuser", formDataToSend, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        }
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
-      Swal.fire({
-        title: "Success",
-        text: 'Account updated successfully!',
-        icon:'success'
-      });
-      
-    }catch (error){
-      toast.error("Failed to update account");
+
+      toast.success("User updated successfully!");
+      setTimeout(() => navigate(-1), 1500); // Go back to previous page
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update user");
+      console.error("Update error:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-              <ToastContainer position="top-center" autoClose={3000} />
+    <Box sx={{ p: 4, display: 'flex', justifyContent: 'center' }}>
+      <ToastContainer position="top-center" autoClose={3000} />
+      
+      <Paper elevation={3} sx={{ 
+        p: 4, 
+        borderRadius: 3, 
+        width: '100%', 
+        maxWidth: 700 
+      }}>
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          mb: 3,
+          cursor: 'pointer',
+          '&:hover': { color: 'primary.main' }
+        }} onClick={() => navigate(-1)}>
+          <ArrowBack sx={{ mr: 1 }} />
+          <Typography variant="subtitle1">Back</Typography>
+        </Box>
 
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl">
-        {errorMessage && <p className="text-red-500 mb-3">{errorMessage}</p>}
-        {successMsg && <p className="text-green-500 mb-3">{successMsg}</p>}
+        <Typography variant="h4" component="h1" gutterBottom sx={{ 
+          fontWeight: 'bold', 
+          mb: 4,
+          color: 'primary.main'
+        }}>
+          Update User Details
+        </Typography>
 
-        {/* Account Details Update Form */}
-        <form onSubmit={handleAccountSubmit} className="mb-6">
-          <h3 className="text-xl font-semibold text-gray-700 mb-3">Edit User Details</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <input type="text" name="firstName" value={updateData.firstName} onChange={handleInputChange} className="border p-2 rounded w-full" placeholder="First Name" required />
-            <input type="text" name="lastName" value={updateData.lastName} onChange={handleInputChange} className="border p-2 rounded w-full" placeholder="Last Name" required />
-          </div>
-          <input type="email" name="email" value={updateData.email} onChange={handleInputChange} className="border p-2 rounded w-full mt-3" placeholder="Email" required />
-          <input type="text" name="phone" value={updateData.phone} onChange={handleInputChange} className="border p-2 rounded w-full mt-3" placeholder="Phone" />
-          <input type="text" name="address" value={updateData.address} onChange={handleInputChange} className="border p-2 rounded w-full mt-3" placeholder="Address" />
-
+        <Box 
+          component="form" 
+          onSubmit={handleAccountSubmit}
+          sx={{ mt: 3 }}
+        >
           {/* Profile Image Upload */}
-          {profileImgPreview && (
-            <div className="mt-3">
-              <img src={profileImgPreview} alt="Profile Preview" className="rounded-md h-24 w-24 object-cover" />
-            </div>
-          )}
-          <div className="mt-3">
-            <label className="block text-gray-700 font-medium mb-1">Profile Image</label>
-            <input type="file" className="w-full px-4 py-2 border border-gray-300 rounded-md" accept="image/*" onChange={handleProfileImgChange} />
-          </div>
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center',
+            mb: 4
+          }}>
+            <Avatar
+              src={profileImgPreview}
+              sx={{ 
+                width: 120, 
+                height: 120, 
+                mb: 2,
+                border: '2px dashed',
+                borderColor: 'primary.main'
+              }}
+            >
+              {!profileImgPreview && <Person sx={{ fontSize: 60 }} />}
+            </Avatar>
+            <Button
+              component="label"
+              variant="outlined"
+              startIcon={<CloudUpload />}
+              sx={{ textTransform: 'none' }}
+            >
+              Change Photo
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleProfileImgChange}
+                hidden
+              />
+            </Button>
+          </Box>
 
-          <button type="submit" className="w-full bg-blue-500 text-white py-2 mt-4 rounded hover:bg-blue-600 transition">Update Account</button>
-        </form>
-        
-      </div>
-    </div>
+          {/* Name Fields */}
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="First Name"
+                name="firstName"
+                value={updateData.firstName}
+                onChange={handleInputChange}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Last Name"
+                name="lastName"
+                value={updateData.lastName}
+                onChange={handleInputChange}
+                required
+              />
+            </Grid>
+
+            {/* Contact Fields */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                name="email"
+                value={updateData.email}
+                onChange={handleInputChange}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Phone Number"
+                name="phone"
+                value={updateData.phone}
+                onChange={handleInputChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Phone />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Address"
+                name="address"
+                value={updateData.address}
+                onChange={handleInputChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Home />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            {/* Submit Button */}
+            <Grid item xs={12}>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                size="large"
+                disabled={loading}
+                startIcon={loading ? <CircularProgress size={24} /> : <CheckCircle />}
+                sx={{ 
+                  py: 2,
+                  mt: 2,
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: 3
+                  },
+                  transition: 'all 0.2s ease-in-out'
+                }}
+              >
+                {loading ? 'Updating...' : 'Update User'}
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
+      </Paper>
+    </Box>
   );
 }

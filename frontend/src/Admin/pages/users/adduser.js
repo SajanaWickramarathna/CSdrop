@@ -1,257 +1,322 @@
 import React, { useState } from 'react';
 import axios from "axios";
-import { useLocation } from 'react-router-dom';
-import Swal from 'sweetalert2';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { 
+  Box, 
+  Paper, 
+  Typography, 
+  TextField, 
+  Button, 
+  Grid, 
+  Avatar,
+  CircularProgress,
+  InputAdornment,
+  IconButton
+} from '@mui/material';
+import { 
+  Person, 
+  Email, 
+  Phone, 
+  Home, 
+  Lock, 
+  CheckCircle,
+  CloudUpload
+} from '@mui/icons-material';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 export default function AddUser() {
   const location = useLocation();
+  const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const role = queryParams.get("role");
 
-  let registerText;
-
-  if (role === 'customer') {
-    registerText = 'new customer';
-  } else if (role === 'admin') {
-    registerText = 'new admin';
-  } else if (role === 'deliver') {
-    registerText = 'new deliver';
-  } else if (role === 'manager') {
-    registerText = 'new inventory manager';
-  } else {
-    registerText = 'new customer supporter';
-  }
+  const roleTitles = {
+    customer: 'Customer',
+    admin: 'Admin',
+    supporter: 'Customer Supporter',
+    manager: 'Manager',
+    deliver: 'Delivery Person'
+  };
 
   const [formData, setFormData] = useState({
-    fname: "",
-    lname: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     address: "",
     password: "",
-    cpassword: "",
+    confirmPassword: "",
   });
 
   const [image, setImage] = useState(null);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Handle text input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle image file change
   const handleImageChange = (e) => {
-    setImage(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate passwords match
-    if (formData.password !== formData.cpassword) {
+    if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match!");
       return;
     }
 
+    setLoading(true);
+
     try {
       const formDataToSend = new FormData();
-      formDataToSend.append("firstName", formData.fname);
-      formDataToSend.append("lastName", formData.lname);
+      formDataToSend.append("firstName", formData.firstName);
+      formDataToSend.append("lastName", formData.lastName);
       formDataToSend.append("email", formData.email);
       formDataToSend.append("phone", formData.phone);
       formDataToSend.append("address", formData.address);
       formDataToSend.append("password", formData.password);
-      formDataToSend.append("confirmPassword", formData.cpassword);
+      formDataToSend.append("confirmPassword", formData.confirmPassword);
       if (image) {
         formDataToSend.append("profile_image", image);
       }
 
-      let response;
-      if(role === 'customer'){
-        response = await axios.post("http://localhost:3001/api/customers/signup", formDataToSend, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      }else if(role === 'supporter'){
-        response = await axios.post("http://localhost:3001/api/supporters/signup", formDataToSend, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      }else if(role === 'manager') {
-        response = await axios.post("http://localhost:3001/api/managers/signup", formDataToSend,{
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      }else if (role === 'deliver') {
-        response = await axios.post("http://localhost:3001/api/delivers/signup", formDataToSend, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      }else if (role === 'admin'){
-        response = await axios.post("http://localhost:3001/api/admins/signup", formDataToSend, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      }else{
-        setError("Invalid role");
+      const endpoints = {
+        customer: "http://localhost:3001/api/customers/signup",
+        supporter: "http://localhost:3001/api/supporters/signup",
+        manager: "http://localhost:3001/api/managers/signup",
+        deliver: "http://localhost:3001/api/delivers/signup",
+        admin: "http://localhost:3001/api/admins/signup"
+      };
+
+      if (!endpoints[role]) {
+        toast.error("Invalid role specified");
+        return;
       }
-      
+
+      const response = await axios.post(endpoints[role], formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       if (response.status === 200) {
-        setSuccess(response?.data?.message);
-        Swal.fire({
-          title: "Success",
-          text: response?.data?.message,
-          icon:'success'
-        });
-        setError("");
-        setTimeout(() => {
-          window.location.href = "/admin-dashboard/";
-        }, 2000);
+        toast.success(`${roleTitles[role]} created successfully!`);
+        setTimeout(() => navigate("/admin-dashboard"), 2000);
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
     }
-
-
   };
+
   return (
-    <div className="flex flex-row px-32 py-2 mt-6" style={{ height: '100%' }}>
-              <ToastContainer position="top-center" autoClose={3000} />
+    <Box sx={{ p: 4, maxWidth: 800, margin: '0 auto' }}>
+      <ToastContainer position="top-center" autoClose={3000} />
 
-      <div className="flex flex-row bg-white min-h-full w-full border-2 rounded-3xl shadow-lg">
-        
-        {/* Left Hero Section */}
-        <div className="p-6 flex flex-col items-center w-full">
+      <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ 
+          fontWeight: 'bold', 
+          textAlign: 'center',
+          mb: 4,
+          color: 'primary.main'
+        }}>
+          Register New {roleTitles[role] || 'User'}
+        </Typography>
 
-          <h1 className="font-bold text-3xl uppercase">Register a {registerText}</h1>
-
-          {error && <p className="text-red-500 text-sm mt-2 font-bold">{error}</p>}
-          {success && <p className="text-green-500 text-sm mt-2 font-bold">{success} & Redirecting....</p>}
-
-          <form onSubmit={handleSubmit} className="flex flex-col w-full  space-y-4" encType="multipart/form-data">
-            <div className="container space-y-4">
-                {/* Row for Name Inputs */}
-                <div className="row flex flex-col lg:flex-row lg:space-x-4 m-3">
-                    <div className="col w-full lg:w-1/2">
-                        <input
-                        type="text"
-                        placeholder="First Name"
-                        name='fname'
-                        className="p-3 w-full rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                        value={formData.fname}
-                        onChange={handleChange}
-                        required
-                        />
-                    </div>
-                    <div className="col w-full lg:w-1/2 mt-4 lg:mt-0">
-                        <input
-                        type="text"
-                        placeholder="Last Name"
-                        name='lname'
-                        className="p-3 w-full rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                        value={formData.lname}
-                        onChange={handleChange}
-                        required
-                        />
-                    </div>
-                </div>
-
-                {/* Row for Address Inputs */}
-                <div className="row flex flex-col lg:flex-row lg:space-x-4 m-3">
-                    <div className="col w-full lg:w-full">
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          onChange={handleImageChange} 
-                          className="p-2 w-full bg-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-purple-600"
-                          required
-                        />
-                    </div>
-                </div>
-
-                {/* Row for Contact Inputs */}
-                <div className="row flex flex-col lg:flex-row lg:space-x-4 m-3">
-                    <div className="col w-full lg:w-1/2">
-                        <input
-                        type="email"
-                        placeholder="Primary Email"
-                        name='email'
-                        className="p-3 w-full rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        />
-                    </div>
-                    <div className="col w-full lg:w-1/2 mt-4 lg:mt-0">
-                        <input
-                        type="text"
-                        placeholder="Phone Number"
-                        name='phone'
-                        pattern="^\+?[1-9]\d{1,11}$"
-                        title="Phone number must be in the format +94712345678"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        className="p-3 w-full rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                        required
-                        />
-                    </div>
-                </div>
-
-                {/* Row for Address Inputs */}
-                <div className="row flex flex-col lg:flex-row lg:space-x-4 m-3">
-                    <div className="col w-full lg:w-full">
-                        <input
-                        type="text"
-                        placeholder="Address"
-                        name='address'
-                        className="p-3 w-full rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                        value={formData.address}
-                        onChange={handleChange}
-                        required
-                        />
-                    </div>
-                </div>
-
-                {/* Row for Password Inputs */}
-                <div className="row flex flex-col space-y-4 m-3">
-                <input
-                    type="password"
-                    placeholder="Password"
-                    name='password'
-                    className="p-3 w-full rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                    value={formData.password}
-                    onChange={handleChange}
+        <Box 
+          component="form" 
+          onSubmit={handleSubmit} 
+          encType="multipart/form-data"
+          sx={{ mt: 3 }}
+        >
+          <Grid container spacing={3}>
+            {/* Profile Picture Upload */}
+            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center',
+                mb: 2
+              }}>
+                <Avatar
+                  src={imagePreview}
+                  sx={{ 
+                    width: 120, 
+                    height: 120, 
+                    mb: 2,
+                    border: '2px dashed',
+                    borderColor: 'primary.main'
+                  }}
+                >
+                  {!imagePreview && <Person sx={{ fontSize: 60 }} />}
+                </Avatar>
+                <Button
+                  component="label"
+                  variant="outlined"
+                  startIcon={<CloudUpload />}
+                  sx={{ textTransform: 'none' }}
+                >
+                  Upload Photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    hidden
                     required
-                />
-                <input
-                    type="password"
-                    placeholder="Confirm Password"
-                    name='cpassword'
-                    className="p-3 w-full rounded bg-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                    value={formData.cpassword}
-                    onChange={handleChange}
-                    required
-                />
-                </div>
-            </div>
+                  />
+                </Button>
+              </Box>
+            </Grid>
 
-            {/* Register Button */}
-            <button
+            {/* Name Fields */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="First Name"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Last Name"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+
+            {/* Contact Fields */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Email />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Phone Number"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Phone />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            {/* Address */}
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Address"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Home />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            {/* Password Fields */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Password"
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Confirm Password"
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </Grid>
+
+            {/* Submit Button */}
+            <Grid item xs={12}>
+              <Button
                 type="submit"
-                className="bg-purple-600 text-white p-3 rounded font-bold hover:bg-purple-950 transition-all duration-300"
-            >
-                Register
-            </button>
-            </form>
-
-
-         
-        </div>
-
-        
-      </div>
-    </div>
+                fullWidth
+                variant="contained"
+                size="large"
+                disabled={loading}
+                startIcon={loading ? <CircularProgress size={24} /> : <CheckCircle />}
+                sx={{ 
+                  py: 2,
+                  mt: 2,
+                  fontWeight: 'bold',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: 3
+                  },
+                  transition: 'all 0.2s ease-in-out'
+                }}
+              >
+                {loading ? 'Creating Account...' : 'Register'}
+              </Button>
+            </Grid>
+          </Grid>
+        </Box>
+      </Paper>
+    </Box>
   );
 }

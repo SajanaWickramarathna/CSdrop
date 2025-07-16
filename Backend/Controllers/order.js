@@ -2,6 +2,7 @@ const nodemailer = require("nodemailer");
 const Order = require("../Models/order");
 const Cart = require("../Models/Cart");
 const User = require("../Models/user");
+const Product = require("../Models/product");
 const Notification = require("../Models/notification"); // Import Notification
 
 // Configure Nodemailer
@@ -252,56 +253,57 @@ exports.cancelOrder = async (req, res) => {
 // GET ANALYTICS
 exports.getAnalytics = async (req, res) => {
   try {
-    const orders = await Order.find().sort({ created_at: 1 });
+    const { timeRange } = req.query;
 
+    const now = new Date();
+    let startDate;
+
+    switch (timeRange) {
+      case "today":
+        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case "week":
+        startDate = new Date(now);
+        startDate.setDate(now.getDate() - 7);
+        break;
+      case "month":
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case "year":
+        startDate = new Date(now.getFullYear(), 0, 1);
+        break;
+      default:
+        startDate = null;
+    }
+
+    let orders = startDate
+      ? await Order.find({ created_at: { $gte: startDate } }).sort({ created_at: 1 })
+      : await Order.find().sort({ created_at: 1 });
+
+    const users = await User.find();
+
+    // The rest of your existing analytics logic here...
     const totalOrders = orders.length;
-    const totalRevenue = orders.reduce(
-      (sum, order) => sum + (order.total_price || 0),
-      0
-    );
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.total_price || 0), 0);
     const averageOrderValue = totalOrders ? totalRevenue / totalOrders : 0;
-    const conversionRate = 100; // Replace with actual logic if available
+    const conversionRate = 100;
 
-    // Total Customers (unique users who placed orders)
     const totalCustomers = new Set(orders.map((order) => order.user_id)).size;
 
-    // Get today's and this month's date boundaries
-    const now = new Date();
-    const startOfToday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
-    );
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const ordersToday = orders.filter(
-      (order) => new Date(order.created_at) >= startOfToday
-    ).length;
-    const ordersThisMonth = orders.filter(
-      (order) => new Date(order.created_at) >= startOfMonth
-    ).length;
-
-    // Order Status Counts
     const statusCounts = {};
     orders.forEach((order) => {
       statusCounts[order.status] = (statusCounts[order.status] || 0) + 1;
     });
 
-    // Payment Method Counts
     const paymentMethodCounts = {};
     orders.forEach((order) => {
-      paymentMethodCounts[order.payment_method] =
-        (paymentMethodCounts[order.payment_method] || 0) + 1;
+      paymentMethodCounts[order.payment_method] = (paymentMethodCounts[order.payment_method] || 0) + 1;
     });
 
-    // Top Selling Products
     const productSales = {};
     orders.forEach((order) => {
       order.items.forEach((item) => {
-        if (!productSales[item.product_id]) {
-          productSales[item.product_id] = 0;
-        }
-        productSales[item.product_id] += item.quantity;
+        productSales[item.product_id] = (productSales[item.product_id] || 0) + item.quantity;
       });
     });
 
@@ -310,7 +312,6 @@ exports.getAnalytics = async (req, res) => {
       .sort((a, b) => b.quantity - a.quantity)
       .slice(0, 5);
 
-    // Top Customers
     const customerStats = {};
     orders.forEach((order) => {
       const userId = order.user_id;
@@ -321,30 +322,53 @@ exports.getAnalytics = async (req, res) => {
       customerStats[userId].total += order.total_price;
     });
 
-    const customerIds = Object.keys(customerStats);
-    const customers = await User.find({
-      user_id: { $in: customerIds.map(Number) },
-    });
-
     const topCustomers = Object.entries(customerStats)
       .map(([user_id, data]) => {
-        const customer = customers.find((c) => c.user_id === Number(user_id));
+        const customer = users.find((c) => c.user_id === Number(user_id));
         return {
           user_id,
-          name: customer
-            ? customer.firstName + " " + customer.lastName
-            : "Unknown",
+          name: customer ? `${customer.firstName} ${customer.lastName}` : "Unknown",
           ...data,
         };
       })
       .sort((a, b) => b.total - a.total)
       .slice(0, 5);
 
+    const recentOrders = orders
+      .slice(-5)
+      .reverse()
+      .map((order) => {
+        const customer = users.find((u) => u.user_id === order.user_id);
+        return {
+          id: order.order_id,
+          customerName: customer ? `${customer.firstName} ${customer.lastName}` : "Unknown",
+          date: order.created_at,
+          amount: order.total_price,
+          status: order.status.toLowerCase(),
+        };
+      });
+
+    const salesDataMap = {};
+    orders.forEach((order) => {
+      const date = order.created_at.toISOString().split('T')[0];
+      if (!salesDataMap[date]) {
+        salesDataMap[date] = { date, sales: 0, orders: 0 };
+      }
+      salesDataMap[date].sales += order.total_price;
+      salesDataMap[date].orders += 1;
+    });
+
+    const salesData = Object.values(salesDataMap).sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    const categoryDistribution = [
+      { name: "Electronics", value: 50000 },
+      { name: "Clothing", value: 30000 },
+      { name: "Accessories", value: 20000 },
+    ];
+
     res.status(200).json({
       totalOrders,
       totalCustomers,
-      ordersToday,
-      ordersThisMonth,
       totalRevenue,
       averageOrderValue,
       conversionRate,
@@ -352,12 +376,17 @@ exports.getAnalytics = async (req, res) => {
       paymentMethodCounts,
       topSellingProducts,
       topCustomers,
+      recentOrders,
+      salesData,
+      categoryDistribution,
     });
   } catch (error) {
     console.error("❌ getAnalytics Error:", error);
     res.status(500).json({ message: "Internal Server Error", error });
   }
 };
+
+
 
 // GET USER ORDER SUMMARY
 exports.getUserOrderSummary = async (req, res) => {
@@ -388,3 +417,5 @@ exports.getUserOrderSummary = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error });
   }
 };
+
+
