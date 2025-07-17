@@ -89,7 +89,7 @@ export default function Cart() {
     fetchUserData();
   }, [token]);
 
-  // Fetch cart and product detailsssssssss
+  // Fetch cart and product details
   useEffect(() => {
     if (!userData) return;
 
