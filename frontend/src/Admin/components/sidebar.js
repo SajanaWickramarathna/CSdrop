@@ -8,6 +8,7 @@ import InventoryIcon from "@mui/icons-material/Inventory2Outlined";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCartOutlined";
 import SettingsIcon from "@mui/icons-material/SettingsOutlined";
 import PromotionIcon from "@mui/icons-material/DiscountOutlined";
+import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import AnalyticsIcon from "@mui/icons-material/AnalyticsOutlined";
 import axios from "axios";
 import HomeIcon from "@mui/icons-material/HomeOutlined";
@@ -17,19 +18,19 @@ export default function Sidebar() {
   const [openDropdowns, setOpenDropdowns] = useState({
     users: false,
     inventory: false,
-    analytics: false
+    analytics: false,
   });
-  
+
   const toggleDropdown = (dropdown) => {
-    setOpenDropdowns(prev => ({
+    setOpenDropdowns((prev) => ({
       ...prev,
-      [dropdown]: !prev[dropdown]
+      [dropdown]: !prev[dropdown],
     }));
-  }
+  };
 
   const [userData, setUserData] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem("token")); 
-  const [isLoading, setIsLoading] = useState(true); 
+  const [token, setToken] = useState(localStorage.getItem("token"));
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   const fetchUserData = async () => {
@@ -47,7 +48,7 @@ export default function Sidebar() {
         window.location.href = "/logout";
       }
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
 
@@ -57,7 +58,7 @@ export default function Sidebar() {
     } else {
       setIsLoading(false);
     }
-  }, [token]); 
+  }, [token]);
 
   if (isLoading) {
     return (
@@ -68,90 +69,100 @@ export default function Sidebar() {
   }
 
   const navItems = [
-    { 
-      name: "Home", 
-      icon: <HomeIcon className="mr-3" />, 
-      to: "/", 
-      type: "link" 
+    {
+      name: "Home",
+      icon: <HomeIcon className="mr-3" />,
+      to: "/",
+      type: "link",
     },
-    { 
-      name: "Shop", 
-      icon: <StoreIcon className="mr-3" />, 
-      to: "/shop", 
-      type: "link" 
+    {
+      name: "Shop",
+      icon: <StoreIcon className="mr-3" />,
+      to: "/shop",
+      type: "link",
     },
-    { 
-      name: "Dashboard", 
-      icon: <DashboardIcon className="mr-3" />, 
-      to: "/admin-dashboard", 
-      type: "link" 
+    {
+      name: "Dashboard",
+      icon: <DashboardIcon className="mr-3" />,
+      to: "/admin-dashboard",
+      type: "link",
     },
-    { 
-      name: "Manage Users", 
-      icon: <PeopleIcon className="mr-3" />, 
+    {
+      name: "Manage Users",
+      icon: <PeopleIcon className="mr-3" />,
       type: "dropdown",
       items: [
         { name: "Customers", to: "/admin-dashboard/users/customers" },
         { name: "Supporters", to: "/admin-dashboard/users/supporters" },
-        { name: "Admins", to: "/admin-dashboard/users/admins" }
-      ]
+        { name: "Admins", to: "/admin-dashboard/users/admins" },
+      ],
     },
-    { 
-      name: "Inventory", 
-      icon: <InventoryIcon className="mr-3" />, 
+    {
+      name: "Inventory",
+      icon: <InventoryIcon className="mr-3" />,
       type: "dropdown",
       items: [
         { name: "Add Product", to: "/admin-dashboard/addproduct" },
         { name: "Products", to: "/admin-dashboard/products" },
         { name: "Categories", to: "/admin-dashboard/category" },
-        { name: "Brands", to: "/admin-dashboard/brands" }
-      ]
+        { name: "Brands", to: "/admin-dashboard/brands" },
+      ],
     },
-    { 
-      name: "Orders", 
-      icon: <ShoppingCartIcon className="mr-3" />, 
-      to: "/admin-dashboard/orders/orders", 
-      type: "link" 
+    {
+      name: "Orders",
+      icon: <ShoppingCartIcon className="mr-3" />,
+      to: "/admin-dashboard/orders/orders",
+      type: "link",
     },
-    { 
-      name: "Analytics", 
-      icon: <AnalyticsIcon className="mr-3" />, 
+    {
+      name: "Analytics",
+      icon: <AnalyticsIcon className="mr-3" />,
       type: "dropdown",
       items: [
         { name: "Users", to: "/admin-dashboard/analytics/users" },
-        { name: "Orders", to: "/admin-dashboard/analytics/orders" }
-      ]
+        { name: "Orders", to: "/admin-dashboard/analytics/orders" },
+      ],
+    },
+    {
+      name: "Delivery",
+      to: "/admin-dashboard/delivery",
+      icon: <LocalShippingIcon className="mr-3" />,
+      type: "link",
     },
     { type: "divider" },
-    { 
-      name: "Settings", 
-      icon: <SettingsIcon className="mr-3" />, 
-      to: "/admin-dashboard/settings", 
-      type: "link" 
-    }
+    {
+      name: "Settings",
+      icon: <SettingsIcon className="mr-3" />,
+      to: "/admin-dashboard/settings",
+      type: "link",
+    },
   ];
 
   return (
     <div className="min-h-screen w-64 bg-white text-blue-950 flex flex-col border-r border-gray-200">
       <div className="w-full h-16 p-4 flex items-center">
-        <img src={Logo} alt="logo" className="w-32 transition-all hover:scale-105" />
+        <img
+          src={Logo}
+          alt="logo"
+          className="w-32 transition-all hover:scale-105"
+        />
       </div>
-      
+
       <hr className="border-gray-200 mx-4" />
-      
+
       <nav className="flex-1 overflow-y-auto py-4">
         <ul>
           {navItems.map((item, index) => {
             if (item.type === "divider") {
               return <hr key={index} className="border-gray-200 my-2 mx-4" />;
             }
-            
+
             if (item.type === "link") {
               return (
                 <li key={item.name} className="px-4 my-1">
                   <NavLink
                     to={item.to}
-                    state={{data: userData}}
+                    state={{ data: userData }}
                     end
                     className={({ isActive }) =>
                       `flex items-center py-2 px-4 rounded-lg transition-all ${
@@ -167,16 +178,22 @@ export default function Sidebar() {
                 </li>
               );
             }
-            
+
             if (item.type === "dropdown") {
-              const isOpen = openDropdowns[item.name.toLowerCase().replace(" ", "_")] || false;
-              
+              const isOpen =
+                openDropdowns[item.name.toLowerCase().replace(" ", "_")] ||
+                false;
+
               return (
                 <li key={item.name} className="px-4 my-1">
                   <button
-                    onClick={() => toggleDropdown(item.name.toLowerCase().replace(" ", "_"))}
+                    onClick={() =>
+                      toggleDropdown(item.name.toLowerCase().replace(" ", "_"))
+                    }
                     className={`flex items-center w-full py-2 px-4 rounded-lg transition-all ${
-                      isOpen ? "text-blue-600" : "text-blue-900 hover:bg-blue-50"
+                      isOpen
+                        ? "text-blue-600"
+                        : "text-blue-900 hover:bg-blue-50"
                     }`}
                   >
                     {item.icon}
@@ -197,7 +214,7 @@ export default function Sidebar() {
                       <li key={subItem.name} className="ml-6 my-1">
                         <NavLink
                           to={subItem.to}
-                          state={{data: userData}}
+                          state={{ data: userData }}
                           className={({ isActive }) =>
                             `block py-2 px-4 rounded-lg transition-all ${
                               isActive
@@ -214,18 +231,18 @@ export default function Sidebar() {
                 </li>
               );
             }
-            
+
             return null;
           })}
         </ul>
       </nav>
 
       <div className="p-4 mt-auto">
-        <button 
+        <button
           className="w-full py-3 rounded-xl flex items-center justify-center transition-all duration-300
                     bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700
                     text-white shadow-md hover:shadow-lg"
-          onClick={() => navigate('/logout')}
+          onClick={() => navigate("/logout")}
         >
           <Logout className="mr-2" />
           Logout

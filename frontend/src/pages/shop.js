@@ -18,11 +18,12 @@ import {
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
+import {api} from "../api"; 
 
 export default function Shop() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [categories, setCategories] = useState([]); 
   const [brands, setBrands] = useState([]);
   const [allBrands, setAllBrands] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -39,8 +40,8 @@ export default function Shop() {
 
   useEffect(() => {
     setLoading(true);
-    axios
-      .get("http://localhost:3001/api/categories")
+    api
+      .get("/categories")
       .then((response) => setCategories(response.data))
       .catch((error) => console.error("Error fetching categories:", error));
 

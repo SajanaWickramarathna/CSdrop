@@ -23,6 +23,9 @@ import Orders from '../Admin/pages/orders/orders';
 import UpdateOrder from '../Admin/pages/orders/updateorder';
 import ViewOrder from '../Admin/pages/orders/vieworder';
 
+import Delivery from '../Admin/pages/delivery/delivery';
+import Createdelivery from '../Admin/pages/delivery/viewdelivery';
+
 export default function AdminDashboard() {
   return (
       <div className="flex bg-gray-100  min-h-screen">
@@ -56,8 +59,9 @@ export default function AdminDashboard() {
 
               <Route path="/analytics/users" element={<UserAnalytics />} />
               <Route path="/analytics/orders" element={<OrderAnalytics />} />
-              
 
+              <Route path="/delivery" element={<Delivery />} />
+              <Route path="/createdelivery" element={<Createdelivery />} />
             </Routes>
           </div>
         </div>

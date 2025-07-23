@@ -9,6 +9,7 @@ import NotificationIcon from "@mui/icons-material/Notifications";
 import TicketIcon from "@mui/icons-material/ListAltOutlined";
 import PlusOneIcon from "@mui/icons-material/PlusOneOutlined";
 import SettingIcon from "@mui/icons-material/SettingsOutlined";
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import axios from "axios";
 import { CircularProgress } from "@mui/material";
 import { useCart } from "../../context/CartContext";
@@ -109,13 +110,46 @@ export default function Sidebar() {
       <nav className="flex-1 px-4 py-6">
         <ul className="space-y-1">
           {[
-            { name: "Dashboard", path: "/customer-dashboard", icon: <DashboardIcon /> },
-            { name: "Profile", path: "/customer-dashboard/profile", icon: <AccountCircleIcon /> },
-            { name: "Cart", path: "/customer-dashboard/cart", icon: <ShoppingCartIcon /> },
-            { name: "Orders", path: "/customer-dashboard/orders", icon: <OrdersIcon /> },
-            { name: "Notifications", path: "/customer-dashboard/notifications", icon: <NotificationIcon /> },
-            { name: "Tickets", path: "/customer-dashboard/tickets", icon: <TicketIcon /> },
-            { name: "Add Ticket", path: "/customer-dashboard/addticket", icon: <PlusOneIcon /> },
+            {
+              name: "Dashboard",
+              path: "/customer-dashboard",
+              icon: <DashboardIcon />,
+            },
+            {
+              name: "Profile",
+              path: "/customer-dashboard/profile",
+              icon: <AccountCircleIcon />,
+            },
+            {
+              name: "Cart",
+              path: "/customer-dashboard/cart",
+              icon: <ShoppingCartIcon />,
+            },
+            {
+              name: "Orders",
+              path: "/customer-dashboard/orders",
+              icon: <OrdersIcon />,
+            },
+            {
+              name: "Delivery",
+              path: "/customer-dashboard/delivery",
+              icon: <LocalShippingIcon />,
+            },
+            {
+              name: "Notifications",
+              path: "/customer-dashboard/notifications",
+              icon: <NotificationIcon />,
+            },
+            {
+              name: "Tickets",
+              path: "/customer-dashboard/tickets",
+              icon: <TicketIcon />,
+            },
+            {
+              name: "Add Ticket",
+              path: "/customer-dashboard/addticket",
+              icon: <PlusOneIcon />,
+            },
           ].map((item) => (
             <li key={item.name}>
               <button
@@ -184,7 +218,9 @@ export default function Sidebar() {
         <footer className="mt-6 text-xs text-blue-400 text-center">
           <p className="mb-1">&copy; {new Date().getFullYear()} DROPship</p>
           <p>All rights reserved</p>
-          <p className="mt-2 text-blue-300">Developed by Sajana Wickramarathna</p>
+          <p className="mt-2 text-blue-300">
+            Developed by Sajana Wickramarathna
+          </p>
         </footer>
       </div>
     </div>

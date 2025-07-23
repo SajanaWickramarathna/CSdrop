@@ -12,6 +12,7 @@ import Ticket from '../Customer/pages/tickets/tickets';
 import Addticket from '../Customer/pages/tickets/addticket';
 import ViweReplyTicket from '../Customer/pages/tickets/viewticket';
 import ViewOrder from '../Customer/pages/viewOrder';
+import Delivery from '../Customer/pages/delivery';
 
 export default function CustomerDashboard() {
   return (
@@ -37,6 +38,7 @@ export default function CustomerDashboard() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/orders" element={<Orders />} />
+            <Route path="/delivery" element={<Delivery />} />
             <Route path='/vieworder/:orderId' element={<ViewOrder/>} />
             <Route path="/notifications" element={<Notification />} />
             <Route path="/tickets" element={<Ticket />} />
