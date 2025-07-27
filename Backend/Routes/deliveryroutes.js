@@ -9,7 +9,7 @@ router.post('/', deliveryController.createDelivery);
 router.get('/all', deliveryController.getAllDeliveries);
 
 // Get delivery by ID
-router.get('/:id', deliveryController.getDeliveryById);
+router.get('/delivery/:id', deliveryController.getDeliveryById);
 
 // Get delivery by Order ID - NEW ROUTE
 router.get('/by-order/:orderId', deliveryController.getDeliveryByOrderId); // New route for tracking by orderId
