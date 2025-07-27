@@ -25,6 +25,7 @@ import ViewOrder from '../Admin/pages/orders/vieworder';
 
 import Delivery from '../Admin/pages/delivery/delivery';
 import Createdelivery from '../Admin/pages/delivery/viewdelivery';
+import DeliveryStatusUpdater from '../Admin/pages/delivery/updatedeliverystatus';
 
 export default function AdminDashboard() {
   return (
@@ -62,6 +63,7 @@ export default function AdminDashboard() {
 
               <Route path="/delivery" element={<Delivery />} />
               <Route path="/createdelivery" element={<Createdelivery />} />
+              <Route path="/delivery/:deliveryId" element={<DeliveryStatusUpdater />} />
             </Routes>
           </div>
         </div>

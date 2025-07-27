@@ -60,7 +60,17 @@ export default function Notifications() {
         setNotifications(response.data);
       } catch (err) {
         console.error('Error fetching notifications:', err);
-        setError('Failed to load notifications');
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-md text-center">
+              <NotificationsIcon className="text-gray-300 text-5xl mb-4 mx-auto" />
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                No Notifications
+              </h2>
+              <p className="text-gray-600">
+                You don't have any notifications yet
+              </p>
+            </div>
+          </div>
       }
     };
 

@@ -1,10 +1,8 @@
-// pages/user/TrackDelivery.js
-
 import React, { useState } from 'react';
 import {
   Box, Typography, TextField, Button, Paper, Stepper, Step, StepLabel
 } from '@mui/material';
-import axios from 'axios';
+import {api} from '../../api';
 
 const steps = ['pending', 'assigned', 'picked_up', 'in_transit', 'delivered', 'cancelled'];
 
@@ -16,10 +14,12 @@ export default function TrackDelivery() {
   const handleTrack = async () => {
     try {
       setError('');
-      const res = await axios.get(`/api/delivery/${orderId}`);
+      // Changed API endpoint to match the new backend route for tracking by order ID
+      const res = await api.get(`/deliveries/by-order/${orderId}`);
       setDelivery(res.data);
     } catch (err) {
-      setError('Delivery not found');
+      console.error("Error tracking delivery:", err); // Log the full error for debugging
+      setError('Delivery not found for this Order ID.');
       setDelivery(null);
     }
   };
@@ -46,6 +46,7 @@ export default function TrackDelivery() {
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6">Delivery Info</Typography>
           <Typography>Delivery ID: {delivery.delivery_id}</Typography>
+          <Typography>Order ID: {delivery.order_id}</Typography> {/* Added Order ID for clarity */}
           <Typography>Status: {delivery.delivery_status}</Typography>
           <Typography>Estimated: {delivery.estimated_delivery?.substring(0, 10) || 'N/A'}</Typography>
           <Typography>Actual: {delivery.actual_delivery?.substring(0, 10) || 'Not delivered yet'}</Typography>
