@@ -90,10 +90,10 @@ const statusConfig = {
     color: 'info',
     label: 'Processing'
   },
-  shipped: {
+  inDelivery: {
     icon: <LocalShipping color="primary" />,
     color: 'primary',
-    label: 'Shipped'
+    label: 'In Delivery'
   },
   delivered: {
     icon: <CheckCircle color="success" />,
@@ -216,7 +216,7 @@ export default function UpdateOrder() {
       if (response.status === 200) {
         setSuccessMessage("Order status updated successfully!");
         setTimeout(() => {
-          navigate("/admin-dashboard/orders");
+          navigate("/admin-dashboard/orders/orders");
         }, 2000);
       }
     } catch (err) {

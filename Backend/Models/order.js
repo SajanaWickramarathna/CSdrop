@@ -11,7 +11,7 @@ const orderSchema = new Schema({
         }
     ],
     total_price: { type: Number, required: true },
-    status: { type: String, enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'], default: 'pending' },
+    status: { type: String, enum: ['pending', 'processing', 'in delivery', 'delivered', 'cancelled'], default: 'pending' },
     shipping_address: { type: String, required: true },
     payment_status: { type: String, enum: ['pending', 'paid', 'failed'], default: 'pending' },
     payment_method: { type: String, enum: ['COD', 'Payment Slip'], default: 'COD' }, // New Field

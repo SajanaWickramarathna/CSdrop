@@ -22,7 +22,7 @@ import {
   Typography,
   Box
 } from "@mui/material";
-import { 
+import {
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
   ShoppingBag as ShoppingBagIcon,
@@ -109,8 +109,8 @@ export default function UserOrders() {
       return;
     }
 
-    if (status === "shipped") {
-      showSnackbar("You cannot cancel an order that has been shipped.", "warning");
+    if (status === "inDelivery") {
+      showSnackbar("You cannot cancel an order that is in delivery.", "warning");
       return;
     }
 
@@ -146,8 +146,8 @@ export default function UserOrders() {
   const getStatusChip = (status) => {
     let color;
     let icon;
-    
-    switch(status) {
+
+    switch (status) {
       case "delivered":
         color = "success";
         icon = <CheckCircleIcon fontSize="small" />;
@@ -156,7 +156,7 @@ export default function UserOrders() {
         color = "error";
         icon = <CancelIcon fontSize="small" />;
         break;
-      case "shipped":
+      case "inDelivery":
         color = "info";
         break;
       default:
@@ -185,11 +185,11 @@ export default function UserOrders() {
 
   if (!token) {
     return (
-      <Box 
-        display="flex" 
-        flexDirection="column" 
-        alignItems="center" 
-        justifyContent="center" 
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
         minHeight="400px"
         p={4}
         textAlign="center"
@@ -222,18 +222,11 @@ export default function UserOrders() {
           <Table>
             <TableHead sx={{ bgcolor: 'background.default' }}>
               <TableRow>
-                {[
-                  "Order ID",
-                  "Total",
-                  "Status",
-                  "Payment",
-                  "Date",
-                  "Actions"
-                ].map((header) => (
+                {["Order ID", "Total", "Status", "Payment", "Date", "Actions"].map((header) => (
                   <TableCell
                     key={header}
-                    sx={{ 
-                      fontWeight: 'bold', 
+                    sx={{
+                      fontWeight: 'bold',
                       textTransform: 'uppercase',
                       color: 'text.secondary',
                       textAlign: 'center'
@@ -246,65 +239,68 @@ export default function UserOrders() {
             </TableHead>
             <TableBody>
               {orders.length > 0 ? (
-                orders.map((order) => (
-                  <TableRow 
-                    key={order.order_id} 
-                    hover
-                    sx={{ 
-                      '&:last-child td': { borderBottom: 0 },
-                      '&:hover': { bgcolor: 'action.hover' }
-                    }}
-                  >
-                    <TableCell sx={{ textAlign: 'center' }}>
-                      <Typography variant="body2" fontWeight="medium">
-                        #{order.order_id}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ textAlign: 'center' }}>
-                      <Typography variant="body2">
-                        LKR {order.total_price.toFixed(2)}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ textAlign: 'center' }}>
-                      {getStatusChip(order.status)}
-                    </TableCell>
-                    <TableCell sx={{ textAlign: 'center' }}>
-                      <Typography variant="body2" textTransform="capitalize">
-                        {order.payment_method}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ textAlign: 'center' }}>
-                      <Typography variant="body2">
-                        {format(new Date(order.created_at), 'dd/MM/yyyy HH:mm')}
-                      </Typography>
-                    </TableCell>
-                    <TableCell sx={{ textAlign: 'center' }}>
-                      <Box display="flex" justifyContent="center" gap={1}>
-                        <Tooltip title="View Details">
-                          <IconButton
-                            color="primary"
-                            size="small"
-                            onClick={() =>
-                              navigate(`/customer-dashboard/vieworder/${order.order_id}`)
-                            }
-                          >
-                            <VisibilityIcon />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Cancel Order">
-                          <IconButton
-                            color="error"
-                            size="small"
-                            onClick={() => handleOpenDialog(order.order_id, order.status)}
-                            disabled={['cancelled', 'shipped', 'delivered'].includes(order.status)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))
+                orders.map((order) => {
+                  const displayStatus = order.status === "shipped" ? "inDelivery" : order.status;
+                  return (
+                    <TableRow
+                      key={order.order_id}
+                      hover
+                      sx={{
+                        '&:last-child td': { borderBottom: 0 },
+                        '&:hover': { bgcolor: 'action.hover' }
+                      }}
+                    >
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <Typography variant="body2" fontWeight="medium">
+                          #{order.order_id}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <Typography variant="body2">
+                          LKR {order.total_price.toFixed(2)}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        {getStatusChip(displayStatus)}
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <Typography variant="body2" textTransform="capitalize">
+                          {order.payment_method}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <Typography variant="body2">
+                          {format(new Date(order.created_at), 'dd/MM/yyyy HH:mm')}
+                        </Typography>
+                      </TableCell>
+                      <TableCell sx={{ textAlign: 'center' }}>
+                        <Box display="flex" justifyContent="center" gap={1}>
+                          <Tooltip title="View Details">
+                            <IconButton
+                              color="primary"
+                              size="small"
+                              onClick={() =>
+                                navigate(`/customer-dashboard/vieworder/${order.order_id}`)
+                              }
+                            >
+                              <VisibilityIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Cancel Order">
+                            <IconButton
+                              color="error"
+                              size="small"
+                              onClick={() => handleOpenDialog(order.order_id, displayStatus)}
+                              disabled={['cancelled', 'inDelivery', 'delivered'].includes(displayStatus)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               ) : (
                 <TableRow>
                   <TableCell colSpan={6} sx={{ textAlign: 'center', py: 4 }}>
@@ -343,8 +339,8 @@ export default function UserOrders() {
           <Button onClick={handleCloseDialog} color="primary">
             No, Keep It
           </Button>
-          <Button 
-            onClick={handleCancelOrder} 
+          <Button
+            onClick={handleCancelOrder}
             color="error"
             variant="contained"
             startIcon={<CancelIcon />}
@@ -361,8 +357,8 @@ export default function UserOrders() {
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
-        <Alert 
-          onClose={handleSnackbarClose} 
+        <Alert
+          onClose={handleSnackbarClose}
           severity={snackbarSeverity}
           sx={{ width: '100%' }}
         >

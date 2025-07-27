@@ -43,6 +43,7 @@ import {
   Payment,
   HourglassEmpty
 } from "@mui/icons-material";
+import { MdLocalShipping } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import jsPDF from "jspdf";
@@ -163,7 +164,7 @@ export default function AllOrders() {
 
   // Open confirmation dialog for cancellation
   const handleOpenDialog = (orderId, status) => {
-    const uncancelableStatuses = ["cancelled", "shipped", "delivered"];
+    const uncancelableStatuses = ["cancelled", "in delivery", "delivered"];
     if (uncancelableStatuses.includes(status.toLowerCase())) {
       setSnackbarMessage(
         `You cannot cancel an order that is ${status.toLowerCase()}.`
@@ -240,27 +241,27 @@ export default function AllOrders() {
     switch(lowerStatus) {
       case 'completed':
       case 'delivered':
-        icon = <CheckCircle fontSize="small" />;
+        
         color = 'success';
         break;
       case 'cancelled':
-        icon = <Cancel fontSize="small" />;
+        
         color = 'error';
         break;
-      case 'shipped':
-        icon = <LocalShipping fontSize="small" />;
+      case 'inDelivery':
+        
         color = 'info';
         break;
       case 'pending':
-        icon = <HourglassEmpty fontSize="small" />;
+        
         color = 'warning';
         break;
       case 'processing':
-        icon = <HourglassEmpty fontSize="small" />;
+        
         color = 'secondary';
         break;
       default:
-        icon = <Payment fontSize="small" />;
+        
         color = 'primary';
     }
     
