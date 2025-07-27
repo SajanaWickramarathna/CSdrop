@@ -401,6 +401,7 @@ const Checkout = () => {
             ))}
           </div>
         </div>
+        
 
         {/* Order Summary */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -418,6 +419,9 @@ const Checkout = () => {
             <div className="flex justify-between">
               <span className="text-gray-600">Shipping</span>
               <span className="font-medium">Free</span>
+            </div>
+             <div className="flex justify-between">
+              <span className="font-black">Dellivery will happen within 14 to 20 days</span>
             </div>
             <div className="border-t border-gray-200 my-2"></div>
             <div className="flex justify-between font-bold text-lg">
