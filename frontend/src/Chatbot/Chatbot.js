@@ -4,7 +4,6 @@ import chatbotIcon from "../assets/assistant.png";
 import { FaTimes, FaPaperPlane } from "react-icons/fa";
 import axios from "axios";
 import { motion } from "framer-motion";
-import "./Chatbot.css";
 
 function Chatbot() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
@@ -14,8 +13,8 @@ function Chatbot() {
   const [isTyping, setIsTyping] = useState(false);
   const [, setTimestampRefreshCounter] = useState(false);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
 
-  // Function to get the current date and time in the required format
   const getCurrentDate = () => {
     const options = {
       year: "numeric",
@@ -28,7 +27,6 @@ function Chatbot() {
     return new Date().toLocaleString("en-US", options);
   };
 
-  // Function to calculate the time difference from the current time
   const getTimeDifference = (timestamp) => {
     const now = new Date();
     const diffInSeconds = (now - timestamp) / 1000;
@@ -44,35 +42,22 @@ function Chatbot() {
     }
   };
 
-  // Function to fetch bot response
   const getResponse = async (input) => {
-    const message = chatbotMessages.find(
-      (msg) => msg.prompt === input
-    )?.message;
-
-    if (message) {
-      return message;
-    }
+    const message = chatbotMessages.find((msg) => msg.prompt === input)?.message;
+    if (message) return message;
 
     try {
-      const response = await axios({
-        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDLUPtSpNZLeuogMKC4qjtXc3_Y49eJnrI`,
-        method: "post",
-        data: {
-          contents: [{ parts: [{ text: input }] }],
-        },
-      });
-      return (
-        response.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
-        chatbotMessages["default"]
+      const response = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyDLUPtSpNZLeuogMKC4qjtXc3_Y49eJnrI`,
+        { contents: [{ parts: [{ text: input }] }] }
       );
+      return response.data?.candidates?.[0]?.content?.parts?.[0]?.text || chatbotMessages["default"];
     } catch (error) {
       console.error("Error fetching response:", error);
       return "Sorry, I'm having trouble responding right now.";
     }
   };
 
-  // Handle sending the user's message
   const handleSend = async () => {
     if (!input.trim()) return;
 
@@ -80,11 +65,10 @@ function Chatbot() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
-
     setIsTyping(true);
+
     setTimeout(async () => {
       setIsTyping(false);
-
       const botResponseText = await getResponse(input);
       const botResponse = {
         text: botResponseText,
@@ -96,139 +80,146 @@ function Chatbot() {
     }, 2000);
   };
 
-  // Refresh timestamps every 60 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       setTimestampRefreshCounter((prev) => prev + 1);
     }, 60000);
-
     return () => clearInterval(interval);
   }, []);
 
-  // Auto scroll to the latest message
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
-  const capitalize = (str) => {
-    return str
+  useEffect(() => {
+    if (isChatbotOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isChatbotOpen]);
+
+  const capitalize = (str) =>
+    str
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
-  };
 
   return (
-    <div className="chatbot-container">
+    <div className="fixed bottom-1 right-1 z-50 lg:bottom-4 lg:right-4">
       {!isChatbotOpen && (
         <motion.div
           onClick={() => setIsChatbotOpen(true)}
-          className="chatbot-icon"
+          className="w-16 h-16 sm:w-12 sm:h-12 lg:w-20 lg:h-20 cursor-pointer rounded-full flex justify-center items-center hover:shadow-lg hover:scale-110 transition"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
-          <img
-            src={chatbotIcon}
-            alt="Chat Icon"
-            className="chatbot-icon-image"
-          />
+          <img src={chatbotIcon} alt="Chat Icon" className="w-full h-full object-cover rounded-full" />
         </motion.div>
       )}
 
       {isChatbotOpen && (
-        <div className="chatbot-window">
-          <div className="chatbot-header">
-            <div className="chatbot-header-info">
-              <h2 className="chatbot-name">How can we help</h2>
-            </div>
+        <div className="w-[500px] h-[550px] bg-white rounded-lg shadow-xl flex flex-col border border-gray-200">
+          {/* Header */}
+          <div className="flex justify-between items-center p-3 bg-gradient-to-r from-purple-700 to-purple-900 text-white rounded-t-lg shadow-sm">
+            <h2 className="text-lg font-bold">How can we help</h2>
             <button
               onClick={() => setIsChatbotOpen(false)}
-              className="chatbot-close-btn"
+              className="text-white hover:text-red-500 hover:bg-white/30 rounded-full p-1 transition"
             >
               <FaTimes />
             </button>
           </div>
 
-          <div className="chatbot-messages">
-            <p className="chatbot-date">{getCurrentDate()}</p>
+          {/* Messages */}
+          <div className="flex-grow overflow-y-auto p-3 bg-white scroll-smooth">
+            <p className="text-sm text-gray-600 font-medium mb-2">{getCurrentDate()}</p>
 
-            <div className="chatbot-greeting">
-              <div className="chatbot-greeting-header">
-                <span>How can we help you today?</span>
+            {/* Greeting */}
+            <div className="bg-purple-100 p-4 rounded-lg shadow-md text-center mb-4 mt-6">
+              <div className="text-lg font-semibold text-purple-800 mb-2">
+                How can we help you today?
               </div>
-
-              <div className="chatbot-greeting-message">
+              <div className="flex flex-col items-center">
                 <motion.p
-                  className="chatbot-greeting-text"
+                  className="text-gray-700 text-sm mb-2"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                 >
-                  Hi there! I'm your virtual assistant. Let me know if you have
-                  any questions!
+                  Hi there! I'm your virtual assistant. Let me know if you have any questions!
                 </motion.p>
               </div>
             </div>
 
+            {/* Chat Messages */}
             {messages.map((msg, index) => (
-              <div
+              <motion.div
                 key={index}
-                className={`chatbot-message ${
-                  msg.fromUser ? "user-message" : "bot-message"
-                }`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className={`flex items-start mb-4 ${msg.fromUser ? "justify-end" : "flex-col items-start"}`}
               >
                 {!msg.fromUser && (
                   <img
                     src={chatbotIcon}
                     alt="Chat Icon"
-                    className="chatbot-icon-image-inChat"
+                    className="w-6 h-6 rounded-full object-cover mr-3"
                   />
                 )}
 
-                <div className="message-content">
+                <div
+                  className={`shadow max-w-[80%] p-3 rounded-2xl text-sm leading-relaxed transition ${
+                    msg.fromUser
+                      ? "bg-purple-600 text-white text-right self-end"
+                      : "bg-gray-100 text-black text-left"
+                  }`}
+                >
                   {msg.image ? (
-                    <img src={msg.image} alt="Uploaded" />
+                    <img src={msg.image} alt="Uploaded" className="rounded-md" />
                   ) : (
-                    <p
-                      className="message-text"
-                      dangerouslySetInnerHTML={{ __html: msg.text }}
-                    />
+                    <p dangerouslySetInnerHTML={{ __html: msg.text }} />
                   )}
                 </div>
 
                 {!msg.fromUser && (
-                  <div className="message-time-container">
-                    <p className="message-time">
-                      {getTimeDifference(msg.timestamp)}
-                    </p>
+                  <div className="mt-1 text-left text-xs text-gray-500">
+                    {getTimeDifference(msg.timestamp)}
                   </div>
                 )}
-              </div>
+              </motion.div>
             ))}
 
+            {/* Typing animation */}
             {(loading || isTyping) && (
-              <div className="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
+              <div className="flex gap-1 items-center mt-2 px-3">
+                <span className="bg-gray-400 w-2 h-2 rounded-full animate-bounce delay-0"></span>
+                <span className="bg-gray-400 w-2 h-2 rounded-full animate-bounce delay-150"></span>
+                <span className="bg-gray-400 w-2 h-2 rounded-full animate-bounce delay-300"></span>
               </div>
             )}
 
             <div ref={messagesEndRef}></div>
           </div>
 
-          <div className="chatbot-input-area">
+          {/* Input area */}
+          <div className="flex items-center p-3 bg-white border-t border-gray-200 rounded-b-lg">
             <input
+              ref={inputRef}
               type="text"
               placeholder="Start a new message..."
               value={input}
               onChange={(e) => setInput(capitalize(e.target.value))}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              className="chatbot-input"
+              className="flex-grow p-2 rounded-full border border-gray-300 focus:ring-2 focus:ring-purple-500 outline-none mr-2"
             />
-            <button onClick={handleSend} className="chatbot-send-btn">
+            <button
+              onClick={handleSend}
+              className="bg-purple-800 p-2 rounded-full text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
+              disabled={loading || !input.trim()}
+            >
               <FaPaperPlane />
             </button>
           </div>

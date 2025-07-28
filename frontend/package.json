@@ -21,7 +21,7 @@
     "cra-template": "^1.3.0",
     "date-fns": "^4.1.0",
     "dist": "^0.1.2",
-    "framer-motion": "^12.19.1",
+    "framer-motion": "^12.23.10",
     "icons-material": "^0.0.1-security",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
