@@ -1,24 +1,17 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
-
-const counterSchema = new Schema({
-  name: { type: String, required: true, unique: true },
-  value: { type: Number, required: true, default: 0 },
-});
-const Counter = mongoose.models.counter || mongoose.model("counter", counterSchema);
 
 const chatSchema = new mongoose.Schema({
-  ticket_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Ticket",
+  ticketId: {
+    type: Number,
     required: true,
   },
-  Chat_id: {
-    type: Number,
-    unique: true,
-  },
-  sender: {
+  sender_id: {
     type: String,
+    required: true, // user_id or admin_id
+  },
+  sender_role: {
+    type: String,
+    enum: ['user', 'admin'],
     required: true,
   },
   message: {
@@ -31,21 +24,4 @@ const chatSchema = new mongoose.Schema({
   },
 });
 
-chatSchema.pre('save', async function (next) {
-  if (!this.isNew) return next();
-  try {
-    const counter = await Counter.findOneAndUpdate(
-      { name: "Chat_id" },
-      { $inc: { value: 1 } },
-      { new: true, upsert: true }
-    );
-    this.Chat_id = counter.value;
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
-const Chat = mongoose.model("Chat", chatSchema);
-
-module.exports = Chat;
+module.exports = mongoose.model("Chat", chatSchema);

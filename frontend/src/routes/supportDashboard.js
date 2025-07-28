@@ -11,7 +11,7 @@ import Settings from '../CustomerSupporter/pages/settings';
 import Replyticket from '../CustomerSupporter/pages/ReplyTicket';
 
 import Notifications from '../CustomerSupporter/pages/notifications';
-import Account from '../CustomerSupporter/pages/account';
+
 
 export default function CustomerSupporterDashboard() {
   return (
@@ -34,7 +34,7 @@ export default function CustomerSupporterDashboard() {
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/notifications" element={<Notifications />} />
-              <Route path="/account" element={<Account />} />
+              
               <Route path='/forms/admin/:id' element={<AdminReply/>} />
 
             </Routes>
