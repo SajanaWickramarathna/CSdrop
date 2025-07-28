@@ -30,7 +30,10 @@ import {
   Help as HelpIcon,
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
-  HourglassEmpty as HourglassEmptyIcon
+  HourglassEmpty as HourglassEmptyIcon,
+  Warning as WarningIcon,
+  PriorityHigh as PriorityHighIcon,
+  ArrowDownward as ArrowDownwardIcon
 } from "@mui/icons-material";
 
 function TicketUserDash() {
@@ -155,6 +158,40 @@ function TicketUserDash() {
     );
   };
 
+  const getPriorityChip = (priority) => {
+  let icon;
+  let color;
+
+  switch (priority.toLowerCase()) {
+    case "high":
+      color = "error";
+      icon = <PriorityHighIcon fontSize="small" />;
+      break;
+    case "medium":
+      color = "warning";
+      icon = <WarningIcon fontSize="small" />;
+      break;
+    case "low":
+      color = "info";
+      icon = <ArrowDownwardIcon fontSize="small" />;
+      break;
+    default:
+      color = "default";
+  }
+
+  return (
+    <Chip
+      label={priority}
+      color={color}
+      icon={icon}
+      size="small"
+      variant="outlined"
+      sx={{ textTransform: "capitalize" }}
+    />
+  );
+};
+
+
   if (!userId) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
@@ -212,7 +249,7 @@ function TicketUserDash() {
           <Table>
             <TableHead sx={{ bgcolor: 'background.default' }}>
               <TableRow>
-                {["Ticket ID", "Category", "Status", "Created", "Actions"].map((header) => (
+                {["Ticket ID", "Priority", "Category", "Status", "Actions"].map((header) => (
                   <TableCell
                     key={header}
                     sx={{ fontWeight: 'bold', textTransform: 'uppercase' }}
@@ -231,12 +268,10 @@ function TicketUserDash() {
                     sx={{ '&:last-child td': { borderBottom: 0 } }}
                   >
                     <TableCell>#{ticket.ticket_id}</TableCell>
+                    <TableCell>{getPriorityChip(ticket.priority)}</TableCell>
                     <TableCell>{ticket.Categories}</TableCell>
                     <TableCell>
                       {getStatusChip(ticket.status)}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(ticket.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <Box display="flex" gap={1}>

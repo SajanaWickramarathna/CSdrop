@@ -23,6 +23,7 @@ import TermsOfService from "./pages/termsofservice";
 import Aboutus from "./pages/aboutus";
 import Notifications from "./pages/notification";
 import ReviewSection from "./pages/review";
+import Chatbot from "./Chatbot/Chatbot";
 
 function App() {
   return (
@@ -88,6 +89,7 @@ function App() {
           }
         />
       </Routes>
+      <Chatbot />
     </div>
   );
 }

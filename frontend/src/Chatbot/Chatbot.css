@@ -1,0 +1,196 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* General on close chatbot container */
+.chatbot-container {
+  @apply fixed bottom-1 right-1 z-50;
+}
+/*the bottom-right corner on all screen sizes*/
+@screen lg {
+  .chatbot-container {
+    @apply bottom-4 right-4;
+  }
+}
+
+/* Chatbot icon when it's closed */
+.chatbot-icon {
+  @apply w-16 h-16 cursor-pointer rounded-full flex justify-center items-center;
+}
+
+.chatbot-icon:hover {
+  @apply shadow-lg scale-110;
+}
+
+@screen sm {
+  .chatbot-icon {
+    @apply w-12 h-12;
+  }
+}
+@screen lg {
+  .chatbot-icon {
+    @apply w-20 h-20;
+  }
+}
+
+/* Chatbot window when opened */
+.chatbot-window {
+  @apply w-[500px] h-[550px] bg-white rounded-lg shadow-lg flex flex-col;
+}
+
+/* Header style */
+.chatbot-header {
+  @apply flex justify-between items-center p-[10px] bg-purple-800 text-white rounded-t-lg shadow-md;
+}
+
+/* Chatbot name */
+.chatbot-name {
+  @apply text-[18px] font-bold;
+}
+
+/* Close button */
+.chatbot-close-btn {
+  @apply bg-transparent border-none text-white cursor-pointer text-[24px] bg-white/20 rounded-full p-1 hover:text-red-500 hover:bg-white rounded-full p-1;
+}
+
+/* Messages section */
+.chatbot-messages {
+  @apply flex-grow overflow-y-auto p-2.5 bg-white;
+  @apply scroll-smooth;
+}
+
+/*in chjat chat bot icon*/
+.chatbot-icon-image-inChat {
+  @apply w-6 h-6 rounded-full object-cover mr-3;
+}
+
+/* Individual message container */
+.chatbot-message {
+  @apply flex items-start mb-4;
+}
+
+/* User and bot messages styling */
+.user-message {
+  @apply justify-end;
+}
+
+.bot-message {
+  @apply flex flex-col items-start; /* Align content to the start */
+}
+
+/* Message content */
+.message-content {
+  @apply shadow-lg max-w-full break-words text-white p-[10px] rounded-lg relative;
+}
+
+/* Text styling */
+.message-text {
+  @apply text-sm leading-relaxed;
+}
+
+.bot-message .message-text {
+  @apply text-black;
+}
+
+.user-message .message-text {
+  @apply text-white;
+}
+
+.bot-message .message-content .message-text {
+  @apply text-left; /* Align bot's message text to the left */
+}
+
+.user-message .message-content .message-text {
+  @apply text-right; /* Align user’s message text to the right */
+}
+
+/* container date and time */
+.chatbot-date {
+  @apply text-sm text-black font-medium mb-2;
+}
+
+/* Message timestamp */
+.message-time-container {
+  @apply mt-1 text-left; /* Add some margin above the timestamp */
+}
+
+.message-time {
+  @apply text-xs text-gray-500;
+}
+
+.message-content {
+  @apply mb-1; /* Add margin-bottom to separate from the timestamp */
+}
+
+/* typing dots */
+@keyframes typing {
+  0% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+.typing-dots span {
+  @apply bg-gray-400 w-2 h-2 mx-0.5 rounded-full inline-block;
+  animation: typing 1.5s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: 0s;
+}
+.typing-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.typing-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* Input area styling */
+.chatbot-input-area {
+  @apply flex items-center p-2.5 bg-white rounded-b-lg;
+}
+
+/* Input field for typing messages */
+.chatbot-input {
+  @apply flex-grow p-2.5 rounded-full border border-black mr-2.5;
+}
+
+/* Send button styling */
+.chatbot-send-btn {
+  @apply bg-purple-800 border-none p-2.5 rounded-full cursor-pointer text-white;
+}
+
+/*message styles for both user and bot */
+.chatbot-message.user-message .message-content {
+  @apply bg-purple-600 text-white;
+}
+
+.chatbot-message.bot-message .message-content {
+  @apply bg-white text-black;
+}
+
+
+/* Chatbot Greeting Container */
+.chatbot-greeting {
+  @apply bg-purple-100 p-4 rounded-lg shadow-md text-center mb-4 mt-6;
+}
+
+/* Header Text */
+.chatbot-greeting-header {
+  @apply text-lg font-semibold text-purple-800 mb-2;
+}
+
+/* Greeting Message */
+.chatbot-greeting-message {
+  @apply flex flex-col items-center;
+}
+
+.chatbot-greeting-text {
+  @apply text-gray-700 text-sm mb-2;
+}
+
