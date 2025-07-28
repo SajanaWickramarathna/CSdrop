@@ -9,6 +9,7 @@ import AdminReply from '../CustomerSupporter/pages/AdminContactUsReply';
 import Analytics from '../CustomerSupporter/pages/analytics';
 import Settings from '../CustomerSupporter/pages/settings';
 import Replyticket from '../CustomerSupporter/pages/ReplyTicket';
+import Profile from '../CustomerSupporter/pages/profile';
 
 import Notifications from '../CustomerSupporter/pages/notifications';
 
@@ -34,7 +35,7 @@ export default function CustomerSupporterDashboard() {
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/notifications" element={<Notifications />} />
-              
+              <Route path="/profile" element={<Profile />} />
               <Route path='/forms/admin/:id' element={<AdminReply/>} />
 
             </Routes>

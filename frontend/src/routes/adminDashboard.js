@@ -26,6 +26,8 @@ import ViewOrder from '../Admin/pages/orders/vieworder';
 import Delivery from '../Admin/pages/delivery/delivery';
 import Createdelivery from '../Admin/pages/delivery/createdelivery';
 
+import Notifications from '../Admin/pages/notifications';
+
 
 export default function AdminDashboard() {
   return (
@@ -64,6 +66,7 @@ export default function AdminDashboard() {
               <Route path="/delivery" element={<Delivery />} />
               <Route path="/createdelivery" element={<Createdelivery />} />
               
+              <Route path="/notifications" element={<Notifications />} />
             </Routes>
           </div>
         </div>

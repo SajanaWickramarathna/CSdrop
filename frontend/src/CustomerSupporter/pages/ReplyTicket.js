@@ -1,132 +1,243 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
-import TicketChat from "../../pages/chat"; // Correct path to TicketChat
-import "../resource/ReplyTicket.css"; // Ensure this CSS file exists
-
-import { Snackbar, Alert } from "@mui/material"; // Import Snackbar and Alert from MUI
+import { useParams, useNavigate } from "react-router-dom";
+import TicketChat from "../../pages/chat";
+import { CircularProgress } from "@mui/material";
+import Swal from "sweetalert2";
+import { 
+  FiArrowLeft, 
+  FiMail, 
+  FiPhone, 
+  FiUser, 
+  FiMessageSquare,
+  FiTag,
+  FiAlertTriangle,
+  FiCheckCircle
+} from "react-icons/fi";
 
 function ReplyTicket() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [ticket, setTicket] = useState(null);
   const [userData, setUserData] = useState(null);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
+  const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
-  const showSnackbar = (message, severity = "success") => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setSnackbarOpen(true);
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
-  };
-
   useEffect(() => {
-    axios
-      .get(`http://localhost:3001/api/tickets/ticket/${id}`)
-      .then((response) => {
-        setTicket(response.data.ticket);
-      })
-      .catch((error) => {
-        console.error("Error fetching the ticket:", error);
-        showSnackbar("Failed to load ticket details", "error");
-      });
-  }, [id]);
-
-  useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
+        const [ticketRes, userRes] = await Promise.all([
+          axios.get(`http://localhost:3001/api/tickets/ticket/${id}`),
+          token ? axios.get("http://localhost:3001/api/users/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          }) : Promise.resolve(null)
+        ]);
+        
+        setTicket(ticketRes.data.ticket);
+        if (userRes) setUserData(userRes.data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Failed to load ticket details",
         });
-        setUserData(response.data);
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-        showSnackbar("Failed to load user data", "error");
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (token) { // Only fetch user data if a token exists
-      fetchUserData();
-    }
-  }, [token]);
+    fetchData();
+  }, [id, token]);
 
-  const handleStatusChange = (e) => {
+  const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
-    axios
-      .put(`http://localhost:3001/api/tickets/${id}`, { status: newStatus })
-      .then(() => {
-        setTicket((prev) => ({ ...prev, status: newStatus }));
-        showSnackbar("Ticket status updated successfully!");
-      })
-      .catch((error) => {
-        console.error("Error updating ticket status:", error);
-        showSnackbar("Failed to update ticket status", "error");
+    try {
+      await axios.put(`http://localhost:3001/api/tickets/${id}`, { status: newStatus });
+      setTicket(prev => ({ ...prev, status: newStatus }));
+      Swal.fire({
+        title: "Success!",
+        text: "Ticket status updated successfully!",
+        icon: "success",
+        confirmButtonColor: "#10B981",
       });
+    } catch (error) {
+      console.error("Error updating ticket status:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to update ticket status",
+      });
+    }
   };
 
-  if (!ticket) return <p>Loading...</p>;
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularProgress />
+      </div>
+    );
+  }
+
+  if (!ticket) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-red-500 text-lg">Failed to load ticket details</p>
+      </div>
+    );
+  }
+
+  const getPriorityIcon = () => {
+    switch (ticket.priority) {
+      case 'High':
+        return <FiAlertTriangle className="h-5 w-5 text-red-600" />;
+      case 'Medium':
+        return <FiAlertTriangle className="h-5 w-5 text-yellow-500" />;
+      case 'Low':
+        return <FiAlertTriangle className="h-5 w-5 text-green-500" />;
+      default:
+        return <FiAlertTriangle className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
+  const getStatusIcon = () => {
+    switch (ticket.status) {
+      case 'Open':
+        return <FiCheckCircle className="h-5 w-5 text-blue-500" />;
+      case 'In Progress':
+        return <FiCheckCircle className="h-5 w-5 text-yellow-500" />;
+      case 'On Hold':
+        return <FiCheckCircle className="h-5 w-5 text-orange-500" />;
+      case 'Closed':
+        return <FiCheckCircle className="h-5 w-5 text-green-500" />;
+      default:
+        return <FiCheckCircle className="h-5 w-5 text-gray-500" />;
+    }
+  };
 
   return (
-    <div>
-      <div className="contentrtck">
-        <h1>Ticket Details</h1>
-        <p>
-          <strong>Name:</strong> {ticket.name}
-        </p>
-        <p>
-          <strong>Gmail:</strong> {ticket.gmail}
-        </p>
-        <p>
-          <strong>Phone Number:</strong> {ticket.phoneNumber}
-        </p>
-        <p>
-          <strong>Categories:</strong> {ticket.Categories}
-        </p>
-        <p>
-          <strong>Message:</strong> {ticket.message}
-        </p>
-        <p>
-          <strong>Priority:</strong> {ticket.priority}
-        </p>
-
-        <div className="input-boxrtck">
-          <label>Status:</label>
-          <select
-            name="status"
-            className="fieldrtck"
-            value={ticket.status}
-            onChange={handleStatusChange}
-          >
-            <option value="Open">Open</option>
-            <option value="In Progress">In Progress</option>
-            <option value="On Hold">On Hold </option>
-            <option value="Closed">Closed</option>
-          </select>
-        </div>
-      </div>
-      {userData && (
-        <TicketChat ticketId={ticket.ticket_id} user_id={userData.user_id} role={"admin"} />
-      )}
-
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={4000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert
-          onClose={handleSnackbarClose}
-          severity={snackbarSeverity}
-          sx={{ width: "100%" }}
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center text-teal-600 hover:text-teal-800 mb-6 transition-colors"
         >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
+          <FiArrowLeft className="mr-2" />
+          Back to Tickets
+        </button>
+
+        <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6">
+          <div className="bg-teal-600 px-6 py-4">
+            <h1 className="text-2xl font-bold text-white">Ticket Details</h1>
+          </div>
+
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 bg-teal-100 p-2 rounded-full">
+                    <FiUser className="h-5 w-5 text-teal-600" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500">Name</p>
+                    <p className="text-sm text-gray-900">{ticket.name}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 bg-teal-100 p-2 rounded-full">
+                    <FiMail className="h-5 w-5 text-teal-600" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500">Email</p>
+                    <p className="text-sm text-gray-900">{ticket.gmail}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 bg-teal-100 p-2 rounded-full">
+                    <FiPhone className="h-5 w-5 text-teal-600" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500">Phone Number</p>
+                    <p className="text-sm text-gray-900">{ticket.phoneNumber}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 bg-teal-100 p-2 rounded-full">
+                    <FiTag className="h-5 w-5 text-teal-600" />
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500">Category</p>
+                    <p className="text-sm text-gray-900">{ticket.Categories}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 bg-teal-100 p-2 rounded-full">
+                    {getPriorityIcon()}
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500">Priority</p>
+                    <p className={`text-sm font-semibold ${
+                      ticket.priority === 'High' ? 'text-red-600' : 
+                      ticket.priority === 'Medium' ? 'text-yellow-600' : 'text-green-600'
+                    }`}>
+                      {ticket.priority}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 bg-teal-100 p-2 rounded-full">
+                    {getStatusIcon()}
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-500">Status</p>
+                    <select
+                      value={ticket.status}
+                      onChange={handleStatusChange}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-sm border-gray-300 focus:outline-none focus:ring-teal-500 focus:border-teal-500 rounded-md border"
+                    >
+                      <option value="Open" className="text-blue-600">Open</option>
+                      <option value="In Progress" className="text-yellow-600">In Progress</option>
+                      <option value="On Hold" className="text-orange-600">On Hold</option>
+                      <option value="Closed" className="text-green-600">Closed</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start w-full">
+              <div className="flex-shrink-0 bg-teal-100 p-2 rounded-full">
+                <FiMessageSquare className="h-5 w-5 text-teal-600" />
+              </div>
+              <div className="ml-3 flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-700">Message</p>
+                <p className="text-base text-gray-800 bg-teal-50 p-4 rounded-lg mt-1 border border-teal-200 shadow-sm break-words">
+                  {ticket.message}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {userData && (
+          
+            <div className="p-6">
+              <TicketChat 
+                ticketId={ticket.ticket_id} 
+                user_id={userData.user_id} 
+                role="admin" 
+              />
+            </div>
+          
+        )}
+      </div>
     </div>
   );
 }

@@ -42,7 +42,7 @@ export default function ContactUsForm() {
     try {
       await axios.post("http://localhost:3001/api/contact/", {
         name: input.name.trim(),
-        email: input.email.trim(),
+        gmail: input.email.trim(),
         phoneNumber: input.phoneNumber.replace(/\D/g, ""),
         message: input.message.trim(),
       });

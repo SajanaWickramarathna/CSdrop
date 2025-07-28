@@ -80,12 +80,13 @@ const addTicket = async (req, res, next) => {
     });
 
      // Notify admins
-    const admins = await User.find({ role: 'admin' });
-    const adminNotifications = admins.map(admin => ({
-      user_id: admin.user_id,
-      message: `New support ticket created by ${name}. Ticket ID: ${ticket.ticket_id}`,
+    // 🔔 Notify all Customer Supporters
+    const supporters = await User.find({ role: 'customer_supporter' });
+    const supporterNotifications = supporters.map(support => ({
+      user_id: support.user_id,
+      message: `New support ticket requires attention. Ticket ID: ${ticket.ticket_id}`,
     }));
-    await Notification.insertMany(adminNotifications);
+    await Notification.insertMany(supporterNotifications);
 
   } catch (err) {
     console.log(err);
