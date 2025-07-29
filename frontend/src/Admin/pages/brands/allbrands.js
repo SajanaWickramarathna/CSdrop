@@ -186,6 +186,18 @@ useEffect(() => {
               </TableCell>
 
               <TableCell
+  align="center"
+  sx={{
+    fontWeight: "bold",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    color: theme.palette.text.secondary,
+  }}
+>
+  CATEGORY
+</TableCell>
+
+              <TableCell
                 align="center"
                 sx={{
                   fontWeight: "bold",
@@ -313,6 +325,9 @@ useEffect(() => {
                       </Box>
                     </Box>
                   </TableCell>
+                  <TableCell align="center">
+    <Typography variant="body2">{row.category_name || 'N/A'}</Typography>
+  </TableCell>
                   <TableCell align="center">
                     <Chip
                       label={row.brand_status}
