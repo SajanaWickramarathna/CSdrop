@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-  Tooltip, 
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
   Legend,
   ResponsiveContainer,
   BarChart,
@@ -12,7 +12,7 @@ import {
   YAxis,
   CartesianGrid
 } from 'recharts';
-import { 
+import {
   Button,
   Box,
   Typography,
@@ -39,6 +39,7 @@ import {
 } from '@mui/icons-material';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { api } from "../../../api"; // Assuming the path to your api.js is correct
 
 const COLORS = ['#4F46E5', '#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981'];
 
@@ -59,10 +60,9 @@ const AnalyticsDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/users');
-        if (!response.ok) throw new Error('Network response was not ok');
-        const data = await response.json();
-        setUserData(data);
+        // Use the 'api' instance to make the GET request
+        const response = await api.get('/users');
+        setUserData(response.data);
       } catch (error) {
         console.error('Error fetching users:', error);
         setError('Failed to load user data. Please try again later.');
@@ -70,7 +70,7 @@ const AnalyticsDashboard = () => {
         setLoading(false);
       }
     };
-    
+
     fetchData();
   }, []);
 
@@ -88,23 +88,23 @@ const AnalyticsDashboard = () => {
 
   const generatePDF = () => {
     const doc = new jsPDF();
-    
+
     // Title
     doc.setFontSize(20);
     doc.setTextColor(theme.palette.primary.main);
     doc.text('User Role Analytics Report', 105, 20, { align: 'center' });
-    
+
     // Date
     doc.setFontSize(12);
     doc.setTextColor(100);
     doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
-    
+
     // Chart image placeholder
     doc.setFillColor(240, 240, 240);
     doc.rect(20, 40, 170, 80, 'F');
     doc.setTextColor(150);
     doc.text('User Role Distribution Chart', 105, 80, { align: 'center' });
-    
+
     // Data table
     autoTable(doc, {
       startY: 130,
@@ -120,16 +120,16 @@ const AnalyticsDashboard = () => {
       },
       margin: { top: 130 }
     });
-    
+
     // Summary statistics
     doc.setFontSize(14);
     doc.setTextColor(theme.palette.primary.main);
     doc.text('Summary Statistics', 20, doc.lastAutoTable.finalY + 20);
-    
+
     doc.setFontSize(12);
     doc.setTextColor(0);
     doc.text(`Total Users: ${userData.length}`, 20, doc.lastAutoTable.finalY + 30);
-    
+
     // Save the PDF
     doc.save(`User_Role_Analytics_${new Date().toISOString().split('T')[0]}.pdf`);
   };
@@ -167,9 +167,9 @@ const AnalyticsDashboard = () => {
         <Typography color="error" variant="h6">
           {error}
         </Typography>
-        <Button 
-          variant="contained" 
-          color="primary" 
+        <Button
+          variant="contained"
+          color="primary"
           onClick={() => window.location.reload()}
           sx={{ mt: 2 }}
         >
@@ -206,9 +206,9 @@ const AnalyticsDashboard = () => {
       </Box>
 
       <Box display="flex" justifyContent="center" mb={4}>
-        <Chip 
-          label={`Total Users: ${userData.length}`} 
-          color="primary" 
+        <Chip
+          label={`Total Users: ${userData.length}`}
+          color="primary"
           variant="outlined"
           sx={{ fontSize: '1rem', p: 2 }}
         />
@@ -233,7 +233,7 @@ const AnalyticsDashboard = () => {
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
-              <Legend 
+              <Legend
                 formatter={(value, entry, index) => (
                   <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
                     {chartData[index].icon}
@@ -249,8 +249,8 @@ const AnalyticsDashboard = () => {
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              <Bar 
-                dataKey="value" 
+              <Bar
+                dataKey="value"
                 name="User Count"
                 fill={theme.palette.primary.main}
                 radius={[4, 4, 0, 0]}
@@ -282,7 +282,7 @@ const AnalyticsDashboard = () => {
                 <TableRow key={row.name}>
                   <TableCell>
                     <Box display="flex" alignItems="center">
-                      <Avatar sx={{ 
+                      <Avatar sx={{
                         bgcolor: theme.palette.background.paper,
                         color: theme.palette.getContrastText(theme.palette.background.paper),
                         mr: 2,
