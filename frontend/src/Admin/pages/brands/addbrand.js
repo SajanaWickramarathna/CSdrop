@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../../api"; 
 import {
   Box,
   Typography,
@@ -43,7 +43,7 @@ const AddBrand = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/categories");
+        const res = await api.get("/categories");
         setCategories(res.data);
       } catch (error) {
         console.error("Failed to load categories:", error);
@@ -99,8 +99,8 @@ const AddBrand = () => {
 
 
     try {
-      const res = await axios.post(
-        "http://localhost:3001/api/brands/addbrand",
+      const res = await api.post(
+        "/brands/addbrand",
         brandData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );

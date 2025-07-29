@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import {api} from '../../../api'; 
 import {
   Button,
   Paper,
@@ -37,21 +38,23 @@ export default function Allbrands({ onBrandSelect, onBrandDelete, refreshKey }) 
   const [searchTerm, setSearchTerm] = useState("");
   const theme = useTheme();
 
+  
   const fetchBrands = async () => {
-    setLoading(true);
-    setError(null);
     try {
-      const response = await fetch('http://localhost:3001/api/brands/with-product-count');
-      if (!response.ok) throw new Error('Failed to fetch brands');
-      const data = await response.json();
-      setBrands(data);
+      const response = await api.get('/brands/with-product-count');
+      setBrands(response.data);
     } catch (error) {
       console.error('Error fetching brands:', error);
-      setError(error.message);
+      setError('Failed to fetch brands. Please try again later.');
     } finally {
       setLoading(false);
     }
   };
+useEffect(() => {
+  setLoading(true); // Start loading before fetching
+  fetchBrands();
+}, []);
+
 
   useEffect(() => {
     fetchBrands();
