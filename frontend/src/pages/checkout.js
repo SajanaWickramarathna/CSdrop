@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
+
 import { useNavigate, Link } from 'react-router-dom';
 import Nav from '../components/navigation';
 import Swal from 'sweetalert2';
 import { useCart } from "../context/CartContext";
+import { api } from '../api';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+
 const PLACEHOLDER_IMAGE = "https://via.placeholder.com/300x200?text=No+Image";
 
 const Checkout = () => {
@@ -43,13 +44,16 @@ const Checkout = () => {
   const navigate = useNavigate();
 
   // Helper functions
-  const getProductImageSrc = useCallback((imgPath) => {
-    if (!imgPath) return PLACEHOLDER_IMAGE;
+  const getProductImageSrc = (imgPath) => {
+    if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
     if (imgPath.startsWith("http")) return imgPath;
-    if (imgPath.startsWith("/uploads")) return `${API_BASE_URL.replace('/api', '')}${imgPath}`;
-    if (imgPath.startsWith("uploads")) return `${API_BASE_URL.replace('/api', '')}/${imgPath}`;
-    return `${API_BASE_URL.replace('/api', '')}/uploads/${imgPath}`;
-  }, []);
+  
+    const baseURL = api.defaults.baseURL.replace("/api", ""); // remove `/api` if present
+    if (imgPath.startsWith("/uploads")) return `${baseURL}${imgPath}`;
+    if (imgPath.startsWith("uploads")) return `${baseURL}/${imgPath}`;
+  
+    return `${baseURL}/uploads/${imgPath}`;
+  };
 
   const updateState = (newState) => {
     setState(prev => ({ ...prev, ...newState }));
@@ -58,7 +62,7 @@ const Checkout = () => {
   // API calls
   const fetchUserData = useCallback(async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/users/me`, {
+      const response = await api.get(`/users/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       updateState({ userData: response.data });
@@ -81,13 +85,13 @@ const Checkout = () => {
 
   const fetchCart = useCallback(async (userId) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/cart/getcart/${userId}`);
+      const response = await api.get(`/cart/getcart/${userId}`);
       const cartData = response.data;
       
       const productDetails = await Promise.all(
         cartData.items.map(async (item) => {
           try {
-            const res = await axios.get(`${API_BASE_URL}/products/product/${item.product_id}`);
+            const res = await api.get(`/products/product/${item.product_id}`);
             return { ...item, product: res.data };
           } catch (err) {
             console.warn(`Product with ID ${item.product_id} not found`);
@@ -203,7 +207,7 @@ const Checkout = () => {
         formData.append(`items[${index}][price]`, item.product.product_price);
       });
 
-      const orderResponse = await axios.post(`${API_BASE_URL}/orders/create`, formData, {
+      const orderResponse = await api.post(`/orders/create`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`,
@@ -215,7 +219,7 @@ const Checkout = () => {
       }
 
       // Clear cart and update count
-      await axios.delete(`${API_BASE_URL}/cart/clearcart/${userData.user_id}`);
+      await api.delete(`/cart/clearcart/${userData.user_id}`);
       await fetchCartCount();
 
       // Show success message
@@ -256,7 +260,7 @@ const Checkout = () => {
       // Attempt to restore cart
       try {
         if (cart?.items?.length > 0) {
-          await axios.post(`${API_BASE_URL}/cart/restore`, {
+          await api.post(`/cart/restore`, {
             user_id: userData.user_id,
             items: cart.items
           });

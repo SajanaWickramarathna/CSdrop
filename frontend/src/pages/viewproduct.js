@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "axios";
+
 import Nav from "../components/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,6 +10,7 @@ import { ShoppingCart, Heart, Share2, ChevronLeft } from "react-feather";
 import Skeleton from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 import { Star } from "react-feather";
+import { api } from "../api";
 
 const ProductViewPage = () => {
   const { id } = useParams();
@@ -31,8 +32,8 @@ const ProductViewPage = () => {
   useEffect(() => {
     async function fetchReviewStats() {
       try {
-        const res = await axios.get(
-          `http://localhost:3001/api/reviews/stats/${id}`
+        const res = await api.get(
+          `/reviews/stats/${id}`
         );
         setReviewStats(res.data);
       } catch (err) {
@@ -48,14 +49,14 @@ const ProductViewPage = () => {
   useEffect(() => {
     async function fetchProductAndBrand() {
       try {
-        const productRes = await axios.get(
-          `http://localhost:3001/api/products/product/${id}`
+        const productRes = await api.get(
+          `/products/product/${id}`
         );
         setProduct(productRes.data);
 
         if (productRes.data.brand_id) {
-          const brandRes = await axios.get(
-            `http://localhost:3001/api/brands/${productRes.data.brand_id}`
+          const brandRes = await api.get(
+            `/brands/${productRes.data.brand_id}`
           );
           setBrand(brandRes.data);
         } else {
@@ -71,9 +72,9 @@ const ProductViewPage = () => {
   }, [id]);
 
   const handleAddToCart = (product_id) => {
-    axios
+    api
       .post(
-        "http://localhost:3001/api/cart/addtocart",
+        "/cart/addtocart",
         { product_id, quantity },
         { headers: { Authorization: `Bearer ${token}` } }
       )
@@ -86,13 +87,7 @@ const ProductViewPage = () => {
       });
   };
 
-  const handleWishlist = () => {
-    // Implement wishlist functionality
-    setIsWishlisted(!isWishlisted);
-    toast.success(
-      !isWishlisted ? "Added to wishlist" : "Removed from wishlist"
-    );
-  };
+  
 
   const handleShare = () => {
     if (navigator.share) {
@@ -310,20 +305,6 @@ const ProductViewPage = () => {
                 </h1>
                 <div className="flex space-x-2">
                   <button
-                    onClick={handleWishlist}
-                    className={`p-2 rounded-full ${
-                      isWishlisted ? "text-red-500" : "text-gray-400"
-                    } hover:bg-gray-100`}
-                    aria-label={
-                      isWishlisted ? "Remove from wishlist" : "Add to wishlist"
-                    }
-                  >
-                    <Heart
-                      size={20}
-                      fill={isWishlisted ? "currentColor" : "none"}
-                    />
-                  </button>
-                  <button
                     onClick={handleShare}
                     className="p-2 rounded-full text-gray-400 hover:bg-gray-100"
                     aria-label="Share product"
@@ -412,9 +393,9 @@ const ProductViewPage = () => {
                 <button
   onClick={() => {
     if (!isAvailable) return;
-    axios
+    api
       .post(
-        "http://localhost:3001/api/cart/addtocart",
+        "/cart/addtocart",
         { product_id, quantity },
         { headers: { Authorization: `Bearer ${token}` } }
       )

@@ -13,7 +13,7 @@ import HomeIcon from "@mui/icons-material/HomeOutlined";
 import StoreIcon from "@mui/icons-material/StorefrontOutlined";
 import AccountCircleIcon from "@mui/icons-material/AccountCircleOutlined";
 import NotificationIcon from "@mui/icons-material/Notifications"; // Import NotificationIcon
-import axios from "axios";
+import { api } from "../../api"; 
 import { CircularProgress } from "@mui/material";
 
 export default function Sidebar() {
@@ -39,7 +39,7 @@ export default function Sidebar() {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/api/users/me", {
+      const response = await api.get("/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUserData(response.data);
@@ -58,8 +58,8 @@ export default function Sidebar() {
 
   const fetchNotifications = async (userId) => {
     try {
-      const res = await axios.get(
-        `http://localhost:3001/api/notifications/user/${userId}`,
+      const res = await api.get(
+        `/notifications/user/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

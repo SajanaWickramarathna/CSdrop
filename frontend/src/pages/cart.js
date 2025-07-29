@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+
+import { api } from "../api"; 
 import { Link } from "react-router-dom";
 import Nav from "../components/navigation";
 import { useCart } from "../context/CartContext";
@@ -41,14 +42,15 @@ export default function Cart() {
 
   // Helper for correct image path
   const getProductImageSrc = (imgPath) => {
-    if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
-    if (imgPath.startsWith("http")) return imgPath;
-    if (imgPath.startsWith("/uploads"))
-      return `http://localhost:3001${imgPath}`;
-    if (imgPath.startsWith("uploads"))
-      return `http://localhost:3001/${imgPath}`;
-    return `http://localhost:3001/uploads/${imgPath}`;
-  };
+  if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
+  if (imgPath.startsWith("http")) return imgPath;
+
+  const baseURL = api.defaults.baseURL.replace("/api", ""); // remove `/api` if present
+  if (imgPath.startsWith("/uploads")) return `${baseURL}${imgPath}`;
+  if (imgPath.startsWith("uploads")) return `${baseURL}/${imgPath}`;
+
+  return `${baseURL}/uploads/${imgPath}`;
+};
 
   // Show snackbar message
   const showSnackbar = (message, severity = "success") => {
@@ -68,7 +70,7 @@ export default function Cart() {
 
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/users/me", {
+        const response = await api.get("/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserData(response.data);
@@ -99,15 +101,15 @@ export default function Cart() {
 
     const fetchCartAndProducts = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3001/api/cart/getcart/${userData.user_id}`
+        const response = await api.get(
+          `/cart/getcart/${userData.user_id}`
         );
         const cartData = response.data;
 
         const productPromises = cartData.items.map(async (item) => {
           try {
-            const res = await axios.get(
-              `http://localhost:3001/api/products/product/${item.product_id}`
+            const res = await api.get(
+              `/products/product/${item.product_id}`
             );
             return res.data;
           } catch (err) {
@@ -151,8 +153,8 @@ export default function Cart() {
 
     setTotalPrice(total);
 
-    axios
-      .put("http://localhost:3001/api/cart/updatetotalprice", {
+    api
+      .put("/cart/updatetotalprice", {
         user_id: userData.user_id,
         total_price: total,
       })
@@ -165,8 +167,8 @@ export default function Cart() {
 
   // Cart actions
   const handleRemoveFromCart = (product_id) => {
-    axios
-      .delete("http://localhost:3001/api/cart/removefromcart", {
+    api
+      .delete("/cart/removefromcart", {
         data: { user_id, product_id },
       })
       .then((response) => {
@@ -181,8 +183,8 @@ export default function Cart() {
   };
 
   const handleClearCart = () => {
-    axios
-      .delete(`http://localhost:3001/api/cart/clearcart/${userData.user_id}`)
+    api
+      .delete(`/cart/clearcart/${userData.user_id}`)
       .then(() => {
         setCart(null);
         fetchCartCount();
@@ -199,8 +201,8 @@ export default function Cart() {
 
   const handleUpdateQuantity = (user_id, product_id, quantity) => {
     if (quantity < 1) return;
-    axios
-      .put("http://localhost:3001/api/cart/updatecartitem", {
+    api
+      .put("/cart/updatecartitem", {
         user_id,
         product_id,
         quantity,

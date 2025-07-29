@@ -4,12 +4,19 @@ import {
   IconButton, Tooltip, Badge, useTheme
 } from "@mui/material";
 import { io } from "socket.io-client";
+
 import axios from "axios";
 import SendIcon from '@mui/icons-material/Send';
+
+import {api} from "../api"; 
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 
-const socket = io("http://localhost:3001");
+// Get base URL without `/api`
+const baseURL = api.defaults.baseURL.replace("/api", "");
+
+// Initialize socket
+const socket = io(baseURL);
 
 export default function TicketChat({ ticketId, user_id, role }) {
   const [message, setMessage] = useState("");
@@ -25,7 +32,7 @@ export default function TicketChat({ ticketId, user_id, role }) {
 
     const fetchMessages = async () => {
       try {
-        const res = await axios.get(`http://localhost:3001/api/chats/${ticketId}`);
+        const res = await api.get(`/chats/${ticketId}`);
         setMessages(res.data);
       } catch (err) {
         console.error("Failed to load chat:", err);

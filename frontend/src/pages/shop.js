@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+
 import { Link } from "react-router-dom";
 import Nav from "../components/navigation";
 import { ToastContainer, toast } from "react-toastify";
@@ -45,8 +45,8 @@ export default function Shop() {
       .then((response) => setCategories(response.data))
       .catch((error) => console.error("Error fetching categories:", error));
 
-    axios
-      .get("http://localhost:3001/api/brands")
+    api
+      .get("/brands")
       .then((response) => {
         setBrands(response.data);
         setAllBrands(response.data);
@@ -59,7 +59,7 @@ export default function Shop() {
   const fetchAllProducts = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("http://localhost:3001/api/products");
+      const response = await api.get("/products");
       setProducts(response.data);
       setFilteredProducts(response.data);
     } catch (error) {
@@ -73,8 +73,8 @@ export default function Shop() {
   const fetchProductsByCategory = async (category_id) => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:3001/api/products/category/${category_id}`
+      const response = await api.get(
+        `/products/category/${category_id}`
       );
       setProducts(response.data);
       setFilteredProducts(response.data);
@@ -88,8 +88,8 @@ export default function Shop() {
 
   const fetchBrandsByCategory = async (category_id) => {
     try {
-      const response = await axios.get(
-        `http://localhost:3001/api/brands/bycategory/${category_id}`
+      const response = await api.get(
+        `/brands/bycategory/${category_id}`
       );
       setBrands(response.data);
     } catch (error) {
@@ -124,9 +124,9 @@ export default function Shop() {
       toast.warn("Please login to add products to the cart.");
       return;
     }
-    axios
+    api
       .post(
-        "http://localhost:3001/api/cart/addtocart",
+        "/cart/addtocart",
         { product_id, quantity: 1 },
         { headers: { Authorization: `Bearer ${token}` } }
       )

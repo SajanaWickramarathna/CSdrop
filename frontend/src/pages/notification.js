@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import { Link } from 'react-router-dom';
 import Nav from '../components/navigation';
 import { 
@@ -14,6 +14,8 @@ import {
   Notifications as NotificationsIcon,
   CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
+import { api } from "../api";
+
 
 export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
@@ -28,7 +30,7 @@ export default function Notifications() {
 
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/users/me", {
+        const response = await api.get("/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserData(response.data);
@@ -56,7 +58,7 @@ export default function Notifications() {
 
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get(`http://localhost:3001/api/notifications/user/${userData.user_id}`);
+        const response = await api.get(`/notifications/user/${userData.user_id}`);
         setNotifications(response.data);
       } catch (err) {
         console.error('Error fetching notifications:', err);
@@ -80,7 +82,7 @@ export default function Notifications() {
   // Clear all notifications
   const handleClearNotifications = async () => {
     try {
-      await axios.delete(`http://localhost:3001/api/notifications/user/${userData.user_id}`);
+      await api.delete(`/notifications/user/${userData.user_id}`);
       setNotifications([]);
     } catch (err) {
       console.error('Error clearing notifications:', err);
@@ -91,7 +93,7 @@ export default function Notifications() {
   // Delete single notification
   const handleDeleteNotification = async (id) => {
     try {
-      await axios.delete(`http://localhost:3001/api/notifications/${id}`);
+      await api.delete(`/notifications/${id}`);
       setNotifications(prev => prev.filter(notification => notification._id !== id));
     } catch (err) {
       console.error('Error deleting notification:', err);

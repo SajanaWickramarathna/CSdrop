@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import axios from "axios";
+
 import Nav from "../components/navigation";
 import {
   FaFacebook,
@@ -12,6 +12,7 @@ import { FaXTwitter } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import { useCart } from "../context/CartContext";
+import { api } from "../api";
 
 export default function Home() {
   const [products, setProducts] = useState([]);
@@ -20,14 +21,14 @@ export default function Home() {
   const { fetchCartCount } = useCart();
 
   const token = localStorage.getItem("token");
-  const API_BASE_URL = "http://localhost:3001/api";
+
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [productsRes, brandsRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/products`),
-          axios.get(`${API_BASE_URL}/brands`),
+          api.get(`/products`),
+          api.get(`/brands`),
         ]);
 
         setProducts(
@@ -52,8 +53,8 @@ export default function Home() {
     }
 
     try {
-      await axios.post(
-        `${API_BASE_URL}/cart/addtocart`,
+      await api.post(
+        `/cart/addtocart`,
         { product_id, quantity: 1 },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -71,14 +72,14 @@ export default function Home() {
         ? "https://via.placeholder.com/300x200?text=No+Image"
         : "https://via.placeholder.com/150?text=No+Image";
     }
-
+const baseURL = api.defaults.baseURL.replace("/api", ""); // remove `/api` if present
     if (imgPath.startsWith("http")) return imgPath;
     if (imgPath.startsWith("/") || imgPath.startsWith("uploads")) {
-      return `${API_BASE_URL.replace("/api", "")}${
+      return `${baseURL.replace("/api", "")}${
         imgPath.startsWith("/") ? "" : "/"
       }${imgPath}`;
     }
-    return `${API_BASE_URL.replace("/api", "")}/uploads/${imgPath}`;
+    return `${baseURL.replace("/api", "")}/uploads/${imgPath}`;
   };
 
   if (isLoading) {

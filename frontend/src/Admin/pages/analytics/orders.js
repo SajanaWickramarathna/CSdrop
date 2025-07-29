@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../../api";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import {
@@ -206,7 +206,7 @@ const Analytics = () => {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:3001/api/orders/analytics");
+        const response = await api.get("/orders/analytics");
         setAnalytics(response.data);
       } catch (error) {
         console.error("Error fetching analytics data:", error);

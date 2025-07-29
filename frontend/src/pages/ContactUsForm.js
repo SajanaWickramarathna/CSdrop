@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import Swal from "sweetalert2";
-import axios from "axios";
+
 import { FaFacebook, FaInstagram, FaTiktok, FaLinkedin, FaChevronRight } from "react-icons/fa";
 import { FaLocationDot, FaXTwitter } from "react-icons/fa6";
 import { MdEmail } from "react-icons/md";
 import { PiPhoneCallFill } from "react-icons/pi";
 import Nav from "../components/navigation";
 import { Link } from "react-router-dom";
+import { api } from "../api";
 
 export default function ContactUsForm() {
   const [input, setInputs] = useState({
@@ -40,7 +41,7 @@ export default function ContactUsForm() {
 
   const sendRequest = async () => {
     try {
-      await axios.post("http://localhost:3001/api/contact/", {
+      await api.post("/contact/", {
         name: input.name.trim(),
         gmail: input.email.trim(),
         phoneNumber: input.phoneNumber.replace(/\D/g, ""),

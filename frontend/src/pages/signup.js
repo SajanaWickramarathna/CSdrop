@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from "axios";
+import { api } from "../api";
 import { useNavigate } from 'react-router-dom';
 import Nav from "../components/navigation";
 import Swal from 'sweetalert2';
@@ -61,8 +61,8 @@ export default function SignUp() {
         formDataToSend.append("profile_image", image);
       }
 
-      const response = await axios.post(
-        "http://localhost:3001/api/customers/signup", 
+      const response = await api.post(
+        "/customers/signup", 
         formDataToSend, 
         { headers: { "Content-Type": "multipart/form-data" } }
       );

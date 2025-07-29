@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+
 import { useNavigate } from 'react-router-dom';
 import Nav from "../components/navigation";
 import Swal from "sweetalert2";
 import { FiMail, FiArrowRight } from 'react-icons/fi';
 import { RingLoader } from 'react-spinners';
+import { api } from "../api";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -19,8 +20,8 @@ export default function ForgotPassword() {
     setError("");
 
     try {
-      const response = await axios.post(
-        'http://localhost:3001/api/users/forgotpassword', 
+      const response = await api.post(
+        '/users/forgotpassword', 
         { email },
         {
           headers: {

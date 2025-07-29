@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../api";
 import { Star, Edit, Trash2 } from "react-feather";
 
 export default function ReviewSection({ productId, onStatsUpdate }) {
@@ -18,8 +18,8 @@ export default function ReviewSection({ productId, onStatsUpdate }) {
       setToken(storedToken);
       if (storedToken) {
         try {
-          const { data } = await axios.get(
-            "http://localhost:3001/api/users/me",
+          const { data } = await api.get(
+            "/users/me",
             {
               headers: { Authorization: `Bearer ${storedToken}` },
             }
@@ -35,8 +35,8 @@ export default function ReviewSection({ productId, onStatsUpdate }) {
 
   useEffect(() => {
     if (!productId) return;
-    axios
-      .get(`http://localhost:3001/api/reviews/product/${productId}`)
+    api
+      .get(`/reviews/product/${productId}`)
       .then((res) => setReviews(res.data))
       .catch((err) => {
         console.error("Error fetching reviews:", err);
@@ -46,8 +46,8 @@ export default function ReviewSection({ productId, onStatsUpdate }) {
 
   const fetchStats = async () => {
     try {
-      const { data } = await axios.get(
-        `http://localhost:3001/api/reviews/stats/${productId}`
+      const { data } = await api.get(
+        `/reviews/stats/${productId}`
       );
       if (onStatsUpdate) onStatsUpdate(data);
     } catch (err) {
@@ -61,15 +61,15 @@ export default function ReviewSection({ productId, onStatsUpdate }) {
     setIsSubmitting(true);
     try {
       if (editingId) {
-        await axios.put(
-          `http://localhost:3001/api/reviews/${editingId}`,
+        await api.put(
+          `/reviews/${editingId}`,
           { ...myReview },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setEditingId(null);
       } else {
-        await axios.post(
-          "http://localhost:3001/api/reviews",
+        await api.post(
+          "/reviews",
           {
             ...myReview,
             productId,
@@ -101,7 +101,7 @@ export default function ReviewSection({ productId, onStatsUpdate }) {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this review?")) return;
     try {
-      await axios.delete(`http://localhost:3001/api/reviews/${id}`, {
+      await api.delete(`/reviews/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setRefresh((r) => !r);

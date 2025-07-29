@@ -24,6 +24,8 @@ import Aboutus from "./pages/aboutus";
 import Notifications from "./pages/notification";
 import ReviewSection from "./pages/review";
 import Chatbot from "./Chatbot/Chatbot";
+import Shipping from "./pages/shippingpolicy";
+import Return from "./pages/returnpolicy";
 
 function App() {
   return (
@@ -40,6 +42,10 @@ function App() {
         <Route path="/privacypolicy" element={<PrivacyPolicy />} />
 
         <Route path="/termsofservice" element={<TermsOfService />} />
+
+        <Route path="/shipping" element={<Shipping />} />
+
+        <Route path="/returns" element={<Return />} />
 
         <Route path="/notifications" element={<Notifications />} />
 

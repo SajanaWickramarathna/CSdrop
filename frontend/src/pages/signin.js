@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+
 import { useNavigate } from 'react-router-dom';
 import Nav from "../components/navigation";
 import Swal from "sweetalert2";
 import { FiMail, FiLock, FiLogIn } from 'react-icons/fi';
 import { RingLoader } from 'react-spinners';
+import { api } from "../api";
 
 export default function SignIn() {
   const [formData, setFormData] = useState({
@@ -25,7 +26,7 @@ export default function SignIn() {
     setError("");
 
     try {
-      const response = await axios.post('http://localhost:3001/api/users/signin', {
+      const response = await api.post('/users/signin', {
         email: formData.email,
         password: formData.password,
       }, {

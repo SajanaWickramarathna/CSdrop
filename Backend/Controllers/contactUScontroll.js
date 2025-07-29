@@ -1,5 +1,7 @@
 const contact = require("../Models/contactModel");
 const nodemailer = require("nodemailer");
+const Notification = require("../Models/notification");
+const User = require("../Models/user");
 
 // Email transporter
 const transporter = nodemailer.createTransport({
@@ -50,6 +52,14 @@ const addMs = async (req, res, next) => {
         console.log("Email sent to admin: " + info.response);
       }
     });
+
+    // ✅ Notify all customer supporters
+    const supporters = await User.find({ role: 'customer_supporter' });
+    const notifications = supporters.map((support) => ({
+      user_id: support.user_id,
+      message: `New contact form submitted by ${name}. Contact ID: ${newId}`,
+    }));
+    await Notification.insertMany(notifications);
 
   } catch (err) {
     console.log(err);
