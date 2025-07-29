@@ -48,6 +48,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { format } from 'date-fns';
+
 
 // Custom theme for better UI
 const theme = createTheme({
@@ -203,6 +205,7 @@ export default function AllOrders() {
       "Total Price",
       "Status",
       "Payment Method",
+      "Date",
     ];
     const rows = filteredOrders.map((order) => [
       order.order_id,
@@ -210,6 +213,9 @@ export default function AllOrders() {
       `LKR ${order.total_price.toFixed(2)}`,
       order.status,
       order.payment_method || "N/A",
+       order.created_at
+    ? format(new Date(order.created_at), "dd/MM/yyyy HH:mm")
+    : "N/A"
     ]);
     autoTable(doc, {
       head: [columns],
@@ -420,6 +426,7 @@ export default function AllOrders() {
                       "Total",
                       "Status",
                       "Payment",
+                      "Date",
                       "Slip",
                       "Actions",
                     ].map((header) => (
@@ -521,6 +528,15 @@ export default function AllOrders() {
                             color="default"
                           />
                         </TableCell>
+{/* Date */}
+                        <TableCell sx={{ py: 1.5, px: 2, textAlign: "center" }}>
+  <Typography variant="body2">
+    {order.created_at
+      ? format(new Date(order.created_at), "dd/MM/yyyy HH:mm")
+      : "N/A"}
+  </Typography>
+</TableCell>
+
 
                         {/* Payment Slip */}
                         <TableCell sx={{ py: 1.5, px: 2, textAlign: "center" }}>
@@ -605,7 +621,7 @@ export default function AllOrders() {
                     renderSkeletonRows()
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}>
+                      <TableCell colSpan={8} sx={{ textAlign: "center", py: 4 }}>
                         <Box className="flex flex-col items-center justify-center py-8">
                           <SearchIcon sx={{ 
                             fontSize: 48, 
