@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import {api} from '../../../api'; 
+import React, { useEffect, useState } from "react";
+import { api } from "../../../api";
 import {
   Button,
   Paper,
@@ -19,7 +19,7 @@ import {
   TextField,
   InputAdornment,
   Skeleton,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Edit,
   Delete,
@@ -27,34 +27,36 @@ import {
   Search,
   Add,
   FilterList,
-} from '@mui/icons-material';
-import { useTheme } from '@mui/material/styles';
-import { alpha } from '@mui/material/styles';
+} from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
+import { alpha } from "@mui/material/styles";
 
-export default function Allbrands({ onBrandSelect, onBrandDelete, refreshKey }) {
+export default function Allbrands({
+  onBrandSelect,
+  onBrandDelete,
+  refreshKey,
+}) {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const theme = useTheme();
 
-  
   const fetchBrands = async () => {
     try {
-      const response = await api.get('/brands/with-product-count');
+      const response = await api.get("/brands/with-product-count");
       setBrands(response.data);
     } catch (error) {
-      console.error('Error fetching brands:', error);
-      setError('Failed to fetch brands. Please try again later.');
+      console.error("Error fetching brands:", error);
+      setError("Failed to fetch brands. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
-useEffect(() => {
-  setLoading(true); // Start loading before fetching
-  fetchBrands();
-}, []);
-
+  useEffect(() => {
+    setLoading(true); // Start loading before fetching
+    fetchBrands();
+  }, []);
 
   useEffect(() => {
     fetchBrands();
@@ -186,16 +188,16 @@ useEffect(() => {
               </TableCell>
 
               <TableCell
-  align="center"
-  sx={{
-    fontWeight: "bold",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    color: theme.palette.text.secondary,
-  }}
->
-  CATEGORY
-</TableCell>
+                align="center"
+                sx={{
+                  fontWeight: "bold",
+                  textTransform: "uppercase",
+                  letterSpacing: 0.5,
+                  color: theme.palette.text.secondary,
+                }}
+              >
+                CATEGORY
+              </TableCell>
 
               <TableCell
                 align="center"
@@ -326,8 +328,10 @@ useEffect(() => {
                     </Box>
                   </TableCell>
                   <TableCell align="center">
-    <Typography variant="body2">{row.category_name || 'N/A'}</Typography>
-  </TableCell>
+                    <Typography variant="body2">
+                      {row.category_name || "N/A"}
+                    </Typography>
+                  </TableCell>
                   <TableCell align="center">
                     <Chip
                       label={row.brand_status}
