@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-
+import Footer from "../components/footer";
 import Nav from "../components/navigation";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -433,6 +433,7 @@ const ProductViewPage = () => {
           />
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

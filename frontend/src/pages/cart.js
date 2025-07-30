@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import Footer from "../components/footer";
 import { api } from "../api"; 
 import { Link } from "react-router-dom";
 import Nav from "../components/navigation";
@@ -496,6 +496,7 @@ export default function Cart() {
           {snackbarMessage}
         </Alert>
       </Snackbar>
+      <Footer />
     </div>
   );
 }

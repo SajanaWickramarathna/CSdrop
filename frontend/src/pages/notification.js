@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import Footer from "../components/footer";
 import { Link } from 'react-router-dom';
 import Nav from '../components/navigation';
 import { 
@@ -206,6 +206,7 @@ export default function Notifications() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   );
 }
