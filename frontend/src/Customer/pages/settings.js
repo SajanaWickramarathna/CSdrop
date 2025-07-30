@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "../../api";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -24,7 +24,7 @@ export default function Settings() {
 
   const [profileImg, setProfileImg] = useState(null);
   const [profileImgPreview, setProfileImgPreview] = useState(
-    userData.profilePic ? `http://localhost:3001${userData.profilePic}` : ""
+    userData.profilePic ? `${api.defaults.baseURL.replace('/api', '')}${userData.profilePic}` : ""
   );
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -58,7 +58,7 @@ export default function Settings() {
     } else {
       setProfileImg(null);
       setProfileImgPreview(
-        userData.profilePic ? `http://localhost:3001${userData.profilePic}` : ""
+        userData.profilePic ? `${api.defaults.baseURL.replace('/api', '')}${userData.profilePic}` : ""
       );
     }
   };
@@ -80,8 +80,8 @@ export default function Settings() {
       if (profileImg) {
         formDataToSend.append("profile_image", profileImg);
       }
-      await axios.put(
-        "http://localhost:3001/api/customers/updatecustomer",
+      await api.put(
+        "/customers/updatecustomer",
         formDataToSend,
         {
           headers: {
@@ -118,8 +118,8 @@ export default function Settings() {
       formDataToSend.append("userId", userId);
       formDataToSend.append("password", passwords.newPassword);
       formDataToSend.append("confirmPassword", passwords.confirmPassword);
-      await axios.put(
-        "http://localhost:3001/api/customers/updatepassword",
+      await api.put(
+        "/customers/updatepassword",
         formDataToSend,
         {
           headers: {

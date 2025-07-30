@@ -30,7 +30,7 @@ import {
   CheckCircle as CheckCircleIcon
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { api } from "../../api";
 import { format } from 'date-fns';
 
 export default function UserOrders() {
@@ -58,7 +58,7 @@ export default function UserOrders() {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/api/users/me", {
+      const response = await api.get("/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUserData(response.data);
@@ -88,8 +88,8 @@ export default function UserOrders() {
   const fetchUserOrders = async () => {
     if (userData) {
       try {
-        const response = await axios.get(
-          `http://localhost:3001/api/orders/user/${userData.user_id}`
+        const response = await api.get(
+          `/orders/user/${userData.user_id}`
         );
         setOrders(response.data);
       } catch (error) {
@@ -132,7 +132,7 @@ export default function UserOrders() {
     if (!selectedOrder) return;
 
     try {
-      await axios.put(`http://localhost:3001/api/orders/cancel/${selectedOrder}`);
+      await api.put(`/orders/cancel/${selectedOrder}`);
       fetchUserOrders();
       showSnackbar("Order cancelled successfully");
     } catch (error) {

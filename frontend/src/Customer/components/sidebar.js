@@ -10,7 +10,7 @@ import TicketIcon from "@mui/icons-material/ListAltOutlined";
 import PlusOneIcon from "@mui/icons-material/PlusOneOutlined";
 import SettingIcon from "@mui/icons-material/SettingsOutlined";
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import axios from "axios";
+import { api } from "../../api";
 import { CircularProgress } from "@mui/material";
 import { useCart } from "../../context/CartContext";
 
@@ -26,7 +26,7 @@ export default function Sidebar() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/users/me", {
+        const res = await api.get("/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserData(res.data);
@@ -55,8 +55,8 @@ export default function Sidebar() {
 
     const fetchNotifications = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:3001/api/notifications/user/${userData.user_id}`
+        const res = await api.get(
+          `/notifications/user/${userData.user_id}`
         );
         const unreadCount = res.data.filter((n) => !n.read).length;
         setNotificationCount(unreadCount);
@@ -92,7 +92,7 @@ export default function Sidebar() {
       <div className="w-full p-6 flex flex-col items-center">
         <div className="relative mb-4">
           <img
-            src={`http://localhost:3001${userData?.profilePic}`}
+            src={`${api.defaults.baseURL.replace('/api', '')}${userData?.profilePic}`}
             alt="Profile"
             className="h-24 w-24 rounded-full object-cover border-4 border-white shadow-md"
           />

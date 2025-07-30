@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../api";
 import {
   BarChart,
   PieChart,
@@ -30,8 +30,8 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (userData) {
-      axios
-        .get(`http://localhost:3001/api/tickets/tickets/${userData.user_id}`)
+      api
+        .get(`/tickets/tickets/${userData.user_id}`)
         .then((response) => {
           const tickets = response.data.tickets;
           const total = tickets.length;
@@ -57,7 +57,7 @@ export default function Dashboard() {
 
   const fetchUserData = async () => {
     try {
-      const res = await axios.get("http://localhost:3001/api/users/me", {
+      const res = await api.get("/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUserData(res.data);
@@ -73,8 +73,8 @@ export default function Dashboard() {
 
   const fetchOrderSummary = async (user_id) => {
     try {
-      const res = await axios.get(
-        `http://localhost:3001/api/orders/user/summary/${user_id}`
+      const res = await api.get(
+        `/orders/user/summary/${user_id}`
       );
       setOrderSummary(res.data);
     } catch (error) {

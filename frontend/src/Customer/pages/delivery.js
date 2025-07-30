@@ -18,7 +18,7 @@ import {
   Collapse,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+
 import { api } from "../../api";
 
 const steps = [
@@ -44,7 +44,7 @@ export default function TrackDelivery() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const res = await axios.get("http://localhost:3001/api/users/me", {
+        const res = await api.get("/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserData(res.data);
@@ -59,8 +59,8 @@ export default function TrackDelivery() {
 
   useEffect(() => {
     if (userData) {
-      axios
-        .get(`http://localhost:3001/api/orders/user/${userData.user_id}`)
+      api
+        .get(`/orders/user/${userData.user_id}`)
         .then(async (res) => {
           const ordersWithDelivery = await Promise.all(
             res.data.map(async (order) => {

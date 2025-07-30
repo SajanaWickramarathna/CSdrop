@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../../api";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
@@ -64,7 +64,7 @@ function TicketUserDash() {
   const fetchTickets = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`http://localhost:3001/api/tickets/tickets/${userId}`);
+      const response = await api.get(`/tickets/tickets/${userId}`);
       setTickets(response.data.tickets);
     } catch (error) {
       console.error("Error fetching tickets:", error);
@@ -101,8 +101,8 @@ function TicketUserDash() {
     if (!selectedTicket) return;
 
     try {
-      const response = await axios.delete(
-        `http://localhost:3001/api/tickets/ticket/${selectedTicket.ticket_id}`
+      const response = await api.delete(
+        `/tickets/ticket/${selectedTicket.ticket_id}`
       );
       if (response.status === 200) {
         setTickets(prevTickets =>

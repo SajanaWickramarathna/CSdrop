@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../api";
 import { Link } from "react-router-dom";
 import {
   CircularProgress,
@@ -43,7 +43,7 @@ export default function Notifications() {
 
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/users/me", {
+        const response = await api.get("/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserData(response.data);
@@ -74,8 +74,8 @@ export default function Notifications() {
 
     const fetchNotifications = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3001/api/notifications/user/${userData.user_id}`
+        const response = await api.get(
+          `/notifications/user/${userData.user_id}`
         );
         setNotifications(response.data);
       } catch (err) {
@@ -100,8 +100,8 @@ export default function Notifications() {
   // Clear all notifications
   const handleClearNotifications = async () => {
     try {
-      await axios.delete(
-        `http://localhost:3001/api/notifications/user/${userData.user_id}`
+      await api.delete(
+        `/notifications/user/${userData.user_id}`
       );
       setNotifications([]);
       showSnackbar("All notifications cleared successfully");
@@ -114,7 +114,7 @@ export default function Notifications() {
   // Delete single notification
   const handleDeleteNotification = async (id) => {
     try {
-      await axios.delete(`http://localhost:3001/api/notifications/${id}`);
+      await api.delete(`/notifications/${id}`);
       setNotifications((prev) =>
         prev.filter((notification) => notification._id !== id)
       );
@@ -122,22 +122,6 @@ export default function Notifications() {
     } catch (err) {
       console.error("Error deleting notification:", err);
       showSnackbar("Error deleting notification", "error");
-    }
-  };
-
-  // Mark as read
-  const handleMarkAsRead = async (id) => {
-    try {
-      await axios.patch(`http://localhost:3001/api/notifications/${id}/read`);
-      setNotifications((prev) =>
-        prev.map((notification) =>
-          notification._id === id
-            ? { ...notification, read: true }
-            : notification
-        )
-      );
-    } catch (err) {
-      console.error("Error marking as read:", err);
     }
   };
 

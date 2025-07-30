@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { api } from "../../../api";
 
 function AddTicket() {
   const location = useLocation();
@@ -24,7 +24,7 @@ function AddTicket() {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/api/users/me", {
+      const response = await api.get("/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUserData(response.data);
@@ -69,8 +69,8 @@ function AddTicket() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    axios
-      .post("http://localhost:3001/api/tickets", input)
+    api
+      .post("/tickets", input)
       .then(() => {
         navigate("/customer-dashboard");
       })

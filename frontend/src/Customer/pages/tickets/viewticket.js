@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../../api";
 import { useParams, useNavigate } from "react-router-dom";
 import TicketChat from "../../../pages/chat"; // Correct path to TicketChat
 
@@ -55,8 +55,8 @@ function ViewReplyTicket() {
     const fetchTicket = async () => {
       setIsLoading(true);
       try {
-        const response = await axios.get(
-          `http://localhost:3001/api/tickets/ticket/${id}`
+        const response = await api.get(
+          `/tickets/ticket/${id}`
         );
         setTicket(response.data.ticket);
       } catch (error) {
@@ -74,7 +74,7 @@ function ViewReplyTicket() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/users/me", {
+        const response = await api.get("/users/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserData(response.data);
