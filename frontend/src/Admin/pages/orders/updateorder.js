@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "../../../api";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -152,8 +152,8 @@ export default function UpdateOrder() {
         try {
           const productPromises = orderData.items.map(async (item) => {
             try {
-              const productRes = await axios.get(
-                `http://localhost:3001/api/products/product/${item.product_id}`
+              const productRes = await api.get(
+                `/products/product/${item.product_id}`
               );
               const product = productRes.data;
               return {
@@ -208,8 +208,8 @@ export default function UpdateOrder() {
     }
 
     try {
-      const response = await axios.put(
-        `http://localhost:3001/api/orders/update/${orderData.order_id}`,
+      const response = await api.put(
+        `/orders/update/${orderData.order_id}`,
         orderData
       );
 

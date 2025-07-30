@@ -29,6 +29,7 @@ import {
 } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import { alpha } from "@mui/material/styles";
+import { api } from "../../../api";
 
 export default function Allproduct({
   onProductSelect,
@@ -45,12 +46,10 @@ export default function Allproduct({
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(
-        "http://localhost:3001/api/products/with-names"
+      const response = await api.get(
+        "/products/with-names"
       );
-      if (!response.ok) throw new Error("Failed to fetch products");
-      const data = await response.json();
-      setProducts(data);
+      setProducts(response.data);
     } catch (error) {
       console.error("Error fetching products:", error);
       setError(error.message);

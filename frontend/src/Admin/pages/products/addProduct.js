@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../../api";
 import { 
   PlusIcon, 
   InformationCircleIcon,
@@ -66,7 +66,7 @@ const AddProduct = () => {
     const fetchCategories = async () => {
       setIsFetchingCategories(true);
       try {
-        const res = await axios.get("http://localhost:3001/api/categories");
+        const res = await api.get("/categories");
         setCategories(res.data);
       } catch (err) {
         setErrorMessage("Failed to load categories. Please try again later.");
@@ -87,7 +87,7 @@ const AddProduct = () => {
       
       setIsFetchingBrands(true);
       try {
-        const res = await axios.get(`http://localhost:3001/api/brands/bycategory/${categoryId}`);
+        const res = await api.get(`/brands/bycategory/${categoryId}`);
         setBrands(res.data);
       } catch (err) {
         setErrorMessage("Failed to load brands for this category.");
@@ -198,12 +198,12 @@ const AddProduct = () => {
 
     productImages.forEach((image, index) => {
       if (image) {
-        formDataToSend.append(`product_images`, image); // Changed to array format
+         formDataToSend.append(`product_image_${index + 1}`, image);
       }
     });
 
     try {
-      const res = await axios.post("http://localhost:3001/api/products/addproduct", formDataToSend, {
+      const res = await api.post("/products/addproduct", formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" }
       });
       

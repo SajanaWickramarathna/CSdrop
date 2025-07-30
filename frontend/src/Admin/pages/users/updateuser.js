@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "../../../api";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -41,7 +41,7 @@ export default function UpdateUser() {
 
   const [profileImg, setProfileImg] = useState(null);
   const [profileImgPreview, setProfileImgPreview] = useState(
-    userData.profilePic ? `http://localhost:3001${userData.profilePic}` : null
+    userData.profilePic ? `${api.defaults.baseURL.replace('/api', '')}${userData.profilePic}` : null
   );
   const [loading, setLoading] = useState(false);
 
@@ -78,7 +78,7 @@ export default function UpdateUser() {
         formDataToSend.append("profile_image", profileImg);
       }
 
-      await axios.put("http://localhost:3001/api/users/updateuser", formDataToSend, {
+      await api.put("/users/updateuser", formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 

@@ -14,7 +14,7 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import axios from "axios";
+import { api } from "../../../api";
 import { Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
 
 import Allproduct from "./allproducts";
@@ -62,8 +62,8 @@ export default function Product() {
     
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:3001/api/products/product/${selectedProduct.id}`
+      const response = await api.get(
+        `/products/product/${selectedProduct.id}`
       );
       if (response.status !== 200) {
         throw new Error("Failed to fetch product data");
@@ -84,16 +84,16 @@ export default function Product() {
 
     setLoading(true);
     try {
-      const productDetailsResponse = await axios.get(
-        `http://localhost:3001/api/products/product/${deleteData.id}`
+      const productDetailsResponse = await api.get(
+        `/products/product/${deleteData.id}`
       );
       const productDetails = productDetailsResponse.data;
 
       const results = await Promise.allSettled([
-        axios.delete(
-          `http://localhost:3001/api/products/deleteproduct/${deleteData.id}`
+        api.delete(
+          `/products/deleteproduct/${deleteData.id}`
         ),
-        axios.post("http://localhost:3001/api/stocks/addstock", {
+        api.post("/stocks/addstock", {
           product_id: productDetails.product_id,
           product_name: productDetails.product_name,
           brand_id: productDetails.brand_id,

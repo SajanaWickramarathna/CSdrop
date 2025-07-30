@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { api } from "../../../api";
 import { 
   Button, 
   Paper, 
@@ -49,7 +49,7 @@ export default function Supporters({ onSupporterSelect, onSupporterDelete }) {
   const fetchSupporters = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:3001/api/supporters/supporters');
+      const response = await api.get('/supporters/supporters');
       setSupporters(response.data);
     } catch (error) {
       enqueueSnackbar('Error fetching supporters', { variant: 'error' });
@@ -61,7 +61,7 @@ export default function Supporters({ onSupporterSelect, onSupporterDelete }) {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3001/api/supporters/customer?id=${id}`);
+      await api.delete(`/supporters/customer?id=${id}`);
       setSupporters(supporters.filter(supporter => supporter._id !== id));
       enqueueSnackbar('Supporter deleted successfully', { variant: 'success' });
     } catch (error) {

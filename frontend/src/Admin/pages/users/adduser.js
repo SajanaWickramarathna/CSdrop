@@ -1,29 +1,29 @@
-import React, { useState } from 'react';
-import axios from "axios";
-import { useLocation, useNavigate } from 'react-router-dom';
-import { 
-  Box, 
-  Paper, 
-  Typography, 
-  TextField, 
-  Button, 
-  Grid, 
+import React, { useState } from "react";
+import { api } from "../../../api";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Grid,
   Avatar,
   CircularProgress,
   InputAdornment,
-  IconButton
-} from '@mui/material';
-import { 
-  Person, 
-  Email, 
-  Phone, 
-  Home, 
-  Lock, 
+  IconButton,
+} from "@mui/material";
+import {
+  Person,
+  Email,
+  Phone,
+  Home,
+  Lock,
   CheckCircle,
-  CloudUpload
-} from '@mui/icons-material';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+  CloudUpload,
+} from "@mui/icons-material";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AddUser() {
   const location = useLocation();
@@ -32,11 +32,11 @@ export default function AddUser() {
   const role = queryParams.get("role");
 
   const roleTitles = {
-    customer: 'Customer',
-    admin: 'Admin',
-    supporter: 'Customer Supporter',
-    manager: 'Manager',
-    deliver: 'Delivery Person'
+    customer: "Customer",
+    admin: "Admin",
+    supporter: "Customer Supporter",
+    manager: "Manager",
+    deliver: "Delivery Person",
   };
 
   const [formData, setFormData] = useState({
@@ -88,12 +88,12 @@ export default function AddUser() {
         formDataToSend.append("profile_image", image);
       }
 
+      const BASE_URL = api.defaults.baseURL;
+
       const endpoints = {
-        customer: "http://localhost:3001/api/customers/signup",
-        supporter: "http://localhost:3001/api/supporters/signup",
-        manager: "http://localhost:3001/api/managers/signup",
-        deliver: "http://localhost:3001/api/delivers/signup",
-        admin: "http://localhost:3001/api/admins/signup"
+        customer: `${BASE_URL}/customers/signup`,
+        supporter: `${BASE_URL}/supporters/signup`,
+        admin: `${BASE_URL}/admins/signup`,
       };
 
       if (!endpoints[role]) {
@@ -101,7 +101,7 @@ export default function AddUser() {
         return;
       }
 
-      const response = await axios.post(endpoints[role], formDataToSend, {
+      const response = await api.post(endpoints[role], formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -117,42 +117,53 @@ export default function AddUser() {
   };
 
   return (
-    <Box sx={{ p: 4, maxWidth: 800, margin: '0 auto' }}>
+    <Box sx={{ p: 4, maxWidth: 800, margin: "0 auto" }}>
       <ToastContainer position="top-center" autoClose={3000} />
 
       <Paper elevation={3} sx={{ p: 4, borderRadius: 3 }}>
-        <Typography variant="h4" component="h1" gutterBottom sx={{ 
-          fontWeight: 'bold', 
-          textAlign: 'center',
-          mb: 4,
-          color: 'primary.main'
-        }}>
-          Register New {roleTitles[role] || 'User'}
+        <Typography
+          variant="h4"
+          component="h1"
+          gutterBottom
+          sx={{
+            fontWeight: "bold",
+            textAlign: "center",
+            mb: 4,
+            color: "primary.main",
+          }}
+        >
+          Register New {roleTitles[role] || "User"}
         </Typography>
 
-        <Box 
-          component="form" 
-          onSubmit={handleSubmit} 
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
           encType="multipart/form-data"
           sx={{ mt: 3 }}
         >
           <Grid container spacing={3}>
             {/* Profile Picture Upload */}
-            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'center' }}>
-              <Box sx={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                alignItems: 'center',
-                mb: 2
-              }}>
+            <Grid
+              item
+              xs={12}
+              sx={{ display: "flex", justifyContent: "center" }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  mb: 2,
+                }}
+              >
                 <Avatar
                   src={imagePreview}
-                  sx={{ 
-                    width: 120, 
-                    height: 120, 
+                  sx={{
+                    width: 120,
+                    height: 120,
                     mb: 2,
-                    border: '2px dashed',
-                    borderColor: 'primary.main'
+                    border: "2px dashed",
+                    borderColor: "primary.main",
                   }}
                 >
                   {!imagePreview && <Person sx={{ fontSize: 60 }} />}
@@ -161,7 +172,7 @@ export default function AddUser() {
                   component="label"
                   variant="outlined"
                   startIcon={<CloudUpload />}
-                  sx={{ textTransform: 'none' }}
+                  sx={{ textTransform: "none" }}
                 >
                   Upload Photo
                   <input
@@ -299,19 +310,21 @@ export default function AddUser() {
                 variant="contained"
                 size="large"
                 disabled={loading}
-                startIcon={loading ? <CircularProgress size={24} /> : <CheckCircle />}
-                sx={{ 
+                startIcon={
+                  loading ? <CircularProgress size={24} /> : <CheckCircle />
+                }
+                sx={{
                   py: 2,
                   mt: 2,
-                  fontWeight: 'bold',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: 3
+                  fontWeight: "bold",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: 3,
                   },
-                  transition: 'all 0.2s ease-in-out'
+                  transition: "all 0.2s ease-in-out",
                 }}
               >
-                {loading ? 'Creating Account...' : 'Register'}
+                {loading ? "Creating Account..." : "Register"}
               </Button>
             </Grid>
           </Grid>

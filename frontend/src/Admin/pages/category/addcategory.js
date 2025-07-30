@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { api } from "../../../api";
 import {
   Box,
   Typography,
@@ -67,7 +67,7 @@ const AddCategory = () => {
 
     try {
       // Get all categories and check normalized
-      const checkRes = await axios.get("http://localhost:3001/api/categories");
+      const checkRes = await api.get("/categories");
       const duplicate = checkRes.data.find(
         (cat) => cat.category_name && cat.category_name.trim().toLowerCase() === nameToCheck
       );
@@ -97,8 +97,8 @@ const AddCategory = () => {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/api/categories/addcategory",
+      const response = await api.post(
+        "/categories/addcategory",
         formDataToSend,
         {
           headers: { "Content-Type": "multipart/form-data" },

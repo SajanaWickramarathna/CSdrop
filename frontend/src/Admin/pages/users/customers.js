@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { api } from "../../../api";
 import { 
   Button, 
   Paper, 
@@ -48,7 +48,7 @@ export default function Customers({ onCustomerSelect, onCustomerDelete }) {
   const fetchCustomers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:3001/api/customers/users');
+      const response = await api.get('/customers/users');
       setCustomers(response.data);
     } catch (error) {
       enqueueSnackbar('Error fetching customers', { variant: 'error' });
@@ -60,7 +60,7 @@ export default function Customers({ onCustomerSelect, onCustomerDelete }) {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3001/api/customers/customer?id=${id}`);
+      await api.delete(`/customers/customer?id=${id}`);
       setCustomers(customers.filter(customer => customer._id !== id));
       enqueueSnackbar('Customer deleted successfully', { variant: 'success' });
     } catch (error) {

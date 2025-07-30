@@ -14,7 +14,7 @@ import {
   Tab,
   Typography
 } from '@mui/material';
-import axios from 'axios';
+import { api } from "../../../api";
 import Swal from 'sweetalert2';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -103,7 +103,7 @@ export default function Users() {
     }
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:3001/api/users/user?id=${selectedUser.id}`);
+      const response = await api.get(`/users/user?id=${selectedUser.id}`);
       if (response.status !== 200) {
         throw new Error("Failed to fetch user data");
       }
@@ -120,7 +120,7 @@ export default function Users() {
     if (!deleteUser) return;
     setLoading(true);
     try {
-      const response = await axios.delete(`http://localhost:3001/api/users/deleteuser?id=${deleteUser.id}`);
+      const response = await api.delete(`/users/deleteuser?id=${deleteUser.id}`);
       if (response.status === 200) {
         toast.success('User deleted successfully');
         handleClickClose();

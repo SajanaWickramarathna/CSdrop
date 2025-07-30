@@ -14,11 +14,11 @@ import {
   Box,
   Typography,
 } from "@mui/material";
-import axios from "axios";
+
 import { Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
 import { useTheme } from "@mui/material/styles";
 import { alpha } from "@mui/material/styles";
-
+import { api } from "../../../api";
 import Brandsbuttons from './brandsbuttons';
 import Allbrands from './allbrands';
 import Addbrand from './addbrand';
@@ -68,8 +68,8 @@ export default function Brand() {
 
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:3001/api/brands/brand/${selectedBrand.id}`
+      const response = await api.get(
+        `/brands/brand/${selectedBrand.id}`
       );
       if (response.status !== 200) {
         throw new Error("Failed to fetch brand data");
@@ -91,9 +91,9 @@ export default function Brand() {
     setLoading(true);
     try {
       const results = await Promise.allSettled([
-        axios.delete(`http://localhost:3001/api/brands/deletebrand/${deleteData.id}`),
-        axios.delete(`http://localhost:3001/api/categories/deletebrandscategory?id=${deleteData.id}`),
-        axios.delete(`http://localhost:3001/api/products/deleteproductbrand?id=${deleteData.id}`),
+        api.delete(`/brands/deletebrand/${deleteData.id}`),
+        api.delete(`/categories/deletebrandscategory?id=${deleteData.id}`),
+        api.delete(`/products/deleteproductbrand?id=${deleteData.id}`),
       ]);
 
       const hasErrors = results.some(result => result.status === "rejected");

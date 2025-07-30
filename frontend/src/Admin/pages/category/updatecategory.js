@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { api } from "../../../api";
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -62,7 +62,7 @@ export default function UpdateCategory() {
       setImagePreview(
         categoryDataFromLocation.category_image?.startsWith('http')
           ? categoryDataFromLocation.category_image
-          : `http://localhost:3001${categoryDataFromLocation.category_image || ''}`
+          : `${api.defaults.baseURL.replace('/api', '')}${categoryDataFromLocation.category_image || ''}`
       );
       setLoading(false); // Data loaded, set loading to false
     } else {
@@ -111,7 +111,7 @@ export default function UpdateCategory() {
 
     try {
       const nameToCheck = categoryData.category_name.trim().toLowerCase();
-      const checkRes = await axios.get("http://localhost:3001/api/categories");
+      const checkRes = await api.get("/categories");
       const duplicate = checkRes.data.find(cat =>
         cat.category_name && cat.category_name.trim().toLowerCase() === nameToCheck &&
         cat.category_id !== categoryData.category_id
@@ -133,8 +133,8 @@ export default function UpdateCategory() {
     if (categoryImage) formDataToSend.append('category_image', categoryImage);
 
     try {
-      const response = await axios.put(
-        `http://localhost:3001/api/categories/updatecategory/${categoryData.category_id}`,
+      const response = await api.put(
+        `/categories/updatecategory/${categoryData.category_id}`,
         formDataToSend,
         {
           headers: { 'Content-Type': 'multipart/form-data' },

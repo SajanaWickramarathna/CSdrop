@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "../../api";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Swal from 'sweetalert2';
@@ -27,7 +27,7 @@ export default function Settings() {
 
   const [profileImg, setProfileImg] = useState(null);
   const [profileImgPreview, setProfileImgPreview] = useState(
-    userData.profilePic ? `http://localhost:3001${userData.profilePic}` : ""
+    userData.profilePic ? `${api.defaults.baseURL.replace('/api', '')}${userData.profilePic}` : ""
   );
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('account');
@@ -68,7 +68,7 @@ export default function Settings() {
       }
     } else {
       setProfileImg(null);
-      setProfileImgPreview(userData.profilePic ? `http://localhost:3001${userData.profilePic}` : "");
+      setProfileImgPreview(userData.profilePic ? `${api.defaults.baseURL.replace('/api', '')}${userData.profilePic}` : "");
     }
   };
 
@@ -88,7 +88,7 @@ export default function Settings() {
         formDataToSend.append("profile_image", profileImg);
       }
 
-      await axios.put("http://localhost:3001/api/admins/updateadmin", formDataToSend, {
+      await api.put("/admins/updateadmin", formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }
@@ -132,7 +132,7 @@ export default function Settings() {
       formDataToSend.append("password", passwords.newPassword);
       formDataToSend.append("confirmPassword", passwords.confirmPassword);
       
-      await axios.put("http://localhost:3001/api/admins/updatepassword", formDataToSend, {
+      await api.put("/admins/updatepassword", formDataToSend, {
         headers: {
           'Content-Type': 'application/json',
         }

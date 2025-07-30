@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../../../api";
 import { useParams } from "react-router-dom";
 
 export default function ViewOrder() {
@@ -12,8 +12,8 @@ export default function ViewOrder() {
   useEffect(() => {
     const fetchOrderDetails = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3001/api/orders/${orderId}`
+        const response = await api.get(
+          `/orders/${orderId}`
         );
         if (response.status !== 200)
           throw new Error("Failed to fetch order details");
@@ -24,8 +24,8 @@ export default function ViewOrder() {
         const productDetails = await Promise.all(
           order.items.map(async (item) => {
             try {
-              const productRes = await axios.get(
-                `http://localhost:3001/api/products/product/${item.product_id}`
+              const productRes = await api.get(
+                `/products/product/${item.product_id}`
               );
               const product = productRes.data;
               return {
@@ -78,11 +78,12 @@ export default function ViewOrder() {
   const getProductImageSrc = (imgPath) => {
     if (!imgPath) return "https://via.placeholder.com/300x200?text=No+Image";
     if (imgPath.startsWith("http")) return imgPath;
-    if (imgPath.startsWith("/uploads"))
-      return `http://localhost:3001${imgPath}`;
-    if (imgPath.startsWith("uploads"))
-      return `http://localhost:3001/${imgPath}`;
-    return `http://localhost:3001/uploads/${imgPath}`;
+  
+    const baseURL = api.defaults.baseURL.replace("/api", ""); // remove `/api` if present
+    if (imgPath.startsWith("/uploads")) return `${baseURL}${imgPath}`;
+    if (imgPath.startsWith("uploads")) return `${baseURL}/${imgPath}`;
+  
+    return `${baseURL}/uploads/${imgPath}`;
   };
 
   return (
@@ -141,12 +142,12 @@ export default function ViewOrder() {
             <h4 className="text-lg font-semibold">Payment Method</h4>
             <p className="text-gray-800">Payment Slip</p>
             <img
-              src={`http://localhost:3001/uploads/${orderData.payment_slip}`}
+              src={`${api.defaults.baseURL.replace('/api', '')}/uploads/${orderData.payment_slip}`}
               alt="Payment Slip"
               className="w-80 border border-gray-300 rounded-lg shadow-sm mt-2"
             />
             <a
-              href={`http://localhost:3001/uploads/${orderData.payment_slip}`}
+              href={`${api.defaults.baseURL.replace('/api', '')}/uploads//${orderData.payment_slip}`}
               target="_blank"
               rel="noopener noreferrer"
               className="block text-blue-500 mt-2 underline"

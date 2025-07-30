@@ -27,7 +27,7 @@ import {
   FormControl,
   Avatar,
 } from "@mui/material";
-import axios from "axios";
+import { api } from "../../api";
 import {
   ShoppingCart,
   MonetizationOn,
@@ -254,12 +254,10 @@ export default function Dashboard() {
       try {
         const [productRes, categoryRes, brandRes, analyticsRes] =
           await Promise.all([
-            axios.get("http://localhost:3001/api/products/"),
-            axios.get("http://localhost:3001/api/categories/"),
-            axios.get("http://localhost:3001/api/brands/"),
-            axios.get(
-              `http://localhost:3001/api/orders/analytics?timeRange=${timeRange}`
-            ),
+            api.get("/products/"),
+            api.get("/categories/"),
+            api.get("/brands/"),
+            api.get(`/orders/analytics?timeRange=${timeRange}`),
           ]);
 
         setDashboardData({

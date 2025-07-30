@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { api } from "../../../api";
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
@@ -58,7 +58,7 @@ export default function UpdateBrand() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await axios.get('http://localhost:3001/api/categories');
+        const res = await api.get('/categories');
         setCategories(res.data);
       } catch (error) {
         console.error('Failed to load categories:', error);
@@ -78,7 +78,7 @@ export default function UpdateBrand() {
       }
       setLoading(true);
       try {
-        const res = await axios.get(`http://localhost:3001/api/brands/brand/${brandId}`);
+        const res = await api.get(`/brands/brand/${brandId}`);
         const brand = res.data;
         setFormData({
           brand_name: brand.brand_name || '',
@@ -87,12 +87,12 @@ export default function UpdateBrand() {
         });
         setCategoryId(brand.category_id?.toString() || '');
         setImagePreview(
-          brand.brand_image
-            ? (brand.brand_image.startsWith('http')
-                ? brand.brand_image
-                : `http://localhost:3001/uploads/${brand.brand_image}`)
-            : ''
-        );
+  brand.brand_image
+    ? (brand.brand_image.startsWith('http')
+        ? brand.brand_image
+        : `${api.defaults.baseURL.replace('/api', '')}/uploads/${brand.brand_image}`)
+    : ''
+);
       } catch (err) {
         console.error('Failed to load brand data:', err);
         showSnackbar('Failed to load brand data', 'error');
@@ -142,8 +142,8 @@ export default function UpdateBrand() {
     }
 
     try {
-      const response = await axios.put(
-        `http://localhost:3001/api/brands/updatebrand/${brandId}`,
+      const response = await api.put(
+        `/brands/updatebrand/${brandId}`,
         formDataToSend,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );

@@ -65,7 +65,8 @@ export default function Allbrands({
   const filteredBrands = brands.filter(
     (brand) =>
       brand.brand_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(brand.brand_id).includes(searchTerm.toLowerCase()) // Allow searching by brand ID
+      String(brand.brand_id).includes(searchTerm.toLowerCase())|| // Allow searching by brand ID
+      brand.category_name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status) => {

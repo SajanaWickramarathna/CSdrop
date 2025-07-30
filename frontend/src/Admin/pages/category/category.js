@@ -14,7 +14,7 @@ import {
   Box,
   Typography,
 } from '@mui/material';
-import axios from 'axios';
+import { api } from "../../../api";
 import { Delete as DeleteIcon } from '@mui/icons-material';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
@@ -63,7 +63,7 @@ export default function Category() {
   const getCategoryById = async (id) => {
     setLoading(true);
     try {
-      const response = await axios.get(`http://localhost:3001/api/categories/category/${id}`);
+      const response = await api.get(`/categories/category/${id}`);
       if (response.status !== 200) {
         throw new Error('Failed to fetch category data');
       }
@@ -81,7 +81,7 @@ export default function Category() {
 
     setLoading(true);
     try {
-      const response = await axios.delete(`http://localhost:3001/api/categories/deletecategory/${deleteData.id}`);
+      const response = await api.delete(`/categories/deletecategory/${deleteData.id}`);
       if (response.status === 200) {
         showSnackbar('Category deleted successfully', 'success');
         handleClickClose();

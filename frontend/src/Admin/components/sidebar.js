@@ -190,7 +190,7 @@ export default function Sidebar() {
           <img
             src={
               userData?.profilePic
-                ? `http://localhost:3001${userData.profilePic}`
+                ? `${api.defaults.baseURL.replace('/api', '')}${userData.profilePic}`
                 : "https://via.placeholder.com/96"
             }
             alt="Profile"

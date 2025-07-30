@@ -33,6 +33,7 @@ import {
   FilterList,
 } from '@mui/icons-material';
 import { useTheme, alpha } from '@mui/material/styles';
+import { api } from "../../../api";
 
 export default function Allcategory({ onCategorySelect, onCategoryDelete, refreshKey }) {
   const [categories, setCategories] = useState([]);
@@ -46,13 +47,11 @@ export default function Allcategory({ onCategorySelect, onCategoryDelete, refres
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('http://localhost:3001/api/categories/with-brand-count');
-      if (!response.ok) throw new Error('Failed to fetch categories');
-      const data = await response.json();
-      setCategories(data);
+      const response = await api.get('/categories/with-brand-count');
+      setCategories(response.data);
     } catch (error) {
       console.error('Error fetching categories:', error);
-      setError(error.message);
+      setError("Failed to fetch categories. Please try again later.");
     } finally {
       setLoading(false);
     }

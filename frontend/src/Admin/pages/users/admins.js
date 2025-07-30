@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { api } from "../../../api";
 import { 
   Button, 
   Paper, 
@@ -51,7 +51,7 @@ export default function Admins({ onAdminSelect, onAdminDelete }) {
   const fetchAdmins = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:3001/api/admins/admins');
+      const response = await api.get('/admins/admins');
       setAdmins(response.data);
     } catch (error) {
       enqueueSnackbar('Error fetching admins', { variant: 'error' });
@@ -63,7 +63,7 @@ export default function Admins({ onAdminSelect, onAdminDelete }) {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:3001/api/admins/customer?id=${id}`);
+      await api.delete(`/admins/customer?id=${id}`);
       setAdmins(admins.filter(admin => admin._id !== id));
       enqueueSnackbar('Admin deleted successfully', { variant: 'success' });
     } catch (error) {

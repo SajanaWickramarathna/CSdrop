@@ -45,7 +45,7 @@ import {
 } from "@mui/icons-material";
 import { MdLocalShipping } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { api } from "../../../api";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { format } from 'date-fns';
@@ -102,13 +102,9 @@ export default function AllOrders() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch("http://localhost:3001/api/orders/all");
-      if (!response.ok) {
-        throw new Error(`Failed to fetch orders: ${response.statusText}`);
-      }
-      const data = await response.json();
-      setOrders(data);
-      setFilteredOrders(data);
+      const response = await api.get("/orders/all");
+      setOrders(response.data);
+      setFilteredOrders(response.data);
     } catch (err) {
       console.error("Error fetching orders:", err);
       setError("Failed to load orders. Please try again later.");
@@ -131,6 +127,7 @@ export default function AllOrders() {
       (order) =>
         order.order_id.toString().includes(lowerSearch) ||
         order.user_name?.toLowerCase().includes(lowerSearch) ||
+        order.user_id?.toString().includes(lowerSearch) ||
         order.status.toLowerCase().includes(lowerSearch) ||
         order.payment_method?.toLowerCase().includes(lowerSearch)
     );
@@ -145,7 +142,7 @@ export default function AllOrders() {
     setOpenDialog(false);
 
     try {
-      await axios.put(`http://localhost:3001/api/orders/cancel/${orderId}`);
+      await api.put(`/orders/cancel/${orderId}`);
       fetchOrders();
       setSnackbarMessage(`Order ${orderId} cancelled successfully.`);
       setSnackbarSeverity("success");

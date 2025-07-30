@@ -1,4 +1,4 @@
-import axios from "axios";
+import { api } from "../../../api";
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/outline"; // Added XMarkIcon for close button
@@ -25,14 +25,14 @@ export default function UpdateProduct() {
   const productData = location.state?.productData;
 
   useEffect(() => {
-    axios.get("http://localhost:3001/api/categories")
+    api.get("categories")
       .then(res => setCategories(res.data))
       .catch(() => setErrorMessage("Error fetching categories"));
   }, []);
 
   useEffect(() => {
     if (categoryId) {
-      axios.get(`http://localhost:3001/api/brands/bycategory/${categoryId}`)
+      api.get(`/brands/bycategory/${categoryId}`)
         .then(res => setBrands(res.data))
         .catch(() => setErrorMessage("Error fetching brands"));
     } else {
@@ -59,7 +59,7 @@ export default function UpdateProduct() {
 
     const initialPreviews = [null, null, null, null];
     (productData.images || []).forEach((img, index) => {
-      initialPreviews[index] = img.startsWith("http") ? img : `http://localhost:3001/uploads/${img}`;
+      initialPreviews[index] = img.startsWith("http") ? img : `${api.defaults.baseURL.replace('/api', '')}/uploads/${img}`;
     });
 
     setPreviews(initialPreviews);
@@ -116,8 +116,8 @@ export default function UpdateProduct() {
     });
 
     try {
-      const response = await axios.put(
-        `http://localhost:3001/api/products/updateproduct/${productData.product_id}`,
+      const response = await api.put(
+        `/products/updateproduct/${productData.product_id}`,
         formDataToSend,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
