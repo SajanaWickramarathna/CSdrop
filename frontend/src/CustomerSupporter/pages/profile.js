@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Edit, Delete } from '@mui/icons-material';
-import axios from 'axios';
+import { api } from "../../api";
 
 export default function Profile() {
   const location = useLocation();
@@ -13,7 +13,7 @@ export default function Profile() {
       const confirmDelete = window.confirm("Are you sure you want to delete your account? This action cannot be undone.");
       if (!confirmDelete) return;
       
-      const deleteUser = await axios.delete(`http://localhost:3001/api/customers/delete?id=${userData.user_id}`);
+      const deleteUser = await api.delete(`/customers/delete?id=${userData.user_id}`);
       alert(deleteUser?.data?.message || "Account deleted successfully");
       navigate('/logout');
     } catch(error) {
@@ -30,7 +30,7 @@ export default function Profile() {
           {/* Profile Picture */}
           <div className="w-32 h-32 md:w-36 md:h-36 rounded-full border-4 border-gray-200 overflow-hidden shadow-lg mb-4">
             <img
-              src={`http://localhost:3001${userData.profilePic}`}
+              src={`${api.defaults.baseURL.replace('/api', '')}${userData.profilePic}`}
               alt="Profile"
               className="w-full h-full object-cover"
               onError={(e) => {

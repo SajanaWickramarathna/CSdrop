@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../api";
 
 // Define a simple loading spinner component for better UX
 const LoadingSpinner = () => (
@@ -33,8 +33,8 @@ export default function Dashboard() {
         setLoading(true);
         // Using Promise.all to fetch data concurrently for better performance
         const [ticketsResponse, contactResponse] = await Promise.all([
-          axios.get("http://localhost:3001/api/tickets"),
-          axios.get("http://localhost:3001/api/contact")
+          api.get("/tickets"),
+          api.get("/contact")
         ]);
 
         // Process ticket data

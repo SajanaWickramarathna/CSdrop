@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../api";
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -62,7 +62,7 @@ export default function Tickets() {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/api/tickets");
+        const response = await api.get("/tickets");
         setTickets(response.data.tickets);
       } catch (error) {
         console.error("Error fetching tickets:", error);
@@ -102,7 +102,7 @@ export default function Tickets() {
     setShowModal(false);
     if (ticketToDelete) {
       try {
-        await axios.delete(`http://localhost:3001/api/tickets/ticket/${ticketToDelete.ticketId}`);
+        await api.delete(`/tickets/ticket/${ticketToDelete.ticketId}`);
         setTickets(prev => prev.filter(ticket => ticket.ticket_id !== ticketToDelete.ticketId));
         showTimedToast("Ticket successfully deleted!", "success");
       } catch (err) {

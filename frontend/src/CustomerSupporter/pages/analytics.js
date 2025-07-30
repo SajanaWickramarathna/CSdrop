@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../api";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -38,8 +38,8 @@ export default function Analytics() {
     const fetchData = async () => {
       try {
         const [ticketsResponse, contactResponse] = await Promise.all([
-          axios.get("http://localhost:3001/api/tickets"),
-          axios.get("http://localhost:3001/api/contact")
+          api.get("/tickets"),
+          api.get("/contact")
         ]);
 
         const tickets = ticketsResponse.data.tickets;

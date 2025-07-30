@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../api";
 import { useParams } from "react-router";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
@@ -14,7 +14,7 @@ function AdminContactUsReply() {
   useEffect(() => {
     const fetchHandler = async () => {
       try {
-        const res = await axios.get(`http://localhost:3001/api/contact/${id}`);
+        const res = await api.get(`/contact/${id}`);
         setInputs(res.data.Ms);
       } catch (error) {
         Swal.fire({
@@ -28,7 +28,7 @@ function AdminContactUsReply() {
   }, [id]);
 
   const sendRequest = async () => {
-    return await axios.put(`http://localhost:3001/api/contact/${id}`, {
+    return await api.put(`/contact/${id}`, {
       name: input.name,
       gmail: input.gmail,
       phoneNumber: input.phoneNumber,

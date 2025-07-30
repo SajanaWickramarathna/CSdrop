@@ -8,7 +8,7 @@ import AnalyticsIcon from "@mui/icons-material/AnalyticsOutlined";
 import SettingsIcon from "@mui/icons-material/SettingsOutlined";
 import AccountCircleIcon from "@mui/icons-material/AccountCircleOutlined";
 import NotificationIcon from "@mui/icons-material/Notifications"; // Import NotificationIcon
-import axios from "axios";
+import { api } from "../../api";
 import { CircularProgress } from "@mui/material";
 
 export default function Sidebar() {
@@ -21,7 +21,7 @@ export default function Sidebar() {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/api/users/me", {
+      const response = await api.get("/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUserData(response.data);
@@ -48,8 +48,8 @@ export default function Sidebar() {
   const fetchNotifications = async (userId) => {
     if (!userId) return; // Ensure userId exists before fetching
     try {
-      const res = await axios.get(
-        `http://localhost:3001/api/notifications/user/${userId}`,
+      const res = await api.get(
+        `/notifications/user/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -101,7 +101,7 @@ export default function Sidebar() {
       <div className="w-full p-6 flex flex-col items-center">
         <div className="relative mb-4">
           <img
-            src={userData?.profilePic ? `http://localhost:3001${userData.profilePic}` : 'https://via.placeholder.com/96'}
+            src={userData?.profilePic ? `${api.defaults.baseURL.replace('/api', '')}${userData.profilePic}` : 'https://via.placeholder.com/96'}
             alt="Profile"
             className="h-24 w-24 rounded-full object-cover border-4 border-white shadow-md"
           />

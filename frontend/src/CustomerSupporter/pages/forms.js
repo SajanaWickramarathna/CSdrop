@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../api";
 import { Link } from "react-router-dom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { FiSearch, FiDownload, FiTrash2, FiMail } from "react-icons/fi";
 
 const fetchHandler = async () => {
-  return await axios.get(`http://localhost:3001/api/contact`).then((res) => res.data);
+  return await api.get(`/contact`).then((res) => res.data);
 };
 
 export default function Forms() {
@@ -44,7 +44,7 @@ export default function Forms() {
     if (!messageToDelete) return;
 
     try {
-      await axios.delete(`http://localhost:3001/api/contact/${messageToDelete.id}`);
+      await api.delete(`/contact/${messageToDelete.id}`);
       const data = await fetchHandler();
       setMessages(data.Ms);
       setShowDeleteConfirm(false); // Close the modal

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { api } from "../../api";
 import { useParams, useNavigate } from "react-router-dom";
 import TicketChat from "../../pages/chat";
 import { CircularProgress } from "@mui/material";
@@ -27,8 +27,8 @@ function ReplyTicket() {
     const fetchData = async () => {
       try {
         const [ticketRes, userRes] = await Promise.all([
-          axios.get(`http://localhost:3001/api/tickets/ticket/${id}`),
-          token ? axios.get("http://localhost:3001/api/users/me", {
+          api.get(`/tickets/ticket/${id}`),
+          token ? api.get("/users/me", {
             headers: { Authorization: `Bearer ${token}` },
           }) : Promise.resolve(null)
         ]);
@@ -53,7 +53,7 @@ function ReplyTicket() {
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     try {
-      await axios.put(`http://localhost:3001/api/tickets/${id}`, { status: newStatus });
+      await api.put(`/tickets/${id}`, { status: newStatus });
       setTicket(prev => ({ ...prev, status: newStatus }));
       Swal.fire({
         title: "Success!",
