@@ -7,7 +7,7 @@ import CartIcon from "@mui/icons-material/ShoppingCart";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
-import axios from "axios";
+import { api } from "../api";
 import { useCart } from "../context/CartContext";
 
 function Nav() {
@@ -32,16 +32,16 @@ function Nav() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userResponse = await axios.get(
-          "http://localhost:3001/api/users/me",
+        const userResponse = await api.get(
+          "/users/me",
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
         setUserData(userResponse.data);
 
-        const notificationsResponse = await axios.get(
-          `http://localhost:3001/api/notifications/user/${userResponse.data.user_id}`
+        const notificationsResponse = await api.get(
+          `/notifications/user/${userResponse.data.user_id}`
         );
         setNotificationCount(notificationsResponse.data.length || 0);
 

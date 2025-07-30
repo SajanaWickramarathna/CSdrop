@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
+import { api } from "../api";
 import Nav from "./navigation";
 import Swal from "sweetalert2";
 
@@ -28,7 +28,7 @@ const ResetPassword = () => {
     }
 
     try {
-      const response = await axios.post(`http://localhost:3001/api/users/reset-password/${token}`, {
+      const response = await api.post(`/users/reset-password/${token}`, {
         password,
       });
       setSuccess(response.data.message);
