@@ -14,11 +14,6 @@ import {
   Tooltip,
   CircularProgress,
   Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
   TextField,
   InputAdornment,
   Box
@@ -38,8 +33,6 @@ export default function Supporters({ onSupporterSelect, onSupporterDelete }) {
   const [supporters, setSupporters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [supporterToDelete, setSupporterToDelete] = useState(null);
   const { enqueueSnackbar } = useSnackbar();
 
   useEffect(() => {
@@ -59,45 +52,20 @@ export default function Supporters({ onSupporterSelect, onSupporterDelete }) {
     }
   };
 
-  const handleDelete = async (id) => {
-    try {
-      await api.delete(`/supporters/customer?id=${id}`);
-      setSupporters(supporters.filter(supporter => supporter._id !== id));
-      enqueueSnackbar('Supporter deleted successfully', { variant: 'success' });
-    } catch (error) {
-      enqueueSnackbar('Error deleting supporter', { variant: 'error' });
-      console.error('Error deleting supporter:', error);
-    } finally {
-      setDeleteDialogOpen(false);
-    }
-  };
-
-  const handleDeleteClick = (supporter) => {
-    setSupporterToDelete(supporter);
-    setDeleteDialogOpen(true);
-  };
-
   const filteredSupporters = supporters.filter((supporter) => {
     const fullName = `${supporter.firstName || ''} ${supporter.lastName || ''}`.toLowerCase();
     const email = (supporter.email || '').toLowerCase();
     const userId = (supporter.user_id || '').toString().toLowerCase();
     const term = searchTerm.toLowerCase().trim().replace(/\s+/g, ' ');
 
-    return (
-      fullName.includes(term) ||
-      email.includes(term) ||
-      userId.includes(term)
-    );
+    return fullName.includes(term) || email.includes(term) || userId.includes(term);
   });
 
   const getStatusChip = (status) => {
     switch(status) {
-      case 'active':
-        return <Chip icon={<CheckCircle />} label="Active" color="success" size="small" />;
-      case 'inactive':
-        return <Chip icon={<Cancel />} label="Inactive" color="error" size="small" />;
-      default:
-        return <Chip label={status} size="small" />;
+      case 'active': return <Chip icon={<CheckCircle />} label="Active" color="success" size="small" />;
+      case 'inactive': return <Chip icon={<Cancel />} label="Inactive" color="error" size="small" />;
+      default: return <Chip label={status} size="small" />;
     }
   };
 
@@ -105,8 +73,7 @@ export default function Supporters({ onSupporterSelect, onSupporterDelete }) {
     <Paper elevation={3} className="rounded-2xl p-4">
       <Box className="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
         <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center' }}>
-          <SupportAgent className="mr-2" />
-          Supporters Management
+          <SupportAgent className="mr-2" /> Supporters Management
         </Typography>
         
         <Box className="flex items-center gap-2 w-full md:w-auto">
@@ -116,13 +83,7 @@ export default function Supporters({ onSupporterSelect, onSupporterDelete }) {
             placeholder="Search supporters..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search />
-                </InputAdornment>
-              ),
-            }}
+            InputProps={{ startAdornment: <InputAdornment position="start"><Search /></InputAdornment> }}
             className="flex-grow md:w-64"
           />
           
@@ -169,9 +130,7 @@ export default function Supporters({ onSupporterSelect, onSupporterDelete }) {
                     </Box>
                   </TableCell>
                   <TableCell>{row.email}</TableCell>
-                  <TableCell>
-                    {getStatusChip(row.userStatus)}
-                  </TableCell>
+                  <TableCell>{getStatusChip(row.userStatus)}</TableCell>
                   <TableCell align="center">
                     <Box className="flex justify-center gap-2">
                       <Tooltip title="Edit">
@@ -185,7 +144,7 @@ export default function Supporters({ onSupporterSelect, onSupporterDelete }) {
                       <Tooltip title="Delete">
                         <IconButton 
                           color="error"
-                          onClick={() => handleDeleteClick({ id: row.user_id, email: row.email })}
+                          onClick={() => onSupporterDelete({ id: row.user_id, email: row.email })}
                         >
                           <Delete />
                         </IconButton>
@@ -206,32 +165,6 @@ export default function Supporters({ onSupporterSelect, onSupporterDelete }) {
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete supporter {supporterToDelete?.email}? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button 
-            onClick={() => handleDelete(supporterToDelete?.id)} 
-            color="error"
-            variant="contained"
-            startIcon={<Delete />}
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Paper>
   );
 }

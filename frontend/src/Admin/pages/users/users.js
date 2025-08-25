@@ -15,7 +15,6 @@ import {
   Typography
 } from '@mui/material';
 import { api } from "../../../api";
-import Swal from 'sweetalert2';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -26,26 +25,6 @@ import Customers from './customers';
 import Supporters from './supporters';
 import Admins from './admins';
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <Box sx={{ p: 3 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
-    </div>
-  );
-}
-
 export default function Users() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -55,7 +34,7 @@ export default function Users() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Set initial tab based on current route
+  // Set initial tab based on route
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('customers')) setTabValue(0);
@@ -63,6 +42,7 @@ export default function Users() {
     else if (path.includes('admins')) setTabValue(2);
   }, [location]);
 
+  // Fetch selected user for update
   useEffect(() => {
     if (selectedUser?.id) {
       getUserById();
@@ -72,17 +52,10 @@ export default function Users() {
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
     switch(newValue) {
-      case 0:
-        navigate('/admin-dashboard/users/customers');
-        break;
-      case 1:
-        navigate('/admin-dashboard/users/supporters');
-        break;
-      case 2:
-        navigate('/admin-dashboard/users/admins');
-        break;
-      default:
-        break;
+      case 0: navigate('/admin-dashboard/users/customers'); break;
+      case 1: navigate('/admin-dashboard/users/supporters'); break;
+      case 2: navigate('/admin-dashboard/users/admins'); break;
+      default: break;
     }
   };
 
@@ -104,9 +77,7 @@ export default function Users() {
     setLoading(true);
     try {
       const response = await api.get(`/users/user?id=${selectedUser.id}`);
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch user data");
-      }
+      if (response.status !== 200) throw new Error("Failed to fetch user data");
       navigate("/admin-dashboard/users/updateuser", { state: { userData: response.data } });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to fetch user");
@@ -124,9 +95,8 @@ export default function Users() {
       if (response.status === 200) {
         toast.success('User deleted successfully');
         handleClickClose();
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+        // Refresh current tab data
+        setTimeout(() => window.location.reload(), 1000);
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to delete user");
@@ -139,17 +109,7 @@ export default function Users() {
 
   return (
     <Box sx={{ p: 3 }}>
-      <ToastContainer 
-        position="top-center" 
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      <ToastContainer position="top-center" autoClose={3000} />
 
       <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
         <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
@@ -199,7 +159,6 @@ export default function Users() {
                 />
               }
             />
-            
             <Route path="/adduser" element={<AddUser />} />
             <Route path="/updateuser" element={<UpdateUser />} />
           </Routes>
@@ -210,29 +169,19 @@ export default function Users() {
       <Dialog
         open={dialogOpen}
         onClose={handleClickClose}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
-          Confirm User Deletion
-        </DialogTitle>
+        <DialogTitle>Confirm User Deletion</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete {deleteUser?.email || 'this user'}?
-          </DialogContentText>
-          <DialogContentText sx={{ mt: 2, color: 'error.main', fontWeight: 'bold' }}>
-            Warning: This action cannot be undone.
+          <DialogContentText>
+            Are you sure you want to delete {deleteUser?.email || 'this user'}? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClickClose} disabled={loading}>
-            Cancel
-          </Button>
+          <Button onClick={handleClickClose} disabled={loading}>Cancel</Button>
           <Button 
             onClick={deleteUserById} 
-            autoFocus
-            color="error"
-            variant="contained"
+            color="error" 
+            variant="contained" 
             disabled={loading}
             startIcon={loading ? <CircularProgress size={20} /> : null}
           >
