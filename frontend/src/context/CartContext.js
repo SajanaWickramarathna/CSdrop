@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import { api } from "../api";
 
 const CartContext = createContext();
 
@@ -14,7 +14,7 @@ export const CartProvider = ({ children }) => {
     }
     
     try {
-      const response = await axios.get("http://localhost:3001/api/cart/count", {
+      const response = await api.get("/cart/count", {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCartCount(response.data.count || 0);
