@@ -152,7 +152,7 @@ function Nav() {
                   <NotificationsIcon className="text-gray-700 hover:text-purple-700" />
                   {notificationCount > 0 && (
                     <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center transform translate-x-1 -translate-y-1">
-                      {notificationCount}
+                      {notificationCount > 9 ? "9+" : notificationCount}
                     </span>
                   )}
                 </Link>
