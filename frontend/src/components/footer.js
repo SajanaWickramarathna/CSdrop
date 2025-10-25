@@ -6,12 +6,12 @@ import { FaXTwitter } from "react-icons/fa6";
 
 const Footer = () => {
   return (
-    <footer className="bg-gray-900 text-gray-300 py-12 space-y-4 pt-8 pb-6 relative z-50">
+  <footer className="bg-primary text-secondary py-12 space-y-4 pt-8 pb-6 relative z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              DROPship
+            <h3 className="text-accent text-lg font-semibold mb-4">
+              Kicknet
             </h3>
             <p className="mb-4">
               Premium products delivered straight to your doorstep.
@@ -19,25 +19,25 @@ const Footer = () => {
             <div className="flex space-x-4">
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-secondary hover:text-accent transition-colors"
               >
                 <FaFacebook className="text-xl" />
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-secondary hover:text-accent transition-colors"
               >
                 <FaInstagram className="text-xl" />
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-secondary hover:text-accent transition-colors"
               >
                 <FaXTwitter className="text-xl" />
               </a>
               <a
                 href="#"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-secondary hover:text-accent transition-colors"
               >
                 <FaTiktok className="text-xl" />
               </a>
@@ -45,14 +45,14 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
+            <h3 className="text-accent text-lg font-semibold mb-4">
               Quick Links
             </h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   to="/shop"
-                  className="hover:text-white transition-colors flex items-center"
+                  className="hover:text-accent transition-colors flex items-center"
                 >
                   <FaChevronRight className="text-xs mr-2" /> Shop
                 </Link>
@@ -85,15 +85,12 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
+            <h3 className="text-accent text-lg font-semibold mb-4">
               Customer Service
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link
-                  to="/shipping"
-                  className="hover:text-white transition-colors flex items-center"
-                >
+                <Link to="/shipping" className="hover:text-accent transition-colors flex items-center">
                   <FaChevronRight className="text-xs mr-2" /> Shipping Policy
                 </Link>
               </li>
@@ -125,36 +122,12 @@ const Footer = () => {
           </div>
 
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
+            <h3 className="text-accent text-lg font-semibold mb-4">
               Contact Info
             </h3>
-            <address className="not-italic space-y-2">
-              <p className="flex items-start">
-                <svg
-                  className="w-5 h-5 mr-2 text-blue-400 mt-0.5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-                123 Main Street, Colombo
-              </p>
+            <address className="not-italic space-y-2 text-secondary">
               <p className="flex items-center">
-                <svg
-                  className="w-5 h-5 mr-2 text-blue-400"
+                <svg className="w-5 h-5 mr-2 text-accent" 
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -170,8 +143,7 @@ const Footer = () => {
                 +94 76 123 4567
               </p>
               <p className="flex items-center">
-                <svg
-                  className="w-5 h-5 mr-2 text-blue-400"
+                <svg className="w-5 h-5 mr-2 text-accent" 
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -190,9 +162,9 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-gray-800 pt-8 text-center">
-          <p>
-            &copy; {new Date().getFullYear()} DROPship. All rights reserved.
+        <div className="border-t border-gray pt-8 text-center">
+          <p className="text-secondary">
+            &copy; {new Date().getFullYear()} Kicknet. All rights reserved.
             <br className="sm:hidden" />
             <span className="hidden sm:inline"> • </span>
             Developed by Sajana Wickramarathna
