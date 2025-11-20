@@ -376,10 +376,10 @@ const Checkout = () => {
   if (!cart.items || cart.items.length === 0) return renderEmptyCart();
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-100 pt-16">
       <Nav />
-      <div className="max-w-3xl mx-auto p-4 mt-6 py-12">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">Checkout</h1>
+      <div className="max-w-3xl mx-auto p-4 mt-6">
+        <h1 className="text-5xl font-extrabold mb-6 text-gray-800">Checkout</h1>
 
         {/* Shipping Information */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
