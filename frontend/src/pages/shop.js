@@ -30,13 +30,39 @@ export default function Shop() {
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [maxPrice, setMaxPrice] = useState(1000000);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showFilterPanel, setShowFilterPanel] = useState(true);
+  const [showFilterPanel, setShowFilterPanel] = useState(() => {
+    try {
+      const saved = localStorage.getItem("shop_showFilterPanel");
+      return saved !== null ? saved === "true" : true;
+    } catch {
+      return true;
+    }
+  });
   const [filterOpen, setFilterOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const { fetchCartCount } = useCart();
 
   const token = localStorage.getItem("token");
+
+  // Persist filter panel visibility when it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem("shop_showFilterPanel", String(showFilterPanel));
+    } catch {}
+  }, [showFilterPanel]);
+
+  // Sort newest → oldest by `created_at`, fallback to `product_id`
+  const sortByNewToOld = (arr) => {
+    return [...(arr || [])].sort((a, b) => {
+      const da = a?.created_at ? new Date(a.created_at).getTime() : 0;
+      const db = b?.created_at ? new Date(b.created_at).getTime() : 0;
+      if (db !== da) return db - da;
+      const ia = Number(a?.product_id ?? 0);
+      const ib = Number(b?.product_id ?? 0);
+      return ib - ia;
+    });
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -60,8 +86,9 @@ export default function Shop() {
     setLoading(true);
     try {
       const response = await api.get("/products");
-      setProducts(response.data);
-      setFilteredProducts(response.data);
+      const sorted = sortByNewToOld(response.data);
+      setProducts(sorted);
+      setFilteredProducts(sorted);
     } catch (error) {
       setProducts([]);
       setFilteredProducts([]);
@@ -74,8 +101,9 @@ export default function Shop() {
     setLoading(true);
     try {
       const response = await api.get(`/products/category/${category_id}`);
-      setProducts(response.data);
-      setFilteredProducts(response.data);
+      const sorted = sortByNewToOld(response.data);
+      setProducts(sorted);
+      setFilteredProducts(sorted);
     } catch (error) {
       setProducts([]);
       setFilteredProducts([]);
@@ -361,7 +389,7 @@ export default function Shop() {
 
       {/* Category Panel */}
       <aside className="hidden lg:block w-60 h-screen fixed top-24 left-0 z-30 bg-white shadow-lg px-6 pt-6 pb-8 flex flex-col gap-8">
-        <h2 className="text-3xl font-extrabold uppercase  text-blue-700 pl-1 mb-8 select-none">
+        <h2 className="text-3xl font-extrabold uppercase  text-stone-950 pl-1 mb-8 select-none">
           CATEGORIES
         </h2>
 
