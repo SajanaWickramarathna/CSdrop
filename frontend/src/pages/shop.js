@@ -18,19 +18,19 @@ import {
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
-import {api} from "../api"; 
+import { api } from "../api";
 
 export default function Shop() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
-  const [categories, setCategories] = useState([]); 
+  const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [allBrands, setAllBrands] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedBrands, setSelectedBrands] = useState([]);
   const [maxPrice, setMaxPrice] = useState(1000000);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [showFilterPanel, setShowFilterPanel] = useState(true);
   const [filterOpen, setFilterOpen] = useState(true);
   const [loading, setLoading] = useState(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
@@ -73,9 +73,7 @@ export default function Shop() {
   const fetchProductsByCategory = async (category_id) => {
     setLoading(true);
     try {
-      const response = await api.get(
-        `/products/category/${category_id}`
-      );
+      const response = await api.get(`/products/category/${category_id}`);
       setProducts(response.data);
       setFilteredProducts(response.data);
     } catch (error) {
@@ -88,9 +86,7 @@ export default function Shop() {
 
   const fetchBrandsByCategory = async (category_id) => {
     try {
-      const response = await api.get(
-        `/brands/bycategory/${category_id}`
-      );
+      const response = await api.get(`/brands/bycategory/${category_id}`);
       setBrands(response.data);
     } catch (error) {
       setBrands([]);
@@ -141,7 +137,6 @@ export default function Shop() {
 
   const handleCategoryClick = async (category_id) => {
     setSelectedCategory(category_id);
-    setShowFilterPanel(!!category_id);
     setSelectedBrands([]);
     setMaxPrice(1000000);
     setSearchQuery("");
@@ -156,9 +151,17 @@ export default function Shop() {
     setMaxPrice(1000000);
   };
 
+  const handleClearAllFilters = async () => {
+    setSelectedCategory("");
+    setSelectedBrands([]);
+    setMaxPrice(1000000);
+    setSearchQuery("");
+    setBrands(allBrands);
+    await fetchAllProducts();
+  };
+
   const handleShowAllProducts = async () => {
     setSelectedCategory("");
-    setShowFilterPanel(false);
     setSelectedBrands([]);
     setMaxPrice(1000000);
     setSearchQuery("");
@@ -197,7 +200,7 @@ export default function Shop() {
       <ToastContainer position="top-center" autoClose={3000} />
 
       {/* Mobile Search and Filter Bar */}
-      <div className="lg:hidden fixed top-16 left-0 right-0 h-16 bg-white shadow-sm z-30 px-4 py-3 flex items-center gap-2">
+      <div className="lg:hidden fixed top-24 left-0 right-0 h-16 bg-white shadow-sm z-40 px-4 py-3 flex items-center gap-2">
         <div className="relative flex-1">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -219,7 +222,7 @@ export default function Shop() {
       </div>
 
       {/* Desktop Search bar */}
-      <div className="hidden lg:block fixed top-16 left-60 right-0 h-16 z-30 bg-white shadow px-8 py-3">
+      <div className="hidden lg:block fixed top-24 left-60 right-0 h-16 z-40 bg-white shadow px-8 py-3">
         <div className="relative max-w-2xl mx-auto">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -357,14 +360,14 @@ export default function Shop() {
       )}
 
       {/* Category Panel */}
-      <aside className="hidden lg:block w-60 h-screen fixed top-20 left-0 z-30 bg-white shadow-lg px-4 pt-4 flex flex-col gap-3">
-        <h2 className="text-lg font-bold tracking-widest text-blue-700 px-2 select-none">
+      <aside className="hidden lg:block w-60 h-screen fixed top-24 left-0 z-30 bg-white shadow-lg px-6 pt-6 pb-8 flex flex-col gap-8">
+        <h2 className="text-3xl font-extrabold uppercase  text-blue-700 pl-1 mb-8 select-none">
           CATEGORIES
         </h2>
 
         <button
           onClick={handleShowAllProducts}
-          className={`mb-3 mx-2 px-3 py-2 rounded-lg transition-colors duration-200 ${
+          className={`mb-4 mx-0 px-4 py-3 rounded-xl shadow-sm transition-colors duration-200 ${
             !selectedCategory
               ? "bg-blue-600 hover:bg-blue-700 text-white"
               : "bg-gray-200 hover:bg-gray-300 text-gray-800"
@@ -373,16 +376,30 @@ export default function Shop() {
           Show All Products
         </button>
 
-        <nav className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-gray-100">
-          <ul className="space-y-1">
+        <button
+          onClick={() => setShowFilterPanel((prev) => !prev)}
+          className={`mx-0 mb-2 px-4 py-3 rounded-xl shadow-sm transition-colors duration-200 font-medium flex items-center justify-center gap-2 ${
+            showFilterPanel
+              ? "bg-white border border-gray-300 text-gray-800 hover:bg-gray-50"
+              : "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
+          }`}
+          aria-label={
+            showFilterPanel ? "Hide filter panel" : "Show filter panel"
+          }
+        >
+          <FaFilter /> {showFilterPanel ? "Hide Filters" : "Show Filters"}
+        </button>
+
+        <nav className="flex-1 overflow-y-auto mt-5 pt-4 pr-1 border-t border-gray-200 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-gray-100">
+          <ul className="space-y-2">
             {categories.map((category) => (
               <li
                 key={category.category_id}
-                className={`flex items-center px-3 py-2 rounded-lg cursor-pointer transition-colors select-none
+                className={`flex items-center px-3 py-3 rounded-lg cursor-pointer transition-colors select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400
                 ${
                   selectedCategory === String(category.category_id)
-                    ? "bg-blue-100 text-blue-700 font-bold"
-                    : "hover:bg-gray-200"
+                    ? "bg-blue-100 text-blue-700 font-bold border border-blue-200"
+                    : "hover:bg-gray-100"
                 }`}
                 onClick={() =>
                   handleCategoryClick(String(category.category_id))
@@ -404,7 +421,7 @@ export default function Shop() {
       </aside>
 
       {/* Main & Filter Panel */}
-      <div className="flex pt-[128px] lg:pt-[128px] lg:pl-60 min-h-screen">
+      <div className="flex pt-[160px] lg:pt-[160px] lg:pl-60 min-h-screen">
         {showFilterPanel && (
           <div
             className={`hidden lg:block w-80 p-4 transition-all duration-300 ease-in-out ${
@@ -424,13 +441,6 @@ export default function Shop() {
                 aria-controls="filter-panel"
               >
                 <h2 className="font-semibold text-lg">Filters</h2>
-                <div className="flex items-center">
-                  {filterOpen ? (
-                    <FiChevronUp className="text-xl" />
-                  ) : (
-                    <FiChevronDown className="text-xl" />
-                  )}
-                </div>
               </div>
 
               <div id="filter-panel" className="p-4 space-y-6">
@@ -492,16 +502,20 @@ export default function Shop() {
                         </p>
                       )}
                     </div>
+                  </>
+                )}
 
+                <div className="border-t pt-3">
+                  <div className="flex gap-2">
                     <button
                       onClick={handleClearBrandAndPriceFilters}
-                      className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-medium transition focus:outline-none focus:ring-2 focus:ring-gray-300"
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 rounded-lg font-medium transition focus:outline-none focus:ring-2 focus:ring-gray-300"
                       aria-label="Clear brand and price filters"
                     >
                       Clear Filters
                     </button>
-                  </>
-                )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -653,8 +667,6 @@ export default function Shop() {
           )}
         </main>
       </div>
-<Footer />
-      
     </div>
   );
 }
