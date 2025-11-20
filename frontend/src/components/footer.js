@@ -11,7 +11,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div>
             <h3 className="text-accent text-lg font-semibold mb-4">
-              Kicknet
+              Kicknet.store
             </h3>
             <p className="mb-4">
               Premium products delivered straight to your doorstep.
@@ -164,7 +164,7 @@ const Footer = () => {
 
         <div className="border-t border-gray pt-8 text-center">
           <p className="text-secondary">
-            &copy; {new Date().getFullYear()} Kicknet. All rights reserved.
+            &copy; {new Date().getFullYear()} Kicknet.store All rights reserved.
             <br className="sm:hidden" />
             <span className="hidden sm:inline"> • </span>
             Developed by Sajana Wickramarathna

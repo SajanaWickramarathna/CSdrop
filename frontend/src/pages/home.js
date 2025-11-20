@@ -112,7 +112,7 @@ const baseURL = api.defaults.baseURL.replace("/api", ""); // remove `/api` if pr
           className="relative text-center space-y-6 px-4"
         >
           <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">
-            DROPship
+            Kicknet.store
           </h1>
           <p className="text-xl md:text-2xl max-w-2xl mx-auto">
             Premium products delivered straight to your doorstep
@@ -216,7 +216,7 @@ const baseURL = api.defaults.baseURL.replace("/api", ""); // remove `/api` if pr
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              About DROPship
+              About Kicknet.store
             </h2>
             <div className="w-20 h-1 bg-blue-600 mx-auto"></div>
           </div>
@@ -245,13 +245,13 @@ const baseURL = api.defaults.baseURL.replace("/api", ""); // remove `/api` if pr
               className="space-y-6"
             >
               <p className="text-lg text-gray-700">
-                At DROPship, we're passionate about connecting you with the
+                At Kicknet.store, we're passionate about connecting you with the
                 highest quality products from around the world. Our carefully
                 curated selection ensures you get only the best items delivered
                 straight to your doorstep.
               </p>
               <p className="text-lg text-gray-700">
-                Founded in 2023, we've grown from a small startup to a trusted
+                Founded in 2025, we've grown from a small startup to a trusted
                 e-commerce platform serving thousands of satisfied customers
                 nationwide. Our mission is to make premium shopping accessible
                 to everyone.
@@ -318,7 +318,7 @@ const baseURL = api.defaults.baseURL.replace("/api", ""); // remove `/api` if pr
             Ready to Experience Premium Shopping?
           </h2>
           <p className="text-xl mb-8 max-w-3xl mx-auto">
-            Join thousands of satisfied customers who trust DROPship for quality
+            Join thousands of satisfied customers who trust Kicknet.store for quality
             products and exceptional service.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
