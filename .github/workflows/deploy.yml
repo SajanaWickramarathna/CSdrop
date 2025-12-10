@@ -1,0 +1,41 @@
+name: 🚀 Deploy Kickstore
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # allows manual trigger from GitHub Actions tab
+
+jobs:
+  backend-deploy:
+    name: 🔧 Deploy Backend to Railway
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛎️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 📦 Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: 🚀 Deploy Backend to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          echo "Deploying backend to Railway..."
+          railway up --service spark-backend --detach
+          echo "✅ Backend deployed successfully!"
+
+  frontend-deploy:
+    name: 🌐 Redeploy Frontend on Vercel
+    runs-on: ubuntu-latest
+    needs: backend-deploy
+
+    steps:
+      - name: 🔄 Trigger Vercel Redeploy
+        run: |
+          echo "Triggering Vercel redeploy..."
+          curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_${{ secrets.VERCEL_PROJECT_ID }}/LONg_DEPLOY_HOOK_ID" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json"
+          echo "✅ Vercel redeploy triggered!"

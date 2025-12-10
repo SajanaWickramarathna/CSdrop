@@ -1,0 +1,13 @@
+Copyright © 2025 S JAY Web Solutions (Pvt) Ltd
+
+All rights reserved.
+
+This software and all associated files are proprietary and confidential.  
+Unauthorized copying, redistribution, modification, or use of any part of this project is strictly prohibited without express written permission from the copyright holder.
+
+You may not:
+- Reproduce or use any part of the codebase
+- Distribute or sublicense the software
+- Modify or reverse engineer any portion of the system
+
+For licensing inquiries, contact: contact@sjaywebsolutions.lk
