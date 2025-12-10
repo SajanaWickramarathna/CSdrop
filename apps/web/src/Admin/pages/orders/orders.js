@@ -542,7 +542,7 @@ export default function AllOrders() {
                             <Button
                               variant="text"
                               size="small"
-                              onClick={() => window.open(`http://localhost:3001/uploads/${order.payment_slip}`, '_blank')}
+                              onClick={() => window.open(`http:///uploads/${order.payment_slip}`, '_blank')}
                               sx={{
                                 textTransform: 'none',
                                 fontWeight: 500

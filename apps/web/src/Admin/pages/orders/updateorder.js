@@ -357,7 +357,7 @@ export default function UpdateOrder() {
                     item.product_images?.[0]
                       ? item.product_images[0].startsWith("http")
                         ? item.product_images[0]
-                        : `http://localhost:3001/uploads/${item.product_images[0]}`
+                        : `http:///uploads/${item.product_images[0]}`
                       : "https://via.placeholder.com/300x200?text=No+Image+Available" // More descriptive placeholder
                   }
                   alt={item.product_name}
@@ -399,10 +399,10 @@ export default function UpdateOrder() {
                       maxWidth: 300,
                       cursor: 'pointer'
                     }}
-                    onClick={() => handleImageClick(`http://localhost:3001/uploads/${orderData.payment_slip}`)}
+                    onClick={() => handleImageClick(`http:///uploads/${orderData.payment_slip}`)}
                   >
                     <img
-                      src={`http://localhost:3001/uploads/${orderData.payment_slip}`}
+                      src={`http:///uploads/${orderData.payment_slip}`}
                       alt="Payment Slip"
                       style={{
                         width: '100%',

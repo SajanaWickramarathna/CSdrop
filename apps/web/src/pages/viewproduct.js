@@ -105,14 +105,24 @@ const ProductViewPage = () => {
   };
 
   const getProductImageSrc = (imgPath) => {
-    if (!imgPath) return "https://via.placeholder.com/600x400?text=No+Image";
-    if (imgPath.startsWith("http")) return imgPath;
-    if (imgPath.startsWith("/uploads"))
-      return `http://localhost:3001${imgPath}`;
-    if (imgPath.startsWith("uploads"))
-      return `http://localhost:3001/${imgPath}`;
-    return `http://localhost:3001/uploads/${imgPath}`;
-  };
+  const baseURL = api.defaults.baseURL.replace("/api", "");
+
+  if (!imgPath)
+    return "https://via.placeholder.com/600x400?text=No+Image";
+
+  // Full external URL
+  if (imgPath.startsWith("http")) return imgPath;
+
+  // /uploads/...
+  if (imgPath.startsWith("/uploads")) return `${baseURL}${imgPath}`;
+
+  // uploads/...
+  if (imgPath.startsWith("uploads")) return `${baseURL}/${imgPath}`;
+
+  // filename only
+  return `${baseURL}/uploads/${imgPath}`;
+};
+
 
   if (loading) {
     return (

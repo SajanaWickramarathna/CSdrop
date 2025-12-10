@@ -208,19 +208,30 @@ export default function Shop() {
   };
 
   const getProductImageSrc = (imgArray) => {
-    if (!imgArray || imgArray.length === 0)
-      return "https://via.placeholder.com/300x200?text=No+Image";
+  const baseURL = api.defaults.baseURL.replace("/api", "");
 
-    const firstImg = imgArray[0];
-    if (!firstImg) return "https://via.placeholder.com/300x200?text=No+Image";
+  if (!imgArray || imgArray.length === 0) {
+    return "https://via.placeholder.com/300x200?text=No+Image";
+  }
 
-    if (firstImg.startsWith("http")) return firstImg;
-    if (firstImg.startsWith("/uploads"))
-      return `http://localhost:3001${firstImg}`;
-    if (firstImg.startsWith("uploads"))
-      return `http://localhost:3001/${firstImg}`;
-    return `http://localhost:3001/uploads/${firstImg}`;
-  };
+  const firstImg = imgArray[0];
+  if (!firstImg) {
+    return "https://via.placeholder.com/300x200?text=No+Image";
+  }
+
+  // Full external URL
+  if (firstImg.startsWith("http")) return firstImg;
+
+  // /uploads/...
+  if (firstImg.startsWith("/uploads")) return `${baseURL}${firstImg}`;
+
+  // uploads/...
+  if (firstImg.startsWith("uploads")) return `${baseURL}/${firstImg}`;
+
+  // Fallback (just filename)
+  return `${baseURL}/uploads/${firstImg}`;
+};
+
 
   return (
     <div className="bg-gray-50 min-h-screen">
