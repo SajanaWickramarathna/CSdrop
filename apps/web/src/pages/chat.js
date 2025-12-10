@@ -13,7 +13,7 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 
 // Get base URL without `/api`
-const baseURL = api.defaults.baseURL.replace("/api", "");
+const baseURL = api.defaults.baseURL.replace(/\/api\/?$/, "")
 
 // Initialize socket
 const socket = io(baseURL);

@@ -105,7 +105,7 @@ const ProductViewPage = () => {
   };
 
   const getProductImageSrc = (imgPath) => {
-  const baseURL = api.defaults.baseURL.replace("/api", "");
+  const baseURL = api.defaults.baseURL.replace(/\/api\/?$/, "")
 
   if (!imgPath)
     return "https://via.placeholder.com/600x400?text=No+Image";

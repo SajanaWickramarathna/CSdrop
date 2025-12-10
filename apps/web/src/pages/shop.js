@@ -208,7 +208,7 @@ export default function Shop() {
   };
 
   const getProductImageSrc = (imgArray) => {
-  const baseURL = api.defaults.baseURL.replace("/api", "");
+  const baseURL = api.defaults.baseURL.replace(/\/api\/?$/, "")
 
   if (!imgArray || imgArray.length === 0) {
     return "https://via.placeholder.com/300x200?text=No+Image";
