@@ -306,7 +306,7 @@ export default function Dashboard() {
       <Box sx={{ p: 4 }}>
         <Grid container spacing={3}>
           {[...Array(7)].map((_, index) => (
-            <Grid item xs={12} sm={6} md={index < 3 ? 4 : 3} key={index}>
+            <Grid key={index} size={{ xs: 12, sm: 6, md: index < 3 ? 4 : 3 }}>
               <Card sx={{ height: 150, borderRadius: 3 }}>
                 <CardContent>
                   <Box
@@ -509,7 +509,7 @@ export default function Dashboard() {
       {/* Summary Cards */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {orderStats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
+          <Grid key={index} size={{ xs: 12, sm: 6, md: 3 }}>
             <StatCard {...stat} />
           </Grid>
         ))}
@@ -535,7 +535,7 @@ export default function Dashboard() {
       {activeTab === 0 && (
         <Grid container spacing={3} sx={{ mb: 4 }} direction="column">
           {/* Sales Trend */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Card
               sx={{
                 width: "100%",
@@ -642,7 +642,7 @@ export default function Dashboard() {
           </Grid>
 
           {/* Revenue Distribution */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Card
               sx={{
                 width: "100%",
@@ -706,7 +706,7 @@ export default function Dashboard() {
 
       {activeTab === 1 && (
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Card
               sx={{
                 height: "100%",
@@ -720,7 +720,7 @@ export default function Dashboard() {
               </Typography>
               <Grid container spacing={3}>
                 {productStats.map((stat, index) => (
-                  <Grid item xs={12} sm={6} md={6} key={index}>
+                  <Grid key={index} size={{ xs: 12, sm: 6, md: 6 }}>
                     <StatCard {...stat} />
                   </Grid>
                 ))}

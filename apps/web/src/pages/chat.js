@@ -12,8 +12,9 @@ import {api} from "../api";
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 
-// Get base URL without `/api`
-const baseURL = api.defaults.baseURL.replace(/\/api\/?$/, "")
+// Get base URL without `/api`, falling back to the current origin if the env is missing
+const rawBaseURL = api.defaults.baseURL || process.env.REACT_APP_SERVER_URL || window.location.origin;
+const baseURL = rawBaseURL.replace(/\/api\/?$/, "");
 
 // Initialize socket
 const socket = io(baseURL);
