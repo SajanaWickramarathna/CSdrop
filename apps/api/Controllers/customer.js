@@ -72,9 +72,14 @@ exports.addCustomer = async(req, res) => {
         
         const token = jwt.sign({ email }, process.env.SECRET_KEY, { expiresIn: "1h" });
 
-        await sendVerificationEmail(email, token);
-    
-        res.status(200).json({ message: "Customer registered! Please check your email for verification." });
+        // Send verification email but don't fail the whole request if email sending fails
+        try {
+            await sendVerificationEmail(email, token);
+        } catch (mailErr) {
+            console.error("Failed to send verification email:", mailErr.message || mailErr);
+        }
+
+        res.status(200).json({ message: "Customer registered! Please check your email for verification (if email sending succeeded)." });
     }catch (error) {
         res.status(500).json(error);
         console.log(error);
